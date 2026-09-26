@@ -156,6 +156,6 @@ fi
 
 echo
 echo "    MCC dashboard:  http://localhost:$PORT/"
-[ "$WITH_SIM" -eq 1 ] || echo "    press 'Start simulator' in the UI, or re-run with --sim"
+[ "$WITH_SIM" -eq 1 ] || echo "    press 'Start feed' in the UI, or re-run with --sim"
 echo "    stop with:      $ROOT/stop.sh"
 echo

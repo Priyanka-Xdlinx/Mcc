@@ -4,10 +4,6 @@ export function StatusBar({ status, live }: { status: Status | null; live: boole
   const f = status?.feed
   return (
     <div className="statusbar">
-      <div className="brand">
-        OrbLinx MCC <span>· XMCC telemetry</span>
-      </div>
-
       <div className="stat">
         <div className="k">Feed</div>
         <div className="v">
@@ -39,17 +35,17 @@ export function StatusBar({ status, live }: { status: Status | null; live: boole
       </div>
 
       <div className="stat">
-        <div className="k">Gaps</div>
+        <div className="k">Lost subframes</div>
         <div className="v">{f?.subframeGaps ?? 0}</div>
       </div>
 
       <div className="stat">
-        <div className="k">History</div>
+        <div className="k">Readings stored</div>
         <div className="v">{(f?.historyRows ?? 0).toLocaleString()}</div>
       </div>
 
       <div className="stat">
-        <div className="k">Stream</div>
+        <div className="k">Dashboard stream</div>
         <div className="v">
           <span className={`dot ${live ? 'on' : 'off'}`} />
           {live ? 'live' : 'offline'}

@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: mcc-backend
+  # Browsers must revalidate the UI on every load (a cheap 304 when unchanged),
+  # so a rebuilt frontend is never hidden behind a cached index.html.
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-cache: true
 
 mcc:
   # Absolute paths keep the app runnable from any working directory.

@@ -28,7 +28,7 @@ and is marked as such.
 
 | Command | What it does |
 |---|---|
-| `./start.sh` | Backend only — press **Start simulator** in the UI |
+| `./start.sh` | Backend only — press **Start feed** in the UI |
 | `./start.sh --sim` | Also starts the XDOS simulator stack |
 | `./start.sh --build` | Force a rebuild of schema, frontend and backend |
 | `./start.sh --fg` | Backend in the foreground, Ctrl-C to stop |
@@ -60,7 +60,19 @@ MCC_DB=../mcc.db MCC_XDOS_HOME="../../updated xdos" \
 ```
 </details>
 
-## The three views
+## The views
+
+The app opens on the **Dashboard**. A theme switch in the header offers
+**Auto** (follows the OS), **Light** and **Dark**; the choice is remembered in the
+browser.
+
+**Dashboard** — link state, spacecraft time, master frame, how many parameters
+are OK, lost subframes; the current master frame as a 16-subframe strip showing
+where each part (VH/H/M/L) completes; health per subsystem (click one to open
+its telemetry); parameters that are changing, with sparklines; parameters that
+need attention; and the XDLINX XDSAT platforms with links to xdlinx.space.
+When the feed stops, figures are labelled *last known* instead of looking live.
+
 
 **Telemetry** — every parameter the LUT downlinks, updating over the websocket:
 value, unit, tier, quality, and the frame it came from. Filter by subsystem, tier

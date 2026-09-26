@@ -1,22 +1,46 @@
 import { useMemo, useState } from 'react'
 import type { Row } from '../types'
+import { displayValue } from '../format'
 
 const TIERS = ['VH', 'H', 'M', 'L'] as const
 
-export function TelemetryTable({ rows }: { rows: Row[] }) {
+const QUALITY_LABEL: Record<string, string> = {
+  OK: 'OK',
+  NO_ANSWER: 'No answer',
+  BLOCK_INCOMPLETE: 'Incomplete',
+  NOT_DOWNLINKED: 'Not sent',
+  WARMUP: 'Warm-up',
+}
+
+export function TelemetryTable({
+  rows,
+  initialSubsystem,
+  initialOnlyProblems,
+}: {
+  rows: Row[]
+  initialSubsystem?: string
+  initialOnlyProblems?: boolean
+}) {
   const [q, setQ] = useState('')
-  const [subsystem, setSubsystem] = useState('')
+  const [subsystem, setSubsystem] = useState(initialSubsystem ?? '')
   const [tier, setTier] = useState('')
-  const [onlyProblems, setOnlyProblems] = useState(false)
+  const [onlyProblems, setOnlyProblems] = useState(initialOnlyProblems ?? false)
 
   const subsystems = useMemo(
     () => Array.from(new Set(rows.map((r) => r.subsystem))).sort(),
     [rows],
   )
 
+  // The backend orders parts alphabetically (H, L, M, VH); operators read them
+  // fastest-first. The sort is stable, so the LUT order within a part is kept.
+  const ordered = useMemo(
+    () => rows.slice().sort((a, b) => TIERS.indexOf(a.tier) - TIERS.indexOf(b.tier)),
+    [rows],
+  )
+
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    return rows.filter((r) => {
+    return ordered.filter((r) => {
       if (subsystem && r.subsystem !== subsystem) return false
       if (tier && r.tier !== tier) return false
       if (onlyProblems && (r.quality === 'OK' || r.quality === null)) return false
@@ -27,7 +51,7 @@ export function TelemetryTable({ rows }: { rows: Row[] }) {
         r.entry.toLowerCase().includes(needle)
       )
     })
-  }, [rows, q, subsystem, tier, onlyProblems])
+  }, [ordered, q, subsystem, tier, onlyProblems])
 
   return (
     <>
@@ -45,18 +69,18 @@ export function TelemetryTable({ rows }: { rows: Row[] }) {
           ))}
         </select>
         <select value={tier} onChange={(e) => setTier(e.target.value)}>
-          <option value="">All tiers</option>
+          <option value="">All parts (VH/H/M/L)</option>
           {TIERS.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <label style={{ display: 'flex', gap: 6, alignItems: 'center', color: 'var(--dim)' }}>
+        <label className="checklabel">
           <input
             type="checkbox"
             checked={onlyProblems}
             onChange={(e) => setOnlyProblems(e.target.checked)}
           />
-          Only flagged
+          Only needs attention
         </label>
         <div className="count">
           {shown.length.toLocaleString()} of {rows.length.toLocaleString()} parameters
@@ -73,19 +97,19 @@ export function TelemetryTable({ rows }: { rows: Row[] }) {
         ) : (
           <table>
             <colgroup>
-              <col style={{ width: 54 }} />
+              <col style={{ width: 60 }} />
               <col style={{ width: 92 }} />
               <col style={{ width: 84 }} />
               <col style={{ width: 210 }} />
               <col />
               <col style={{ width: 190 }} />
-              <col style={{ width: 130 }} />
+              <col style={{ width: 118 }} />
               <col style={{ width: 56 }} />
               <col style={{ width: 48 }} />
             </colgroup>
             <thead>
               <tr>
-                <th>Tier</th>
+                <th>Part</th>
                 <th>Subsystem</th>
                 <th>Entry</th>
                 <th>Message</th>
@@ -108,14 +132,16 @@ export function TelemetryTable({ rows }: { rows: Row[] }) {
                     {/* 24% of downlinked parameters are not byte aligned; a
                         decoder that assumes alignment gets these wrong. */}
                     {r.byte_aligned === 0 && (
-                      <span style={{ color: 'var(--dimmer)', marginLeft: 6 }} title="not byte aligned">∿</span>
+                      <span className="nba-mark" title="Not byte aligned: decoded bit by bit">∿</span>
                     )}
                   </td>
                   <td className={`num val ${r.value == null ? 'stale' : ''}`}
                       title={r.value ?? undefined}>
-                    {r.value ?? '—'}
+                    {displayValue(r.value)}
                   </td>
-                  <td className={`q ${r.quality ?? ''}`}>{r.quality ?? 'no data'}</td>
+                  <td className={`q ${r.quality ?? 'none'}`}>
+                    <span>{r.quality ? QUALITY_LABEL[r.quality] ?? r.quality : 'No data'}</span>
+                  </td>
                   <td className="num dimcol">{r.master_frame ?? '—'}</td>
                   <td className="num dimcol">{r.subframe ?? '—'}</td>
                 </tr>

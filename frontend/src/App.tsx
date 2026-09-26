@@ -1,49 +1,69 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { AppHeader, TABS, type Tab } from './components/AppHeader'
 import { StatusBar } from './components/StatusBar'
-import { SimControl } from './components/SimControl'
+import { Dashboard, type TelemetryFilter } from './components/Dashboard'
 import { TelemetryTable } from './components/TelemetryTable'
 import { ChartsView } from './components/ChartsView'
 import { DecodeView } from './components/DecodeView'
 import { useTelemetryStream } from './hooks/useTelemetryStream'
-
-type Tab = 'telemetry' | 'charts' | 'decode'
-
-const TABS: { id: Tab; label: string; hint: string }[] = [
-  { id: 'telemetry', label: 'Telemetry', hint: 'every parameter the LUT downlinks, live' },
-  { id: 'charts', label: 'Charts', hint: 'values over time' },
-  { id: 'decode', label: 'Decode trace', hint: 'Layer 1 and Layer 2, byte by byte' },
-]
+import { useTheme } from './theme'
 
 export default function App() {
-  const { rows, status, live, reload, refreshStatus } = useTelemetryStream()
-  const [tab, setTab] = useState<Tab>('telemetry')
+  const { rows, status, live, lastMsgAt, movers, reload, refreshStatus } = useTelemetryStream()
+  const theme = useTheme()
+  const [tab, setTab] = useState<Tab>('dashboard')
+  const [filter, setFilter] = useState<TelemetryFilter & { n: number }>({ n: 0 })
+  const [chartIds, setChartIds] = useState<number[]>([])
+
+  useEffect(() => {
+    const t = TABS.find((x) => x.id === tab)
+    document.title = `${t?.label ?? 'MCC'} · OrbLinx MCC`
+  }, [tab])
 
   return (
     <div className="app">
-      <StatusBar status={status} live={live} />
+      <AppHeader
+        tab={tab}
+        onTab={setTab}
+        status={status}
+        live={live}
+        theme={theme.choice}
+        onTheme={theme.set}
+        onFeedChanged={() => {
+          void refreshStatus()
+          void reload()
+        }}
+      />
+      {tab !== 'dashboard' && <StatusBar status={status} live={live} />}
 
-      <div className="tabbar">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={`tab ${tab === t.id ? 'on' : ''}`}
-            onClick={() => setTab(t.id)}
-            title={t.hint}
-          >
-            {t.label}
-          </button>
-        ))}
-        <SimControl
+      {tab === 'dashboard' && (
+        <Dashboard
+          rows={rows}
           status={status}
-          onChanged={() => {
-            void refreshStatus()
-            void reload()
+          live={live}
+          lastMsgAt={lastMsgAt}
+          movers={movers}
+          onOpenTelemetry={(f) => {
+            setFilter((prev) => ({ ...f, n: prev.n + 1 }))
+            setTab('telemetry')
+          }}
+          onOpenCharts={(ids) => {
+            setChartIds(ids)
+            setTab('charts')
           }}
         />
-      </div>
-
-      {tab === 'telemetry' && <TelemetryTable rows={rows} />}
-      {tab === 'charts' && <ChartsView rows={rows} live={live} />}
+      )}
+      {tab === 'telemetry' && (
+        <TelemetryTable
+          key={filter.n}
+          rows={rows}
+          initialSubsystem={filter.subsystem}
+          initialOnlyProblems={filter.onlyProblems}
+        />
+      )}
+      {tab === 'charts' && (
+        <ChartsView rows={rows} live={live} movers={movers} initial={chartIds} />
+      )}
       {tab === 'decode' && <DecodeView rows={rows} live={live} />}
     </div>
   )

@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { Status } from '../types'
 
 /**
- * Start and stop the XDOS simulator from the browser.
+ * Start and stop the XDLINX telemetry stack (the XDOS OBC, its subsystem
+ * models and the XMCC forwarder) from the browser.
  *
  * The backend runs one fixed command, so nothing typed here reaches a shell.
  * Telemetry only flows once the EPS kill switch is released, which is what
@@ -15,45 +16,36 @@ export function SimControl({
   status: Status | null
   onChanged: () => void
 }) {
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<'start' | 'stop' | null>(null)
   const sim = status?.simulator
   const running = sim?.running ?? false
+  const detail = sim
+    ? running
+      ? `Running · ${sim.processes.length} processes${sim.pid ? ` · pid ${sim.pid}` : ''}`
+      : 'Stopped'
+    : 'Status unknown'
 
-  const call = async (path: string) => {
-    setBusy(true)
+  const call = async (what: 'start' | 'stop') => {
+    setBusy(what)
     try {
-      await fetch(path, { method: 'POST' })
+      await fetch(`/api/sim/${what}`, { method: 'POST' })
       onChanged()
     } finally {
-      setBusy(false)
+      setBusy(null)
     }
   }
 
   return (
-    <div className="controls">
-      {sim?.error && <span className="err">{sim.error}</span>}
-      {!sim?.error && running && (
-        <span className="err" style={{ color: 'var(--dim)' }}>
-          {sim?.adopted ? 'already running' : `pid ${sim?.pid}`} ·{' '}
-          {sim?.processes.length ?? 0} processes
-        </span>
+    <div className="feedctl" title={sim?.error ?? detail}>
+      {running ? (
+        <button className="danger" disabled={busy !== null} onClick={() => call('stop')}>
+          {busy === 'stop' ? 'Stopping…' : 'Stop feed'}
+        </button>
+      ) : (
+        <button className="primary" disabled={busy !== null} onClick={() => call('start')}>
+          {busy === 'start' ? 'Starting…' : 'Start feed'}
+        </button>
       )}
-      <button
-        className="primary"
-        disabled={busy || running}
-        onClick={() => call('/api/sim/start')}
-        title="Runs scripts/run_stack.sh --power-on --no-gs --no-windows"
-      >
-        {busy && !running ? 'Starting…' : 'Start simulator'}
-      </button>
-      <button
-        className="danger"
-        disabled={busy || !running}
-        onClick={() => call('/api/sim/stop')}
-        title="Stops the stack, including xdos_tm_view which kill_all.sh misses"
-      >
-        Stop
-      </button>
     </div>
   )
 }

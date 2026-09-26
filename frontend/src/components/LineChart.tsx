@@ -178,14 +178,14 @@ export function LineChart({
               {area && series.length === 1 && (
                 <path
                   d={`${d} L${px(last.x).toFixed(1)},${py(yMin).toFixed(1)} L${px(first.x).toFixed(1)},${py(yMin).toFixed(1)} Z`}
-                  fill={s.color}
+                  style={{ fill: s.color }}
                   opacity={0.12}
                   stroke="none"
                 />
               )}
-              <path d={d} className="line" stroke={s.color} />
+              <path d={d} className="line" style={{ stroke: s.color }} />
               {pts.length === 1 && (
-                <circle cx={px(last.x)} cy={py(last.y)} r={4} fill={s.color} />
+                <circle cx={px(last.x)} cy={py(last.y)} r={4} style={{ fill: s.color }} />
               )}
               {/* direct label at the last point, for small series counts */}
               {!compact && series.length <= 4 && (
@@ -193,7 +193,7 @@ export function LineChart({
                   x={px(last.x) + 8}
                   y={py(last.y) + 4}
                   className="direct-label"
-                  fill={s.color}
+                  style={{ fill: s.color }}
                 >
                   {s.name.length > 14 ? s.name.slice(0, 13) + '…' : s.name}
                 </text>
@@ -204,7 +204,7 @@ export function LineChart({
                     cx={px(hoverX)}
                     cy={py(pts.find((p) => p.x === hoverX)!.y)}
                     r={4.5}
-                    fill={s.color}
+                    style={{ fill: s.color }}
                     className="hover-dot"
                   />
                 )}

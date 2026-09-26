@@ -10,6 +10,14 @@ interface Update {
   quality: Row['quality']
 }
 
+/** A parameter whose value has changed at least once since the page opened. */
+export interface Mover {
+  id: number
+  at: number
+  changes: number
+  points: number[]
+}
+
 interface SocketMessage {
   type: 'telemetry' | 'status' | 'blockIncomplete'
   masterFrame?: number
@@ -30,13 +38,23 @@ export function useTelemetryStream() {
   const [rows, setRows] = useState<Row[]>([])
   const [status, setStatus] = useState<Status | null>(null)
   const [live, setLive] = useState(false)
+  const [lastMsgAt, setLastMsgAt] = useState<number | null>(null)
+  const [movers, setMovers] = useState<Mover[]>([])
   const byId = useRef(new Map<number, number>())
+  const current = useRef<Row[]>([])
+  const moving = useRef(new Map<number, Mover>())
+  const lastMf = useRef<number | null>(null)
 
   const reload = useCallback(async () => {
-    const r = await fetch('/api/telemetry/latest')
-    const data: Row[] = await r.json()
-    byId.current = new Map(data.map((row, i) => [row.parameter_id, i]))
-    setRows(data)
+    try {
+      const r = await fetch('/api/telemetry/latest')
+      const data: Row[] = await r.json()
+      byId.current = new Map(data.map((row, i) => [row.parameter_id, i]))
+      current.current = data
+      setRows(data)
+    } catch {
+      /* backend restarting; the socket reconnect reloads */
+    }
   }, [])
 
   const refreshStatus = useCallback(async () => {
@@ -75,22 +93,51 @@ export function useTelemetryStream() {
           return
         }
         if (msg.type !== 'telemetry' || !msg.updates) return
-        setRows((prev) => {
-          const next = prev.slice()
-          for (const u of msg.updates!) {
-            const i = byId.current.get(u.parameterId)
-            if (i === undefined) continue
-            next[i] = {
-              ...next[i],
-              value: u.value,
-              quality: u.quality,
-              master_frame: msg.masterFrame ?? next[i].master_frame,
-              subframe: msg.subframe ?? next[i].subframe,
-              spacecraft_time: msg.spacecraftTime ?? next[i].spacecraft_time,
+        const now = Date.now()
+        const next = current.current.slice()
+        let moved = false
+        // An OBC reboot restarts the master frame count: every value jumps, which
+        // is not the same as a parameter changing. Start the change list afresh.
+        const rebooted =
+          msg.masterFrame !== undefined && lastMf.current !== null && msg.masterFrame < lastMf.current
+        if (msg.masterFrame !== undefined) lastMf.current = msg.masterFrame
+        if (rebooted) {
+          moving.current.clear()
+          setMovers([])
+        }
+        for (const u of msg.updates) {
+          const i = byId.current.get(u.parameterId)
+          if (i === undefined) continue
+          const before = next[i].value
+          // Warm-up values (first master frame after boot) are not trustworthy.
+          if (!rebooted && u.quality !== 'WARMUP' && next[i].quality !== 'WARMUP'
+              && before !== null && before !== u.value) {
+            const m = moving.current.get(u.parameterId) ?? {
+              id: u.parameterId,
+              at: now,
+              changes: 0,
+              points: [parseFloat(before)].filter(Number.isFinite),
             }
+            const y = parseFloat(u.value)
+            m.at = now
+            m.changes += 1
+            if (Number.isFinite(y)) m.points = [...m.points, y].slice(-60)
+            moving.current.set(u.parameterId, m)
+            moved = true
           }
-          return next
-        })
+          next[i] = {
+            ...next[i],
+            value: u.value,
+            quality: u.quality,
+            master_frame: msg.masterFrame ?? next[i].master_frame,
+            subframe: msg.subframe ?? next[i].subframe,
+            spacecraft_time: msg.spacecraftTime ?? next[i].spacecraft_time,
+          }
+        }
+        current.current = next
+        setRows(next)
+        setLastMsgAt(now)
+        if (moved) setMovers(Array.from(moving.current.values()))
       }
     }
 
@@ -102,5 +149,5 @@ export function useTelemetryStream() {
     }
   }, [])
 
-  return { rows, status, live, reload, refreshStatus }
+  return { rows, status, live, lastMsgAt, movers, reload, refreshStatus }
 }

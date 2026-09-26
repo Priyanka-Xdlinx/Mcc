@@ -1,18 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LineChart, type Point, type Series } from './LineChart'
 import type { Row } from '../types'
+import type { Mover } from '../hooks/useTelemetryStream'
+import { displayValue } from '../format'
 
-// Categorical slots in fixed order, stepped for this dark surface and validated
-// as a set (lightness band, chroma floor, CVD separation, normal-vision floor,
-// contrast >= 3:1 against #0d1117). Assigned in order and never cycled.
-const SERIES_COLORS = [
-  '#3987e5', // blue
-  '#d95926', // orange
-  '#199e70', // aqua
-  '#c98500', // yellow
-  '#d55181', // magenta
-  '#008300', // green
-]
+// Categorical slots in fixed order: blue, orange, aqua, yellow, magenta, green.
+// Each theme defines its own step of these hues (--s1..--s6 in index.css) so
+// every series keeps >= 3:1 contrast on its surface. Assigned in order and
+// never cycled.
+const SERIES_COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)']
 /** Past this many series an overlay is unreadable, so the grid takes over. */
 const OVERLAY_MAX = SERIES_COLORS.length
 const SELECT_MAX = 48
@@ -26,8 +22,18 @@ interface HistoryRow {
 
 type View = 'grid' | 'overlay'
 
-export function ChartsView({ rows, live }: { rows: Row[]; live: boolean }) {
-  const [selected, setSelected] = useState<number[]>([])
+export function ChartsView({
+  rows,
+  live,
+  movers,
+  initial,
+}: {
+  rows: Row[]
+  live: boolean
+  movers: Mover[]
+  initial: number[]
+}) {
+  const [selected, setSelected] = useState<number[]>(initial)
   const [data, setData] = useState<Record<number, Point[]>>({})
   const [q, setQ] = useState('')
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -214,14 +220,38 @@ export function ChartsView({ rows, live }: { rows: Row[]; live: boolean }) {
 
         {widgets.length === 0 ? (
           <div className="empty">
-            Pick parameters on the left — or press <b>Add all</b> to chart everything
-            matching the filter.
-            <br />
-            <span style={{ color: 'var(--dimmer)' }}>
-              In this simulator only 8 of 755 parameters actually change, so most
-              widgets will sit flat. Try <code>lat</code>, <code>lon</code>,{' '}
-              <code>Uptime</code> or <code>card_run_counter</code>.
-            </span>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg)', marginBottom: 6 }}>
+              Choose parameters to chart
+            </div>
+            Tick parameters on the left, or press <b>Add all</b> to chart everything matching the filter.
+            {movers.length > 0 ? (
+              <>
+                <div style={{ marginTop: 14 }}>
+                  {movers.length} parameters are changing right now:
+                </div>
+                <div className="chip-row">
+                  {movers.slice(0, 8).map((m) => {
+                    const r = rows.find((x) => x.parameter_id === m.id)
+                    return r ? (
+                      <button key={m.id} className="chip-btn" onClick={() => toggle(m.id)}>
+                        {r.name} <span style={{ color: 'var(--dimmer)' }}>{displayValue(r.value)}</span>
+                      </button>
+                    ) : null
+                  })}
+                </div>
+                <div className="chip-row">
+                  <button className="primary"
+                          onClick={() => setSelected(movers.slice(0, OVERLAY_MAX).map((m) => m.id))}>
+                    Chart the changing parameters
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ marginTop: 10, color: 'var(--dimmer)' }}>
+                Most parameters hold a constant value in the current feed; those that change will be
+                offered here as soon as they move.
+              </div>
+            )}
           </div>
         ) : effectiveView === 'overlay' ? (
           facets.map(([unit, f]) => (
@@ -253,8 +283,8 @@ export function ChartsView({ rows, live }: { rows: Row[]; live: boolean }) {
                     </span>
                     <span className="w-tier">{w.row.tier}</span>
                   </div>
-                  <div className="w-value">
-                    {w.row.value ?? (last ? String(last.y) : '—')}
+                  <div className="w-value" title={w.row.value ?? undefined}>
+                    {displayValue(w.row.value ?? (last ? String(last.y) : null))}
                   </div>
                   <div className="w-meta">
                     {w.row.subsystem} · {w.row.data_type}
