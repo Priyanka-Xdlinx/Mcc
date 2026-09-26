@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LineChart, type Point, type Series } from './LineChart'
 import type { Row } from '../types'
 import type { Mover } from '../hooks/useTelemetryStream'
-import { displayValue } from '../format'
+import { displayValue, plural } from '../format'
 
 // Categorical slots in fixed order: blue, orange, aqua, yellow, magenta, green.
 // Each theme defines its own step of these hues (--s1..--s6 in index.css) so
@@ -53,10 +53,17 @@ export function ChartsView({
       .slice(0, 600)
   }, [rows, q])
 
+  // Only the newest request may write: an older, slower one would otherwise
+  // overwrite the data for a selection that has since changed.
+  const requestNo = useRef(0)
   const load = useCallback(async (ids: number[]) => {
-    const pairs = await Promise.all(
+    const mine = ++requestNo.current
+    let pairs: [number, Point[]][]
+    try {
+      pairs = await Promise.all(
       ids.map(async (id): Promise<[number, Point[]]> => {
         const r = await fetch(`/api/telemetry/${id}/history?limit=400`)
+        if (!r.ok) throw new Error(`history ${id}: HTTP ${r.status}`)
         const hist: HistoryRow[] = await r.json()
         return [
           id,
@@ -70,8 +77,11 @@ export function ChartsView({
             .sort((a, b) => a.x - b.x),
         ]
       }),
-    )
-    setData(Object.fromEntries(pairs))
+      )
+    } catch {
+      return // backend unreachable: keep what is on screen; the next refresh retries
+    }
+    if (mine === requestNo.current) setData(Object.fromEntries(pairs))
   }, [])
 
   useEffect(() => {
@@ -90,12 +100,22 @@ export function ChartsView({
       s.includes(id) ? s.filter((x) => x !== id) : s.length >= SELECT_MAX ? s : [...s, id],
     )
 
-  // Colour follows the parameter, not its position: a series keeps its hue when
-  // another is removed.
-  const colorOf = useCallback(
-    (id: number) => SERIES_COLORS[Math.max(0, selected.indexOf(id)) % SERIES_COLORS.length],
-    [selected],
-  )
+  // Colour follows the parameter, not its position: each series keeps its slot
+  // when another is removed, and a new series takes the lowest free slot.
+  // Past six series the widget grid takes over and slots repeat.
+  const slots = useRef(new Map<number, number>())
+  const colorOf = useMemo(() => {
+    const m = slots.current
+    for (const id of Array.from(m.keys())) if (!selected.includes(id)) m.delete(id)
+    for (const id of selected) {
+      if (m.has(id)) continue
+      const used = new Set(m.values())
+      let slot = 0
+      while (used.has(slot)) slot++
+      m.set(id, slot)
+    }
+    return (id: number) => SERIES_COLORS[(m.get(id) ?? 0) % SERIES_COLORS.length]
+  }, [selected])
 
   const widgets = useMemo(
     () =>
@@ -223,11 +243,11 @@ export function ChartsView({
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg)', marginBottom: 6 }}>
               Choose parameters to chart
             </div>
-            Tick parameters on the left, or press <b>Add all</b> to chart everything matching the filter.
+            Tick parameters in the list, or press <b>Add all</b> to chart everything matching the filter.
             {movers.length > 0 ? (
               <>
                 <div style={{ marginTop: 14 }}>
-                  {movers.length} parameters are changing right now:
+                  {plural(movers.length, 'parameter')} changed since this page opened:
                 </div>
                 <div className="chip-row">
                   {movers.slice(0, 8).map((m) => {

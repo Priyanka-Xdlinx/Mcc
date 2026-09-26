@@ -6,11 +6,11 @@
 :root {
   --bg: #0b0f14; --panel: #121821; --panel-2: #18202b; --raised: #1d2633;
   --line: #263141; --line-soft: #1a2230; --hover: #151d28; --sel: #17263b;
-  --fg: #e7edf4; --dim: #9ba7b4; --dimmer: #6d7988;
-  --accent: #5aa2ff; --accent-strong: #2f7ff0; --on-accent: #ffffff; --accent-soft: #15243a;
+  --fg: #e7edf4; --dim: #9ba7b4; --dimmer: #838e9c;
+  --accent: #5aa2ff; --accent-strong: #1f6feb; --on-accent: #ffffff; --accent-soft: #15243a;
   --ok: #3fb950; --ok-soft: #11281a; --warn: #dca531; --warn-soft: #2d2410;
   --bad: #f2705f; --bad-soft: #33171a; --warmup: #a98bf5; --warmup-soft: #221b39;
-  --t-vh: #e5534b; --t-h: #c98500; --t-m: #3987e5; --t-l: #199e70;
+  --t-vh: #f06a5f; --t-h: #c98500; --t-m: #4f97f0; --t-l: #22ad7c;
   --l1: #3987e5; --l2: #d95926; --l3: #3fb950;
   --hex-bg: #080b10; --hex-fg: #a3adba; --mark-bg: #3d2f08; --mark-fg: #ffd866;
   --grid: #212a36; --tooltip-bg: #0e131b; --shadow: 0 10px 30px rgba(0,0,0,.45);
@@ -24,11 +24,11 @@
   :root:not([data-theme="dark"]) {
     --bg: #f4f6f9; --panel: #ffffff; --panel-2: #eef2f7; --raised: #ffffff;
     --line: #d6dde6; --line-soft: #e7ecf2; --hover: #f1f5fa; --sel: #e2ecfb;
-    --fg: #16202c; --dim: #4b5767; --dimmer: #647081;
-    --accent: #1f6feb; --accent-strong: #1f6feb; --on-accent: #ffffff; --accent-soft: #e4eefd;
-    --ok: #1a7f37; --ok-soft: #dff3e5; --warn: #976400; --warn-soft: #fbf1d6;
-    --bad: #cf222e; --bad-soft: #fde6e7; --warmup: #7048cf; --warmup-soft: #efe9fc;
-    --t-vh: #d1453b; --t-h: #b07100; --t-m: #2f73c9; --t-l: #13845c;
+    --fg: #16202c; --dim: #4b5767; --dimmer: #5a6676;
+    --accent: #175ccc; --accent-strong: #1f6feb; --on-accent: #ffffff; --accent-soft: #e4eefd;
+    --ok: #16732f; --ok-soft: #dff3e5; --warn: #8a5a00; --warn-soft: #fbf1d6;
+    --bad: #c11f2a; --bad-soft: #fde6e7; --warmup: #7048cf; --warmup-soft: #efe9fc;
+    --t-vh: #bd3a31; --t-h: #8f5c00; --t-m: #2963ae; --t-l: #0e7050;
     --l1: #2f73c9; --l2: #c2491b; --l3: #1a7f37;
     --hex-bg: #f7f9fc; --hex-fg: #475467; --mark-bg: #ffe9a3; --mark-fg: #5c4200;
     --grid: #e3e8ee; --tooltip-bg: #ffffff; --shadow: 0 10px 30px rgba(20,32,48,.14);
@@ -41,11 +41,11 @@
 :root[data-theme="light"] {
   --bg: #f4f6f9; --panel: #ffffff; --panel-2: #eef2f7; --raised: #ffffff;
   --line: #d6dde6; --line-soft: #e7ecf2; --hover: #f1f5fa; --sel: #e2ecfb;
-  --fg: #16202c; --dim: #4b5767; --dimmer: #647081;
-  --accent: #1f6feb; --accent-strong: #1f6feb; --on-accent: #ffffff; --accent-soft: #e4eefd;
-  --ok: #1a7f37; --ok-soft: #dff3e5; --warn: #976400; --warn-soft: #fbf1d6;
-  --bad: #cf222e; --bad-soft: #fde6e7; --warmup: #7048cf; --warmup-soft: #efe9fc;
-  --t-vh: #d1453b; --t-h: #b07100; --t-m: #2f73c9; --t-l: #13845c;
+  --fg: #16202c; --dim: #4b5767; --dimmer: #5a6676;
+  --accent: #175ccc; --accent-strong: #1f6feb; --on-accent: #ffffff; --accent-soft: #e4eefd;
+  --ok: #16732f; --ok-soft: #dff3e5; --warn: #8a5a00; --warn-soft: #fbf1d6;
+  --bad: #c11f2a; --bad-soft: #fde6e7; --warmup: #7048cf; --warmup-soft: #efe9fc;
+  --t-vh: #bd3a31; --t-h: #8f5c00; --t-m: #2963ae; --t-l: #0e7050;
   --l1: #2f73c9; --l2: #c2491b; --l3: #1a7f37;
   --hex-bg: #f7f9fc; --hex-fg: #475467; --mark-bg: #ffe9a3; --mark-fg: #5c4200;
   --grid: #e3e8ee; --tooltip-bg: #ffffff; --shadow: 0 10px 30px rgba(20,32,48,.14);
@@ -663,3 +663,55 @@ td.dimcol { color: var(--dim); }
 .nba-mark { color: var(--dimmer); margin-left: 6px; }
 
 .tm-sub .tier { margin: 0 6px; }
+
+/* ── small screens: tablet and phone ────────────────────────────────────── */
+/* header: two rows (brand + controls, then the page tabs) below 1000px */
+.nav button { white-space: nowrap; }
+@media (max-width: 1000px) {
+  .appbar { height: auto; flex-wrap: wrap; padding: 8px 14px 0; gap: 8px 12px; }
+  .appbar-right { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .nav { order: 3; width: 100%; margin-left: -4px; height: 42px; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav button { flex: none; }
+}
+@media (max-width: 760px) {
+  .linkpill { display: none; }
+  .dash-inner { padding: 16px 14px 32px; }
+  .dash-head .fresh { margin-left: 0; text-align: left; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .platforms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .charts { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .picker { max-height: 260px; border-right: none; border-bottom: 1px solid var(--line); }
+  .statusbar { gap: 10px 18px; padding: 8px 12px; }
+  .filters input[type=search] { min-width: 0; flex: 1 1 100%; }
+  .verdict-result { margin-left: 0; text-align: left; }
+}
+@media (max-width: 480px) {
+  .brandmark .sep, .brandmark img { display: none; }
+  .platforms { grid-template-columns: 1fr; }
+  .kpi .v { font-size: 19px; }
+  .mfstrip { grid-template-columns: 26px repeat(16, minmax(0, 1fr)); gap: 2px; }
+  .mfstrip .n { font-size: 9px; }
+}
+.charts > * { min-width: 0; }
+.plots-bar { flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .plots-bar .count { flex-basis: 100%; margin-left: 0; }
+}
+/* name above count: keeps every subsystem card readable at any card width */
+.ss .ss-top { flex-direction: column; align-items: flex-start; gap: 1px; }
+.ss .ss-name { white-space: nowrap; }
+.ss .ss-count { margin-left: 0; white-space: nowrap; font-size: 11.5px; }
+
+.banner {
+  flex: none; padding: 9px 18px; font-size: 13px;
+  background: var(--bad-soft); color: var(--fg);
+  border-bottom: 1px solid color-mix(in srgb, var(--bad) 40%, transparent);
+}
+.banner b { color: var(--bad); }
+.banner code { font-family: var(--mono); font-size: 12px; background: var(--panel); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); }
+
+.linkpill.idle { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: var(--warn-soft); }
+.dot.idle { background: var(--warn); }
+.feed-err { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; color: var(--bad); }
+.dimcol { color: var(--dim); }

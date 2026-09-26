@@ -23,3 +23,16 @@ export function ago(ms: number | null, now: number): string {
   if (s < 90) return `${Math.round(s)} s ago`
   return `${Math.round(s / 60)} min ago`
 }
+
+/** CRC-16 as XDOS prints it (0x%04X), so the two consoles match by eye. */
+export function crcHex(n: number | null | undefined): string {
+  if (n == null || n < 0) return '—'
+  return `0x${n.toString(16).toUpperCase().padStart(4, '0')}`
+}
+
+/** A telemetry message within this many ms counts as "receiving now". */
+export const FRESH_MS = 3000
+
+export function plural(n: number, one: string, many = `${one}s`): string {
+  return `${n.toLocaleString()} ${n === 1 ? one : many}`
+}

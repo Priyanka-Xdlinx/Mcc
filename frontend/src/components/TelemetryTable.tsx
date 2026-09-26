@@ -12,12 +12,16 @@ const QUALITY_LABEL: Record<string, string> = {
   WARMUP: 'Warm-up',
 }
 
+const ATTENTION = ['NO_ANSWER', 'BLOCK_INCOMPLETE']
+
 export function TelemetryTable({
   rows,
+  backendUp,
   initialSubsystem,
   initialOnlyProblems,
 }: {
   rows: Row[]
+  backendUp: boolean | null
   initialSubsystem?: string
   initialOnlyProblems?: boolean
 }) {
@@ -43,7 +47,8 @@ export function TelemetryTable({
     return ordered.filter((r) => {
       if (subsystem && r.subsystem !== subsystem) return false
       if (tier && r.tier !== tier) return false
-      if (onlyProblems && (r.quality === 'OK' || r.quality === null)) return false
+      // Same definition as the dashboard's Needs attention.
+      if (onlyProblems && !(r.quality && ATTENTION.includes(r.quality))) return false
       if (!needle) return true
       return (
         r.name.toLowerCase().includes(needle) ||
@@ -90,9 +95,20 @@ export function TelemetryTable({
       <div className="tablewrap">
         {rows.length === 0 ? (
           <div className="empty">
-            No parameters loaded. Build the decode schema first:
-            <br />
-            <code>python3 mcc-app/schema/build_schema.py</code>
+            {backendUp === false ? (
+              'Waiting for the MCC backend. This page loads the parameters as soon as it is reachable.'
+            ) : (
+              <>
+                No parameters loaded. Build the decode schema first:
+                <br />
+                <code>python3 mcc-app/schema/build_schema.py</code>
+              </>
+            )}
+          </div>
+        ) : shown.length === 0 ? (
+          <div className="empty">
+            No parameters match these filters.
+            {onlyProblems && ' Nothing currently needs attention.'}
           </div>
         ) : (
           <table>

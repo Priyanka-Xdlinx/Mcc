@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Status } from '../types'
 
 /**
@@ -8,6 +8,7 @@ import type { Status } from '../types'
  * The backend runs one fixed command, so nothing typed here reaches a shell.
  * Telemetry only flows once the EPS kill switch is released, which is what
  * --power-on does; without it the OBC boots unpowered and the feed stays silent.
+ * Stopping asks for a second click: a restart costs ~30 s of OBC boot.
  */
 export function SimControl({
   status,
@@ -17,30 +18,59 @@ export function SimControl({
   onChanged: () => void
 }) {
   const [busy, setBusy] = useState<'start' | 'stop' | null>(null)
+  const [confirmStop, setConfirmStop] = useState(false)
+  const [failure, setFailure] = useState<string | null>(null)
   const sim = status?.simulator
   const running = sim?.running ?? false
+  const error = failure ?? sim?.error ?? null
+
+  useEffect(() => {
+    if (!confirmStop) return
+    const t = setTimeout(() => setConfirmStop(false), 6000)
+    return () => clearTimeout(t)
+  }, [confirmStop])
+
+  const call = async (what: 'start' | 'stop') => {
+    setBusy(what)
+    setFailure(null)
+    try {
+      const r = await fetch(`/api/sim/${what}`, { method: 'POST' })
+      if (!r.ok) throw new Error(`${what === 'start' ? 'Start' : 'Stop'} failed (HTTP ${r.status})`)
+      const body = await r.json().catch(() => null)
+      if (body?.error) throw new Error(body.error)
+    } catch (e) {
+      setFailure(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(null)
+      setConfirmStop(false)
+      onChanged()
+    }
+  }
+
   const detail = sim
     ? running
       ? `Running · ${sim.processes.length} processes${sim.pid ? ` · pid ${sim.pid}` : ''}`
       : 'Stopped'
-    : 'Status unknown'
-
-  const call = async (what: 'start' | 'stop') => {
-    setBusy(what)
-    try {
-      await fetch(`/api/sim/${what}`, { method: 'POST' })
-      onChanged()
-    } finally {
-      setBusy(null)
-    }
-  }
+    : 'Backend not reachable'
 
   return (
-    <div className="feedctl" title={sim?.error ?? detail}>
-      {running ? (
-        <button className="danger" disabled={busy !== null} onClick={() => call('stop')}>
-          {busy === 'stop' ? 'Stopping…' : 'Stop feed'}
-        </button>
+    <div className="feedctl" title={detail}>
+      {error && <span className="feed-err" role="alert" title={error}>{error}</span>}
+      {!sim ? (
+        <button disabled>Feed control unavailable</button>
+      ) : running ? (
+        confirmStop ? (
+          <>
+            <button onClick={() => setConfirmStop(false)}>Cancel</button>
+            <button className="danger" disabled={busy !== null} onClick={() => call('stop')}>
+              {busy === 'stop' ? 'Stopping…' : 'Confirm stop'}
+            </button>
+          </>
+        ) : (
+          <button className="danger" disabled={busy !== null} onClick={() => setConfirmStop(true)}>
+            Stop feed
+          </button>
+        )
       ) : (
         <button className="primary" disabled={busy !== null} onClick={() => call('start')}>
           {busy === 'start' ? 'Starting…' : 'Start feed'}

@@ -1,4 +1,5 @@
 import type { Status } from '../types'
+import { crcHex } from '../format'
 
 export function StatusBar({ status, live }: { status: Status | null; live: boolean }) {
   const f = status?.feed
@@ -31,7 +32,7 @@ export function StatusBar({ status, live }: { status: Status | null; live: boole
           so the CRC of the table in flight is worth keeping on screen. */}
       <div className="stat">
         <div className="k">LUT CRC-16</div>
-        <div className="v">{f?.lutCrc16 ?? '—'}</div>
+        <div className="v" title={f ? String(f.lutCrc16) : undefined}>{crcHex(f?.lutCrc16)}</div>
       </div>
 
       <div className="stat">

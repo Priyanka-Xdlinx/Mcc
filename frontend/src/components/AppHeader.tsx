@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import type { Status } from '../types'
+import { FRESH_MS } from '../format'
 import type { ThemeChoice } from '../theme'
 import { SimControl } from './SimControl'
 
@@ -22,6 +24,7 @@ export function AppHeader({
   onTab,
   status,
   live,
+  lastMsgAt,
   theme,
   onTheme,
   onFeedChanged,
@@ -30,11 +33,19 @@ export function AppHeader({
   onTab: (t: Tab) => void
   status: Status | null
   live: boolean
+  lastMsgAt: number | null
   theme: ThemeChoice
   onTheme: (t: ThemeChoice) => void
   onFeedChanged: () => void
 }) {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [])
   const connected = !!status?.feed.connected && live
+  const receiving = connected && lastMsgAt != null && now - lastMsgAt < FRESH_MS
+  const pill = receiving ? 'on' : connected ? 'idle' : 'off'
   return (
     <header className="appbar">
       <div className="brandmark">
@@ -61,9 +72,9 @@ export function AppHeader({
       </nav>
 
       <div className="appbar-right">
-        <span className={`linkpill ${connected ? 'on' : 'off'}`}>
-          <span className={`dot ${connected ? 'on' : 'off'}`} />
-          {connected ? 'Receiving' : live ? 'Feed idle' : 'Offline'}
+        <span className={`linkpill ${pill}`} role="status">
+          <span className={`dot ${pill}`} />
+          {receiving ? 'Receiving' : connected ? 'No data' : status ? 'Feed stopped' : 'Offline'}
         </span>
         <div className="themeswitch" role="group" aria-label="Theme">
           {THEMES.map((t) => (

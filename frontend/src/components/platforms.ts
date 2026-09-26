@@ -32,6 +32,6 @@ export const XDLINX_LINKS: { label: string; url: string }[] = [
   { label: 'Blog', url: 'https://xdlinx.space/blog/' },
   { label: 'Careers', url: 'https://xdlinx.space/careers/' },
   { label: 'Contact', url: 'https://xdlinx.space/xdlinx-space-labs-contact-us/' },
-  { label: 'LinkedIn', url: 'http://www.linkedin.com/company/xdlinx-labs' },
+  { label: 'LinkedIn', url: 'https://www.linkedin.com/company/xdlinx-labs' },
   { label: 'Instagram', url: 'https://www.instagram.com/xdlinxlab/' },
 ]

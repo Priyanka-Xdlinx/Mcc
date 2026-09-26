@@ -9,7 +9,8 @@ import { useTelemetryStream } from './hooks/useTelemetryStream'
 import { useTheme } from './theme'
 
 export default function App() {
-  const { rows, status, live, lastMsgAt, movers, reload, refreshStatus } = useTelemetryStream()
+  const { rows, status, live, backendUp, lastMsgAt, lastFrame, movers, reload, refreshStatus } =
+    useTelemetryStream()
   const theme = useTheme()
   const [tab, setTab] = useState<Tab>('dashboard')
   const [filter, setFilter] = useState<TelemetryFilter & { n: number }>({ n: 0 })
@@ -24,8 +25,14 @@ export default function App() {
     <div className="app">
       <AppHeader
         tab={tab}
-        onTab={setTab}
-        status={status}
+        onTab={(t) => {
+          // The nav always opens a page unfiltered; filters come only from a
+          // dashboard link that asked for them.
+          if (t === 'telemetry') setFilter((prev) => ({ n: prev.n + 1 }))
+          setTab(t)
+        }}
+        lastMsgAt={lastMsgAt}
+        status={backendUp === false ? null : status}
         live={live}
         theme={theme.choice}
         onTheme={theme.set}
@@ -34,6 +41,12 @@ export default function App() {
           void reload()
         }}
       />
+      {backendUp === false && (
+        <div className="banner" role="alert">
+          <b>The MCC backend is not reachable.</b> Start it with <code>./start.sh --sim</code> in
+          mcc-app; this page reconnects by itself.
+        </div>
+      )}
       {tab !== 'dashboard' && <StatusBar status={status} live={live} />}
 
       {tab === 'dashboard' && (
@@ -42,6 +55,7 @@ export default function App() {
           status={status}
           live={live}
           lastMsgAt={lastMsgAt}
+          lastFrame={lastFrame}
           movers={movers}
           onOpenTelemetry={(f) => {
             setFilter((prev) => ({ ...f, n: prev.n + 1 }))
@@ -57,6 +71,7 @@ export default function App() {
         <TelemetryTable
           key={filter.n}
           rows={rows}
+          backendUp={backendUp}
           initialSubsystem={filter.subsystem}
           initialOnlyProblems={filter.onlyProblems}
         />

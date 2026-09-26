@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Quality, Row, Status } from '../types'
-import type { Mover } from '../hooks/useTelemetryStream'
-import { ago, displayValue } from '../format'
+import type { LastFrame, Mover } from '../hooks/useTelemetryStream'
+import { FRESH_MS, ago, crcHex, displayValue, plural } from '../format'
 import { PLATFORMS, XDLINX_LINKS } from './platforms'
 
 interface Frame {
@@ -83,6 +83,7 @@ export function Dashboard({
   status,
   live,
   lastMsgAt,
+  lastFrame,
   movers,
   onOpenTelemetry,
   onOpenCharts,
@@ -91,6 +92,7 @@ export function Dashboard({
   status: Status | null
   live: boolean
   lastMsgAt: number | null
+  lastFrame: LastFrame | null
   movers: Mover[]
   onOpenTelemetry: (f: TelemetryFilter) => void
   onOpenCharts: (ids: number[]) => void
@@ -131,8 +133,9 @@ export function Dashboard({
     [rows],
   )
   const rowById = useMemo(() => new Map(rows.map((r) => [r.parameter_id, r])), [rows])
+  // Listed in the order they first moved, so rows do not jump every second.
   const topMovers = useMemo(
-    () => movers.slice().sort((a, b) => b.at - a.at).slice(0, 7),
+    () => movers.slice().sort((a, b) => a.first - b.first || a.id - b.id).slice(0, 7),
     [movers],
   )
   const attention = useMemo(
@@ -147,12 +150,17 @@ export function Dashboard({
   const curSf = frames[0]?.subframe ?? null
 
   const connected = !!f?.connected && live
-  const [scDate, scClock] = (f?.spacecraftTime ?? ' ').split(' ')
-  const fresh = lastMsgAt != null && now - lastMsgAt < 3000
+  // The socket carries every subframe; the status poll is only every 2 s.
+  const frameNo = lastFrame?.masterFrame ?? (f && f.masterFrame >= 0 ? f.masterFrame : null)
+  const [scDate, scClock] = (lastFrame?.spacecraftTime ?? f?.spacecraftTime ?? ' ').split(' ')
+  const fresh = lastMsgAt != null && now - lastMsgAt < FRESH_MS
   // Values on screen are live only while messages keep arriving; otherwise
   // they are the last known readings and must not look healthy.
   const current = connected && fresh
-  const running = status?.simulator.running ?? false
+  const sim = status?.simulator
+  const running = sim?.running ?? false
+  const startedAt = sim?.startedAt ? Date.parse(sim.startedAt) : NaN
+  const booting = running && !fresh && (lastMsgAt == null || (Number.isFinite(startedAt) && now - startedAt < 90_000))
 
   return (
     <div className="dash">
@@ -167,16 +175,18 @@ export function Dashboard({
             <br />
             {fresh
               ? 'one message per second'
-              : connected
-                ? running ? 'stack starting: the OBC boots in about 30 s' : 'connected, no telemetry'
-                : 'feed not connected · showing last known values'}
+              : booting
+                ? 'stack starting: the OBC boots in about 30 s'
+                : connected
+                  ? 'telemetry has stopped · showing last known values'
+                  : lastMsgAt == null ? 'no telemetry received yet' : 'feed not connected · showing last known values'}
           </div>
         </div>
 
         <section className="kpis" aria-label="Key figures">
-          <div className={`kpi ${connected ? 'good' : 'bad'}`}>
+          <div className={`kpi ${current ? 'good' : connected ? 'warn' : 'bad'}`}>
             <div className="k">Link</div>
-            <div className="v">{connected ? 'Connected' : 'Offline'}</div>
+            <div className="v">{current ? 'Receiving' : connected ? 'No data' : f ? 'Disconnected' : 'Offline'}</div>
             <div className="s">{f ? `XMCC · ${f.feedHost}:${f.feedPort}` : 'backend not reachable'}</div>
           </div>
           <div className="kpi">
@@ -186,21 +196,30 @@ export function Dashboard({
           </div>
           <div className="kpi">
             <div className="k">Master frame</div>
-            <div className="v">{f && f.masterFrame >= 0 ? `#${f.masterFrame}` : '—'}</div>
-            <div className="s">{curSf ? `subframe ${curSf} of 16` : '16 subframes = 16 s'}</div>
+            <div className="v">{frameNo !== null ? `#${frameNo}` : '—'}</div>
+            <div className="s">{lastFrame ? `subframe ${lastFrame.subframe} of 16` : '16 subframes = 16 s'}</div>
           </div>
           <div className={`kpi ${current && all.total && all.ok === all.total ? 'good' : ''}`}>
-            <div className="k">{current ? 'Parameters OK' : 'Parameters OK · last known'}</div>
+            <div className="k">Decoded OK</div>
             <div className="v">
               {all.ok.toLocaleString()} <small>/ {all.total.toLocaleString()}</small>
             </div>
             <Meter c={all} />
+            <div className="s">
+              {!all.total
+                ? 'no telemetry yet'
+                : !current
+                  ? 'last known values'
+                  : all.warmup
+                    ? `${all.warmup.toLocaleString()} in the warm-up frame`
+                    : 'answered and complete'}
+            </div>
           </div>
           <div className={`kpi ${all.problem ? 'warn' : ''}`}>
             <div className="k">Needs attention</div>
             <div className="v">{all.problem.toLocaleString()}</div>
             <div className="s">
-              {all.warmup ? `${all.warmup} warming up · ` : ''}no answer or incomplete
+              no answer or incomplete
             </div>
           </div>
           <div className={`kpi ${f && f.subframeGaps > 0 ? 'warn' : ''}`}>
@@ -216,7 +235,9 @@ export function Dashboard({
               <div className="card-head">
                 <h2>Current master frame</h2>
                 <span className="sub">
-                  {mf !== null ? `#${mf} · ${inMf.size} of 16 subframes received` : 'waiting for the first subframe'}
+                  {mf !== null
+                    ? `#${mf} · ${inMf.size} of 16 subframes received${current ? '' : ' · not updating'}`
+                    : 'waiting for the first subframe'}
                 </span>
               </div>
               <div className="mfstrip" role="img"
@@ -233,7 +254,7 @@ export function Dashboard({
                 {TIERS.map((t) => (
                   <span key={t.id}>
                     <i style={{ background: `var(--t-${t.id.toLowerCase()})` }} />
-                    {t.id} complete every {t.span === 1 ? '1 s' : `${t.span} s`}
+                    {t.id} completes every {t.span === 1 ? '1 s' : `${t.span} s`}
                   </span>
                 ))}
                 <span><i style={{ background: 'color-mix(in srgb, var(--dim) 14%, var(--panel-2))' }} /> piece held until the block is whole</span>
@@ -243,7 +264,7 @@ export function Dashboard({
             <section className="card">
               <div className="card-head">
                 <h2>Subsystem health</h2>
-                <span className="sub">{bySubsystem.length} subsystems in the downlink</span>
+                <span className="sub">{plural(bySubsystem.length, 'subsystem')} in the downlink</span>
                 <button className="linkbtn act" onClick={() => onOpenTelemetry({})}>Open telemetry</button>
               </div>
               <div className="subsys">
@@ -302,7 +323,7 @@ export function Dashboard({
             <section className="card">
               <div className="card-head">
                 <h2>Changing now</h2>
-                <span className="sub">{movers.length} since this page opened</span>
+                <span className="sub">{plural(movers.length, 'parameter')} changed since this page opened</span>
                 {movers.length > 0 && (
                   <button className="linkbtn act"
                           onClick={() => onOpenCharts(topMovers.map((m) => m.id).slice(0, 6))}>
@@ -313,8 +334,9 @@ export function Dashboard({
               <div className="list">
                 {topMovers.length === 0 && (
                   <div className="list-empty">
-                    No value has changed yet. New readings arrive every second; most parameters hold a
-                    constant value in the current feed.
+                    {current
+                      ? 'No value has changed yet. New readings arrive every second; most parameters hold a constant value in the current feed.'
+                      : 'Waiting for live telemetry.'}
                   </div>
                 )}
                 {topMovers.map((m) => {
@@ -337,7 +359,7 @@ export function Dashboard({
             <section className="card">
               <div className="card-head">
                 <h2>Needs attention</h2>
-                <span className="sub">{attention.length} {attention.length === 1 ? 'parameter' : 'parameters'}</span>
+                <span className="sub">{plural(attention.length, 'parameter')}</span>
                 {attention.length > 0 && (
                   <button className="linkbtn act" onClick={() => onOpenTelemetry({ onlyProblems: true })}>
                     Show all
@@ -346,7 +368,13 @@ export function Dashboard({
               </div>
               <div className="list">
                 {attention.length === 0 && (
-                  <div className="list-empty">Every subsystem answered and every block arrived complete.</div>
+                  <div className="list-empty">
+                    {rows.length === 0
+                      ? 'No telemetry loaded yet.'
+                      : current
+                        ? 'Every subsystem answered and every block arrived complete.'
+                        : 'Nothing flagged in the last known values.'}
+                  </div>
                 )}
                 {attention.slice(0, 6).map((r) => (
                   <div className="li" key={r.parameter_id}>
@@ -397,7 +425,7 @@ export function Dashboard({
         </section>
 
         <footer className="dash-foot">
-          <span>LUT CRC-16 <b>{f?.lutCrc16 ?? '—'}</b></span>
+          <span>LUT CRC-16 <b title={f ? String(f.lutCrc16) : undefined}>{crcHex(f?.lutCrc16)}</b></span>
           <span>LUT entries <b>{f?.lutEntries ?? '—'}</b></span>
           <span>Values decoded <b>{(f?.decodedValues ?? 0).toLocaleString()}</b></span>
           <span>Readings stored <b>{(f?.historyRows ?? 0).toLocaleString()}</b></span>
@@ -431,9 +459,11 @@ function FrameRow({
           <span
             key={sf}
             className={`c ${cls} ${curSf === sf ? 'cur' : ''}`}
-            title={!fr ? `subframe ${sf}: not received yet` : done
-              ? `subframe ${sf}: ${tier} block complete, values decoded`
-              : `subframe ${sf}: ${tier} piece ${((sf - 1) % span) + 1} of ${span}`}
+            title={!fr
+              ? curSf !== null && sf < curSf ? `subframe ${sf}: not received` : `subframe ${sf}: not received yet`
+              : done
+                ? `subframe ${sf}: last piece of the ${tier} block arrives here`
+                : `subframe ${sf}: ${tier} piece ${((sf - 1) % span) + 1} of ${span}`}
           />
         )
       })}
