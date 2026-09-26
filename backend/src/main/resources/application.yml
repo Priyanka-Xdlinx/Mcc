@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mcc-backend
+
+mcc:
+  # Absolute paths keep the app runnable from any working directory.
+  db: ${MCC_DB:../mcc.db}
+  xdos-home: ${MCC_XDOS_HOME:../../updated xdos}
+  feed:
+    host: 127.0.0.1
+    port: 9100
+    # Refuse to decode unless the flown LUT matches the one the schema was built
+    # from. Position inside a tier is the ONLY link between the OBC and the
+    # ground; a mismatched twin reads every value from the wrong offset and
+    # still looks completely plausible.
+    enforce-crc: true
+    reconnect-delay-ms: 1000
+  history:
+    enabled: true
+    # About 350 rows/sec: VH completes every subframe, H every 2, M every 4,
+    # L every 8. That is ~230 MB/hour, so the cap has to be real and the pruner
+    # has to actually run (IngestService.prune, every 30s).
+    max-rows: 500000
+
+logging:
+  level:
+    com.orblinx.mcc: INFO

@@ -1,0 +1,12 @@
+# build output and dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+backend/target/
+# runtime state (the DB is rebuilt by schema/build_schema.py; history is disposable)
+mcc.db
+mcc.db-*
+backend.log
+.backend.pid
+.sim.pid
+.DS_Store
