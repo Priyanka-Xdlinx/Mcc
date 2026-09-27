@@ -5,14 +5,32 @@ import { Dashboard, type TelemetryFilter } from './components/Dashboard'
 import { TelemetryTable } from './components/TelemetryTable'
 import { ChartsView } from './components/ChartsView'
 import { DecodeView } from './components/DecodeView'
+import { Docs } from './components/Docs'
+import { XdlinxPage } from './components/XdlinxPage'
 import { useTelemetryStream } from './hooks/useTelemetryStream'
 import { useTheme } from './theme'
+
+function tabFromHash(): Tab {
+  const id = location.hash.replace(/^#/, '').split('/')[0]
+  return (TABS.some((t) => t.id === id) ? id : 'dashboard') as Tab
+}
 
 export default function App() {
   const { rows, status, live, backendUp, lastMsgAt, lastFrame, movers, reload, refreshStatus } =
     useTelemetryStream()
   const theme = useTheme()
-  const [tab, setTab] = useState<Tab>('dashboard')
+  // The address carries the page (#telemetry, #docs/database, ...) so a page can
+  // be bookmarked, opened directly, or reached with the browser's Back button.
+  const [tab, setTab] = useState<Tab>(() => tabFromHash())
+  useEffect(() => {
+    const on = () => setTab(tabFromHash())
+    window.addEventListener('hashchange', on)
+    return () => window.removeEventListener('hashchange', on)
+  }, [])
+  useEffect(() => {
+    if (tabFromHash() === tab) return // already there (keeps #docs/database intact)
+    history.pushState(null, '', tab === 'dashboard' ? location.pathname : `#${tab}`)
+  }, [tab])
   const [filter, setFilter] = useState<TelemetryFilter & { n: number }>({ n: 0 })
   const [chartIds, setChartIds] = useState<number[]>([])
 
@@ -47,7 +65,7 @@ export default function App() {
           mcc-app; this page reconnects by itself.
         </div>
       )}
-      {tab !== 'dashboard' && <StatusBar status={status} live={live} />}
+      {(tab === 'telemetry' || tab === 'charts' || tab === 'decode') && <StatusBar status={status} live={live} />}
 
       {tab === 'dashboard' && (
         <Dashboard
@@ -80,6 +98,8 @@ export default function App() {
         <ChartsView rows={rows} live={live} movers={movers} initial={chartIds} />
       )}
       {tab === 'decode' && <DecodeView rows={rows} live={live} />}
+      {tab === 'docs' && <Docs theme={theme.choice} />}
+      {tab === 'xdlinx' && <XdlinxPage />}
     </div>
   )
 }

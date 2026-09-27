@@ -1,23 +1,50 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { LineChart, type Point, type Series } from './LineChart'
+import { Chart, type ChartSeries } from './Chart'
 import type { Row } from '../types'
 import type { Mover } from '../hooks/useTelemetryStream'
 import { displayValue, plural } from '../format'
 
-// Categorical slots in fixed order: blue, orange, aqua, yellow, magenta, green.
-// Each theme defines its own step of these hues (--s1..--s6 in index.css) so
-// every series keeps >= 3:1 contrast on its surface. Assigned in order and
-// never cycled.
-const SERIES_COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)']
-/** Past this many series an overlay is unreadable, so the grid takes over. */
-const OVERLAY_MAX = SERIES_COLORS.length
+// Series colours, in fixed order, from the shared chart palette (index.css, per theme).
+const SLOT_VARS = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s6']
+/** Past this many series an overlay is unreadable, so the widget grid takes over. */
+const OVERLAY_MAX = SLOT_VARS.length
 const SELECT_MAX = 48
+/** Seconds between readings for each part of the payload. */
+const PERIOD: Record<string, number> = { VH: 1, H: 2, M: 4, L: 8 }
+const WINDOWS = [
+  { id: '5m', label: 'Last 5 min', sec: 300 },
+  { id: '15m', label: 'Last 15 min', sec: 900 },
+  { id: 'all', label: 'All stored', sec: 0 },
+] as const
 
 interface HistoryRow {
   master_frame: number
   subframe: number
   spacecraft_time: string | null
+  received_at: string | null
   value_num: number | null
+}
+interface Pt { t: number; y: number }
+
+/** Spacecraft time is UTC calendar time ("2026-09-26 18:52:56.883"); fall back to receive time. */
+function timeOf(h: HistoryRow): number {
+  if (h.spacecraft_time) {
+    const t = Date.parse(h.spacecraft_time.replace(' ', 'T') + 'Z')
+    if (Number.isFinite(t)) return t
+  }
+  return h.received_at ? Date.parse(h.received_at) : NaN
+}
+
+/** Put several series on one time axis: union of timestamps, null where a series has no reading. */
+function align(list: Pt[][]): { x: number[]; ys: (number | null)[][] } {
+  const x = Array.from(new Set(list.flatMap((pts) => pts.map((p) => p.t)))).sort((a, b) => a - b)
+  const index = new Map(x.map((t, i) => [t, i]))
+  const ys = list.map((pts) => {
+    const y: (number | null)[] = new Array(x.length).fill(null)
+    for (const p of pts) y[index.get(p.t)!] = p.y
+    return y
+  })
+  return { x, ys }
 }
 
 type View = 'grid' | 'overlay'
@@ -34,10 +61,13 @@ export function ChartsView({
   initial: number[]
 }) {
   const [selected, setSelected] = useState<number[]>(initial)
-  const [data, setData] = useState<Record<number, Point[]>>({})
+  const [data, setData] = useState<Record<number, Pt[]>>({})
   const [q, setQ] = useState('')
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [view, setView] = useState<View>('grid')
+  const [windowId, setWindowId] = useState<(typeof WINDOWS)[number]['id']>('15m')
+
+  const rowById = useMemo(() => new Map(rows.map((r) => [r.parameter_id, r])), [rows])
 
   const candidates = useMemo(() => {
     const needle = q.trim().toLowerCase()
@@ -50,48 +80,55 @@ export function ChartsView({
           r.subsystem.toLowerCase().includes(needle) ||
           r.entry.toLowerCase().includes(needle),
       )
+      // ticked parameters first, so a selection is never buried in the list
+      .sort((a, b) => Number(selected.includes(b.parameter_id)) - Number(selected.includes(a.parameter_id)))
       .slice(0, 600)
-  }, [rows, q])
+  }, [rows, q, selected])
 
   // Only the newest request may write: an older, slower one would otherwise
   // overwrite the data for a selection that has since changed.
   const requestNo = useRef(0)
-  const load = useCallback(async (ids: number[]) => {
-    const mine = ++requestNo.current
-    let pairs: [number, Point[]][]
-    try {
-      pairs = await Promise.all(
-      ids.map(async (id): Promise<[number, Point[]]> => {
-        const r = await fetch(`/api/telemetry/${id}/history?limit=400`)
-        if (!r.ok) throw new Error(`history ${id}: HTTP ${r.status}`)
-        const hist: HistoryRow[] = await r.json()
-        return [
-          id,
-          hist
-            .filter((h) => h.value_num !== null)
-            .map((h) => ({
-              x: h.master_frame * 16 + (h.subframe - 1),
-              y: h.value_num as number,
-              label: h.spacecraft_time ?? `MF${h.master_frame} SF${h.subframe}`,
-            }))
-            .sort((a, b) => a.x - b.x),
-        ]
-      }),
-      )
-    } catch {
-      return // backend unreachable: keep what is on screen; the next refresh retries
-    }
-    if (mine === requestNo.current) setData(Object.fromEntries(pairs))
-  }, [])
+  const load = useCallback(
+    async (ids: number[]) => {
+      const mine = ++requestNo.current
+      const win = WINDOWS.find((w) => w.id === windowId)!
+      let pairs: [number, Pt[]][]
+      try {
+        pairs = await Promise.all(
+          ids.map(async (id): Promise<[number, Pt[]]> => {
+            const period = PERIOD[rowById.get(id)?.tier ?? 'VH'] ?? 1
+            const limit = win.sec ? Math.min(5000, Math.ceil(win.sec / period) + 2) : 5000
+            const r = await fetch(`/api/telemetry/${id}/history?limit=${limit}`)
+            if (!r.ok) throw new Error(`history ${id}: HTTP ${r.status}`)
+            const hist: HistoryRow[] = await r.json()
+            const pts = hist
+              .filter((h) => h.value_num !== null)
+              .map((h) => ({ t: timeOf(h), y: h.value_num as number }))
+              .filter((p) => Number.isFinite(p.t))
+              .sort((a, b) => a.t - b.t)
+            if (!win.sec || !pts.length) return [id, pts]
+            const from = pts[pts.length - 1].t - win.sec * 1000
+            return [id, pts.filter((p) => p.t >= from)]
+          }),
+        )
+      } catch {
+        return // backend unreachable: keep what is on screen; the next refresh retries
+      }
+      if (mine === requestNo.current) setData(Object.fromEntries(pairs))
+    },
+    [windowId, rowById],
+  )
 
   useEffect(() => {
     if (selected.length) void load(selected)
     else setData({})
-  }, [selected, load])
+    // rows change every second; reload on selection or window change only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, windowId])
 
   useEffect(() => {
     if (!autoRefresh || !live || selected.length === 0) return
-    const t = setInterval(() => void load(selected), 4000)
+    const t = setInterval(() => void load(selected), 3000)
     return () => clearInterval(t)
   }, [autoRefresh, live, selected, load])
 
@@ -114,37 +151,31 @@ export function ChartsView({
       while (used.has(slot)) slot++
       m.set(id, slot)
     }
-    return (id: number) => SERIES_COLORS[(m.get(id) ?? 0) % SERIES_COLORS.length]
+    return (id: number) => SLOT_VARS[(m.get(id) ?? 0) % SLOT_VARS.length]
   }, [selected])
 
   const widgets = useMemo(
     () =>
       selected
         .map((id) => {
-          const row = rows.find((r) => r.parameter_id === id)
+          const row = rowById.get(id)
           if (!row) return null
           const pts = data[id] ?? []
           const varies = pts.length > 1 && pts.some((p) => p.y !== pts[0].y)
-          return { id, row, pts, varies, color: colorOf(id) }
+          return { id, row, pts, varies, colorVar: colorOf(id) }
         })
         .filter((w): w is NonNullable<typeof w> => w !== null),
-    [selected, rows, data, colorOf],
+    [selected, rowById, data, colorOf],
   )
 
-  // Overlay mode still refuses to put two units on one axis.
+  // Overlay never puts two units on one axis: one chart per unit.
   const facets = useMemo(() => {
-    const byUnit = new Map<string, { series: Series[]; step: boolean }>()
+    const byUnit = new Map<string, typeof widgets>()
     for (const w of widgets) {
       const unit = w.row.unit ?? ''
-      const isState = w.row.data_type === 'ENUM' || w.row.data_type === 'BOOL'
-      const s: Series = { id: w.id, name: w.row.name, color: w.color, points: w.pts }
-      const f = byUnit.get(unit)
-      if (f) {
-        f.series.push(s)
-        f.step = f.step && isState
-      } else byUnit.set(unit, { series: [s], step: isState })
+      byUnit.set(unit, [...(byUnit.get(unit) ?? []), w])
     }
-    return Array.from(byUnit.entries())
+    return Array.from(byUnit.entries()).map(([unit, ws]) => ({ unit, ws, ...align(ws.map((w) => w.pts)) }))
   }, [widgets])
 
   const tooManyToOverlay = selected.length > OVERLAY_MAX
@@ -156,6 +187,7 @@ export function ChartsView({
         <input
           type="search"
           placeholder="Filter parameters…"
+          aria-label="Filter parameters"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -166,9 +198,7 @@ export function ChartsView({
           <button
             onClick={() =>
               setSelected((s) =>
-                Array.from(
-                  new Set([...s, ...candidates.map((c) => c.parameter_id)]),
-                ).slice(0, SELECT_MAX),
+                Array.from(new Set([...s, ...candidates.map((c) => c.parameter_id)])).slice(0, SELECT_MAX),
               )
             }
             disabled={candidates.length === 0}
@@ -205,7 +235,7 @@ export function ChartsView({
             <button
               className={effectiveView === 'grid' ? 'primary' : ''}
               onClick={() => setView('grid')}
-              title="One widget per parameter"
+              title="One chart per parameter"
             >
               Widgets
             </button>
@@ -216,25 +246,23 @@ export function ChartsView({
               title={
                 tooManyToOverlay
                   ? `Overlay is unreadable past ${OVERLAY_MAX} series`
-                  : 'Draw the selected series on shared axes'
+                  : 'Parameters with the same unit on shared axes'
               }
             >
               Overlay
             </button>
           </div>
+          <select value={windowId} onChange={(e) => setWindowId(e.target.value as typeof windowId)} aria-label="Time window">
+            {WINDOWS.map((w) => (
+              <option key={w.id} value={w.id}>{w.label}</option>
+            ))}
+          </select>
           <label>
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            auto-refresh while live
+            <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
+            live refresh
           </label>
-          <button onClick={() => void load(selected)} disabled={!selected.length}>
-            Refresh now
-          </button>
           <div className="count">
-            {widgets.filter((w) => w.varies).length} of {widgets.length} moving · last 400 samples
+            {widgets.filter((w) => w.varies).length} of {widgets.length} moving · UTC · drag on a chart to zoom
           </div>
         </div>
 
@@ -246,12 +274,10 @@ export function ChartsView({
             Tick parameters in the list, or press <b>Add all</b> to chart everything matching the filter.
             {movers.length > 0 ? (
               <>
-                <div style={{ marginTop: 14 }}>
-                  {plural(movers.length, 'parameter')} changed since this page opened:
-                </div>
+                <div style={{ marginTop: 14 }}>{plural(movers.length, 'parameter')} changed since this page opened:</div>
                 <div className="chip-row">
                   {movers.slice(0, 8).map((m) => {
-                    const r = rows.find((x) => x.parameter_id === m.id)
+                    const r = rowById.get(m.id)
                     return r ? (
                       <button key={m.id} className="chip-btn" onClick={() => toggle(m.id)}>
                         {r.name} <span style={{ color: 'var(--dimmer)' }}>{displayValue(r.value)}</span>
@@ -260,69 +286,59 @@ export function ChartsView({
                   })}
                 </div>
                 <div className="chip-row">
-                  <button className="primary"
-                          onClick={() => setSelected(movers.slice(0, OVERLAY_MAX).map((m) => m.id))}>
+                  <button className="primary" onClick={() => setSelected(movers.slice(0, OVERLAY_MAX).map((m) => m.id))}>
                     Chart the changing parameters
                   </button>
                 </div>
               </>
             ) : (
               <div style={{ marginTop: 10, color: 'var(--dimmer)' }}>
-                Most parameters hold a constant value in the current feed; those that change will be
-                offered here as soon as they move.
+                Most parameters hold a constant value in the current feed; those that change will be offered here as
+                soon as they move.
               </div>
             )}
           </div>
         ) : effectiveView === 'overlay' ? (
-          facets.map(([unit, f]) => (
-            <div className="plot" key={unit || 'unitless'}>
+          facets.map((f) => (
+            <div className="plot" key={f.unit || 'unitless'}>
               <div className="plot-title">
-                {f.series.length === 1 ? f.series[0].name : `${f.series.length} parameters`}
-                {unit ? <span className="plot-unit"> · {unit}</span> : null}
-                <span className="plot-form">{f.step ? 'step' : 'line'}</span>
+                {f.ws.length === 1 ? f.ws[0].row.name : plural(f.ws.length, 'parameter')}
+                <span className="plot-unit"> · {f.unit || 'no unit'}</span>
               </div>
-              <LineChart
-                series={f.series}
-                unit={unit || null}
-                step={f.step}
-                area={f.series.length === 1 && !f.step}
+              <Chart
+                x={f.x}
+                ys={f.ys}
+                series={f.ws.map((w): ChartSeries => ({ label: w.row.name, unit: w.row.unit ?? undefined, colorVar: w.colorVar, scale: 'y' }))}
+                height={240}
+                spanGaps
+                ariaLabel={`${f.ws.map((w) => w.row.name).join(', ')} over time`}
               />
             </div>
           ))
         ) : (
           <div className="widgets">
             {widgets.map((w) => {
-              const last = w.pts[w.pts.length - 1]
               const isState = w.row.data_type === 'ENUM' || w.row.data_type === 'BOOL'
               return (
                 <div className={`widget ${w.varies ? '' : 'flat'}`} key={w.id}>
                   <div className="w-head">
-                    <span className="swatch" style={{ background: w.color }} />
-                    <span className="w-name" title={`${w.row.entry} · ${w.row.message}`}>
-                      {w.row.name}
-                    </span>
+                    <span className="swatch" style={{ background: `var(${w.colorVar})` }} />
+                    <span className="w-name" title={`${w.row.entry} · ${w.row.message}`}>{w.row.name}</span>
                     <span className="w-tier">{w.row.tier}</span>
+                    <button className="w-close" onClick={() => toggle(w.id)} aria-label={`Remove ${w.row.name}`} title="Remove">×</button>
                   </div>
-                  <div className="w-value" title={w.row.value ?? undefined}>
-                    {displayValue(w.row.value ?? (last ? String(last.y) : null))}
-                  </div>
+                  <div className="w-value" title={w.row.value ?? undefined}>{displayValue(w.row.value)}</div>
                   <div className="w-meta">
                     {w.row.subsystem} · {w.row.data_type}
-                    {w.varies ? (
-                      <span className="w-moving"> · moving</span>
-                    ) : (
-                      <span> · flat over {w.pts.length} samples</span>
-                    )}
+                    {isState ? ' · state' : ''}
+                    {w.varies ? <span className="w-moving"> · moving</span> : <span> · constant over {plural(w.pts.length, 'reading')}</span>}
                   </div>
-                  <LineChart
-                    series={[
-                      { id: w.id, name: w.row.name, color: w.color, points: w.pts },
-                    ]}
-                    unit={w.row.unit}
-                    height={112}
-                    step={isState}
-                    area={!isState && w.varies}
-                    compact
+                  <Chart
+                    x={w.pts.map((p) => p.t)}
+                    ys={[w.pts.map((p) => p.y)]}
+                    series={[{ label: w.row.name, unit: w.row.unit ?? undefined, colorVar: w.colorVar }]}
+                    height={130}
+                    ariaLabel={`${w.row.name} over time`}
                   />
                 </div>
               )

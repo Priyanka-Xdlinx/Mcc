@@ -5,6 +5,10 @@ import com.orblinx.mcc.decode.TraceService;
 import com.orblinx.mcc.wire.Subframe;
 import com.orblinx.mcc.wire.Tier;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Decode")
 public class DecodeController {
 
     private final IngestService ingest;
@@ -37,14 +42,22 @@ public class DecodeController {
      * an owner for each of the 1280 payload bytes.
      */
     @GetMapping("/frame-decode")
-    public Map<String, Object> frameDecode(@RequestParam(required = false) Long mf,
-                                           @RequestParam(required = false) Integer sf) {
+    @Operation(summary = "One subframe, fully decoded",
+               description = "Every tier, LUT entry and parameter in the subframe, and the owner of each "
+                           + "of the 1,280 payload bytes. Without mf/sf it uses the newest subframe.")
+    public Map<String, Object> frameDecode(
+            @Parameter(description = "Master frame number") @RequestParam(required = false) Long mf,
+            @Parameter(description = "Subframe number, 1 to 16") @RequestParam(required = false) Integer sf) {
         return frameDecoder.decodeFrame(ingest.frames(), mf, sf);
     }
 
     /** Recent subframes, newest first, for the frame picker. */
     @GetMapping("/frames")
-    public List<Map<String, Object>> frames(@RequestParam(defaultValue = "320") int limit) {
+    @Operation(summary = "Buffered subframes, newest first",
+               description = "The last subframes held in memory (up to 320 = 20 master frames), with the "
+                           + "tiers whose block completes in each.")
+    public List<Map<String, Object>> frames(
+            @Parameter(description = "Maximum subframes, 1 to 320") @RequestParam(defaultValue = "320") int limit) {
         List<Map<String, Object>> out = new ArrayList<>();
         for (Subframe sf : ingest.frames().recent(Math.min(Math.max(limit, 1), 320))) {
             Map<String, Object> m = new LinkedHashMap<>();
@@ -66,8 +79,10 @@ public class DecodeController {
 
     /** One frame in full: the header, and each tier segment as hex. */
     @GetMapping("/frames/{masterFrame}/{subframe}")
-    public Map<String, Object> frame(@PathVariable long masterFrame,
-                                     @PathVariable int subframe) {
+    @Operation(summary = "One buffered subframe as received",
+               description = "The 26-byte XMCC header and each tier segment of the payload as hex.")
+    public Map<String, Object> frame(@Parameter(description = "Master frame number") @PathVariable long masterFrame,
+                                     @Parameter(description = "Subframe number, 1 to 16") @PathVariable int subframe) {
         Map<String, Object> out = new LinkedHashMap<>();
         var found = ingest.frames().get(masterFrame, subframe);
         if (found.isEmpty()) {
@@ -102,9 +117,14 @@ public class DecodeController {
      * which is what the live view follows.
      */
     @GetMapping("/trace")
-    public Map<String, Object> trace(@RequestParam int parameterId,
-                                     @RequestParam(required = false) Long mf,
-                                     @RequestParam(required = false) Integer sf) {
+    @Operation(summary = "Decode trace for one parameter",
+               description = "Every step from payload bytes to engineering value: XMCC header, tier split, "
+                           + "block assembly, LUT picks, MIB field (offset, type, endianness, scale) and "
+                           + "the arithmetic. Produced by the decoder on its normal path.")
+    public Map<String, Object> trace(
+            @Parameter(description = "Parameter id", example = "2168") @RequestParam int parameterId,
+            @Parameter(description = "Master frame number; newest if omitted") @RequestParam(required = false) Long mf,
+            @Parameter(description = "Subframe number, 1 to 16") @RequestParam(required = false) Integer sf) {
         return tracer.trace(ingest.frames(), parameterId, mf, sf);
     }
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Quality, Row, Status } from '../types'
 import type { LastFrame, Mover } from '../hooks/useTelemetryStream'
 import { FRESH_MS, ago, crcHex, displayValue, plural } from '../format'
-import { PLATFORMS, XDLINX_LINKS } from './platforms'
+import { Trends } from './Trends'
 
 interface Frame {
   masterFrame: number
@@ -261,6 +261,13 @@ export function Dashboard({
               </div>
             </section>
 
+            <Trends
+              ids={topMovers.slice(0, 4).map((m) => m.id)}
+              rows={rowById}
+              live={live}
+              onOpen={() => onOpenCharts(topMovers.map((m) => m.id).slice(0, 6))}
+            />
+
             <section className="card">
               <div className="card-head">
                 <h2>Subsystem health</h2>
@@ -391,38 +398,6 @@ export function Dashboard({
             </section>
           </div>
         </div>
-
-        <section className="card">
-          <div className="card-head">
-            <h2>XDLINX satellite platforms</h2>
-            <span className="sub">XDSAT family · from xdlinx.space</span>
-            <a className="linkbtn act" href="https://xdlinx.space/platform/" target="_blank" rel="noreferrer">
-              All platforms ↗
-            </a>
-          </div>
-          <div className="platforms">
-            {PLATFORMS.map((p) => (
-              <a className="pf" key={p.id} href={p.url} target="_blank" rel="noreferrer">
-                <div className="pf-img"><img src={p.image} alt={p.name} loading="lazy" /></div>
-                <div className="pf-body">
-                  <div className="pf-name">{p.name}<span className="ext">↗</span></div>
-                  <dl>
-                    <dt>Bus</dt><dd>{p.bus}</dd>
-                    <dt>Payload</dt><dd>{p.payload}</dd>
-                    <dt>Power storage</dt><dd>{p.power}</dd>
-                    <dt>Solar</dt><dd>{p.solar}</dd>
-                    <dt>Heritage</dt><dd>{p.heritage}</dd>
-                  </dl>
-                </div>
-              </a>
-            ))}
-          </div>
-          <div className="xd-links">
-            {XDLINX_LINKS.map((l) => (
-              <a key={l.url} href={l.url} target="_blank" rel="noreferrer">{l.label}</a>
-            ))}
-          </div>
-        </section>
 
         <footer className="dash-foot">
           <span>LUT CRC-16 <b title={f ? String(f.lutCrc16) : undefined}>{crcHex(f?.lutCrc16)}</b></span>

@@ -4,13 +4,15 @@ import { FRESH_MS } from '../format'
 import type { ThemeChoice } from '../theme'
 import { SimControl } from './SimControl'
 
-export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'decode'
+export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'decode' | 'docs' | 'xdlinx'
 
 export const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: 'dashboard', label: 'Dashboard', hint: 'Mission overview' },
   { id: 'telemetry', label: 'Telemetry', hint: 'Every parameter the LUT downlinks, live' },
   { id: 'charts', label: 'Charts', hint: 'Values over time' },
   { id: 'decode', label: 'Decode trace', hint: 'From payload bytes to engineering value' },
+  { id: 'docs', label: 'Docs', hint: 'How it is built, database schema, REST API (Swagger), live stream' },
+  { id: 'xdlinx', label: 'XDLINX', hint: 'XDSAT satellite platforms and links' },
 ]
 
 const THEMES: { id: ThemeChoice; label: string }[] = [
@@ -47,31 +49,18 @@ export function AppHeader({
   const receiving = connected && lastMsgAt != null && now - lastMsgAt < FRESH_MS
   const pill = receiving ? 'on' : connected ? 'idle' : 'off'
   return (
-    <header className="appbar">
-      <div className="brandmark">
-        <img src="/xdlinx/logo-white.png" alt="XDLINX Space Labs" />
-        <span className="sep" />
-        <div>
-          <div className="app-name">OrbLinx MCC</div>
-          <div className="app-sub">Mission control</div>
+    <header className="bar">
+      <div className="bar-in">
+        <div className="brandmark">
+          <img className="logo-ink" src="/xdlinx/logo-ink-800.png" alt="XDLINX Space Labs" />
+          <img className="logo-white" src="/xdlinx/logo-white-800.png" alt="XDLINX Space Labs" />
+          <span className="sep" />
+          <div className="brand-title">
+            <b>OrbLinx MCC</b>
+            <span>Mission control · XMCC telemetry</span>
+          </div>
         </div>
-      </div>
-
-      <nav className="nav" aria-label="Pages">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={tab === t.id ? 'on' : ''}
-            aria-current={tab === t.id ? 'page' : undefined}
-            onClick={() => onTab(t.id)}
-            title={t.hint}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="appbar-right">
+        <div className="grow" />
         <span className={`linkpill ${pill}`} role="status">
           <span className={`dot ${pill}`} />
           {receiving ? 'Receiving' : connected ? 'No data' : status ? 'Feed stopped' : 'Offline'}
@@ -90,6 +79,19 @@ export function AppHeader({
         </div>
         <SimControl status={status} onChanged={onFeedChanged} />
       </div>
+      <nav className="nav" aria-label="Pages">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            className={tab === t.id ? 'on' : ''}
+            aria-current={tab === t.id ? 'page' : undefined}
+            onClick={() => onTab(t.id)}
+            title={t.hint}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
     </header>
   )
 }

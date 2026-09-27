@@ -62,6 +62,21 @@ MCC_DB=../mcc.db MCC_XDOS_HOME="../../updated xdos" \
 
 ## The views
 
+Pages: **Dashboard**, **Telemetry**, **Charts**, **Decode trace**, **Docs** and **XDLINX**.
+Each has its own address (`/#charts`, `/#docs/database`, …); `?theme=light|dark|auto`
+sets the theme from the address. The look (palette, IBM Plex type, header, uPlot
+charts) is shared with the Orblinx platform.
+
+**Docs** — how the system is built, the database schema read live from `mcc.db`
+(`GET /api/schema`), the REST API in Swagger UI, and the WebSocket messages.
+Swagger UI is also at <http://localhost:8080/swagger-ui.html>, and the OpenAPI
+description at <http://localhost:8080/v3/api-docs>.
+
+**XDLINX** — the XDSAT platforms and links from xdlinx.space (images stored locally).
+
+**Charts** — uPlot charts on a UTC time axis; drag to zoom, +/− buttons, reset.
+Windows: last 5 min, last 15 min, or all stored history.
+
 The app opens on the **Dashboard**. A theme switch in the header offers
 **Auto** (follows the OS), **Light** and **Dark**; the choice is remembered in the
 browser.
@@ -70,7 +85,7 @@ browser.
 are OK, lost subframes; the current master frame as a 16-subframe strip showing
 where each part (VH/H/M/L) completes; health per subsystem (click one to open
 its telemetry); parameters that are changing, with sparklines; parameters that
-need attention; and the XDLINX XDSAT platforms with links to xdlinx.space.
+need attention; and live trend charts of the changing parameters.
 When the feed stops, figures are labelled *last known* instead of looking live.
 
 

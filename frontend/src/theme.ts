@@ -36,3 +36,37 @@ export function useTheme() {
   const set = useCallback((c: ThemeChoice) => setChoice(c), [])
   return { choice, set }
 }
+
+/**
+ * The palette actually on screen ('light' | 'dark'), for canvas drawing (uPlot)
+ * that reads colours once from CSS variables and must redraw when they change.
+ */
+export function useResolvedTheme(): 'light' | 'dark' {
+  const read = (): 'light' | 'dark' => {
+    const t = document.documentElement.dataset.theme
+    if (t === 'light' || t === 'dark') return t
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    } catch {
+      return 'light'
+    }
+  }
+  const [resolved, setResolved] = useState(read)
+  useEffect(() => {
+    const update = () => setResolved(read())
+    const mo = new MutationObserver(update)
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    let mq: MediaQueryList | null = null
+    try {
+      mq = window.matchMedia('(prefers-color-scheme: dark)')
+      mq.addEventListener('change', update)
+    } catch {
+      /* no media queries: keep the attribute observer */
+    }
+    return () => {
+      mo.disconnect()
+      mq?.removeEventListener('change', update)
+    }
+  }, [])
+  return resolved
+}
