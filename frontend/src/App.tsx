@@ -3,7 +3,7 @@ import { AppHeader, TABS, type Tab } from './components/AppHeader'
 import { StatusBar } from './components/StatusBar'
 import { Dashboard, type TelemetryFilter } from './components/Dashboard'
 import { TelemetryTable } from './components/TelemetryTable'
-import { ChartsView } from './components/ChartsView'
+import { ChartsDashboard } from './ox/ChartsDashboard'
 import { DecodeView } from './components/DecodeView'
 import { Docs } from './components/Docs'
 import { XdlinxPage } from './components/XdlinxPage'
@@ -98,7 +98,7 @@ export default function App() {
         />
       )}
       {tab === 'charts' && (
-        <ChartsView rows={rows} live={live} movers={movers} initial={chartIds} />
+        <ChartsDashboard rows={rows} lutCrc={status?.feed.lutCrc16 ?? (backendUp === false && rows.length ? 0 : null)} pick={chartIds} />
       )}
       {tab === 'decode' && <DecodeView rows={rows} live={live} />}
       {tab === 'docs' && <Docs theme={theme.choice} />}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Status } from '../types'
+import { Icon } from './Icon'
 
 /**
  * Start and stop the XDLINX telemetry stack (the XDOS OBC, its subsystem
@@ -61,18 +62,24 @@ export function SimControl({
       ) : running ? (
         confirmStop ? (
           <>
-            <button onClick={() => setConfirmStop(false)}>Cancel</button>
+            <button onClick={() => setConfirmStop(false)}>
+              <Icon name="x" size={14} />
+              Cancel
+            </button>
             <button className="danger" disabled={busy !== null} onClick={() => call('stop')}>
+              <Icon name="stop" size={14} />
               {busy === 'stop' ? 'Stopping…' : 'Confirm stop'}
             </button>
           </>
         ) : (
           <button className="danger" disabled={busy !== null} onClick={() => setConfirmStop(true)}>
+            <Icon name="stop" size={14} />
             Stop feed
           </button>
         )
       ) : (
         <button className="primary" disabled={busy !== null} onClick={() => call('start')}>
+          <Icon name="satellite" size={15} />
           {busy === 'start' ? 'Starting…' : 'Start feed'}
         </button>
       )}

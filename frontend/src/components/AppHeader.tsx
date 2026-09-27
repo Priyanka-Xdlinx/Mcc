@@ -3,6 +3,7 @@ import type { Status } from '../types'
 import { FRESH_MS } from '../format'
 import type { ThemeChoice } from '../theme'
 import { SimControl } from './SimControl'
+import { Icon, type IconName } from './Icon'
 
 export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'track' | 'decode' | 'docs' | 'xdlinx'
 
@@ -16,10 +17,10 @@ export const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: 'xdlinx', label: 'XDLINX', hint: 'XDSAT satellite platforms and links' },
 ]
 
-const THEMES: { id: ThemeChoice; label: string }[] = [
-  { id: 'system', label: 'Auto' },
-  { id: 'light', label: 'Light' },
-  { id: 'dark', label: 'Dark' },
+const THEMES: { id: ThemeChoice; label: string; icon: IconName }[] = [
+  { id: 'system', label: 'Auto', icon: 'auto' },
+  { id: 'light', label: 'Light', icon: 'sun' },
+  { id: 'dark', label: 'Dark', icon: 'moon' },
 ]
 
 export function AppHeader({
@@ -74,6 +75,7 @@ export function AppHeader({
               aria-pressed={theme === t.id}
               onClick={() => onTheme(t.id)}
             >
+              <Icon name={t.icon} size={14} />
               {t.label}
             </button>
           ))}
@@ -89,6 +91,7 @@ export function AppHeader({
             onClick={() => onTab(t.id)}
             title={t.hint}
           >
+            <Icon name={t.id} size={16} />
             {t.label}
           </button>
         ))}
