@@ -4,12 +4,13 @@ import { FRESH_MS } from '../format'
 import type { ThemeChoice } from '../theme'
 import { SimControl } from './SimControl'
 
-export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'decode' | 'docs' | 'xdlinx'
+export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'track' | 'decode' | 'docs' | 'xdlinx'
 
 export const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: 'dashboard', label: 'Dashboard', hint: 'Mission overview' },
   { id: 'telemetry', label: 'Telemetry', hint: 'Every parameter the LUT downlinks, live' },
   { id: 'charts', label: 'Charts', hint: 'Values over time' },
+  { id: 'track', label: 'Ground track', hint: 'Spacecraft position on a globe and a map, from GPS telemetry' },
   { id: 'decode', label: 'Decode trace', hint: 'From payload bytes to engineering value' },
   { id: 'docs', label: 'Docs', hint: 'How it is built, database schema, REST API (Swagger), live stream' },
   { id: 'xdlinx', label: 'XDLINX', hint: 'XDSAT satellite platforms and links' },

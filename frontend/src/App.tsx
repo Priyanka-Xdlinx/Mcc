@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { AppHeader, TABS, type Tab } from './components/AppHeader'
 import { StatusBar } from './components/StatusBar'
 import { Dashboard, type TelemetryFilter } from './components/Dashboard'
@@ -7,6 +7,9 @@ import { ChartsView } from './components/ChartsView'
 import { DecodeView } from './components/DecodeView'
 import { Docs } from './components/Docs'
 import { XdlinxPage } from './components/XdlinxPage'
+
+// three.js is large, so the 3D page loads only when it is opened.
+const OrbitPage = lazy(() => import('./components/orbit/OrbitPage'))
 import { useTelemetryStream } from './hooks/useTelemetryStream'
 import { useTheme } from './theme'
 
@@ -100,6 +103,11 @@ export default function App() {
       {tab === 'decode' && <DecodeView rows={rows} live={live} />}
       {tab === 'docs' && <Docs theme={theme.choice} />}
       {tab === 'xdlinx' && <XdlinxPage />}
+      {tab === 'track' && (
+        <Suspense fallback={<div className="empty">Loading the 3D view…</div>}>
+          <OrbitPage rows={rows} live={live} />
+        </Suspense>
+      )}
     </div>
   )
 }

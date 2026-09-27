@@ -1,20 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ThemeChoice } from '../theme'
 import { plural } from '../format'
+import { GlossaryDoc, HldDoc, LldDoc, RequirementsDoc, RisksDoc, TimingDoc, TraceabilityDoc } from './DocsDesign'
 
-type Section = 'build' | 'database' | 'api' | 'stream'
+type Section = 'requirements' | 'hld' | 'lld' | 'timing' | 'build' | 'database' | 'api' | 'stream' | 'trace' | 'risks' | 'glossary'
 
 const SECTIONS: { id: Section; label: string; hint: string }[] = [
+  { id: 'requirements', label: 'Requirements', hint: 'Functional, non-functional, constraints' },
+  { id: 'hld', label: 'High-level design', hint: 'Context, blocks, data flow, decisions' },
+  { id: 'lld', label: 'Low-level design', hint: 'Sequence, state machines, algorithm, threads' },
+  { id: 'timing', label: 'Timing and performance', hint: 'Deadlines, intervals, measured latency' },
   { id: 'build', label: 'How it is built', hint: 'Architecture, build and run, decode, tests' },
   { id: 'database', label: 'Database schema', hint: 'Live tables, keys and row counts' },
   { id: 'api', label: 'REST API (Swagger)', hint: 'Every endpoint, try it out' },
   { id: 'stream', label: 'Live stream', hint: 'The WebSocket messages' },
+  { id: 'trace', label: 'Traceability', hint: 'Requirement → code → test' },
+  { id: 'risks', label: 'Risks and open issues', hint: 'What could go wrong, and the plan' },
+  { id: 'glossary', label: 'Glossary', hint: 'Terms used across the MCC' },
 ]
 
 export function Docs({ theme }: { theme: ThemeChoice }) {
   const [section, setSectionState] = useState<Section>(() => {
     const s = location.hash.split('/')[1]
-    return (SECTIONS.some((x) => x.id === s) ? s : 'build') as Section
+    return (SECTIONS.some((x) => x.id === s) ? s : 'requirements') as Section
   })
   const setSection = (s: Section) => {
     setSectionState(s)
@@ -37,6 +45,13 @@ export function Docs({ theme }: { theme: ThemeChoice }) {
         ))}
       </nav>
       <div className={`docs-body ${section === 'api' ? 'wide' : ''}`}>
+        {section === 'requirements' && <RequirementsDoc />}
+        {section === 'hld' && <HldDoc />}
+        {section === 'lld' && <LldDoc />}
+        {section === 'timing' && <TimingDoc />}
+        {section === 'trace' && <TraceabilityDoc />}
+        {section === 'risks' && <RisksDoc />}
+        {section === 'glossary' && <GlossaryDoc />}
         {section === 'build' && <BuildDoc />}
         {section === 'database' && <DatabaseDoc />}
         {section === 'api' && <ApiDoc theme={theme} />}
