@@ -72,6 +72,8 @@ public class SimulatorService {
                     "--power-on", "--no-gs", "--no-windows");
             pb.directory(xdosHome.toFile());
             pb.redirectErrorStream(true);
+            // logs/ is git-ignored, so a fresh clone does not have it yet.
+            Files.createDirectories(xdosHome.resolve("logs"));
             pb.redirectOutput(new File(xdosHome.toFile(), "logs/run_stack_ui.log"));
             process = pb.start();
             startedAt = Instant.now();

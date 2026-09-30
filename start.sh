@@ -145,8 +145,10 @@ if [ "$WITH_SIM" -eq 1 ]; then
         fi
     fi
     say "starting the XDOS simulator"
-    curl -fsS -X POST "http://localhost:$PORT/api/sim/start" >/dev/null \
+    SIMERR=$(curl -fsS -X POST "http://localhost:$PORT/api/sim/start" 2>/dev/null \
+        | "$PY" -c 'import sys,json; print(json.load(sys.stdin).get("error") or "")' 2>/dev/null) \
         || die "simulator failed to start - check the UI for the reason"
+    [ -z "$SIMERR" ] || die "simulator failed to start: $SIMERR"
     # The OBC boots unpowered and takes ~10 s after the kill switch is released.
     say "waiting for telemetry ..."
     i=0
