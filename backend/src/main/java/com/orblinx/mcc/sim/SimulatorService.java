@@ -74,6 +74,16 @@ public class SimulatorService {
             pb.redirectErrorStream(true);
             // logs/ is git-ignored, so a fresh clone does not have it yet.
             Files.createDirectories(xdosHome.resolve("logs"));
+            // The OBC stays silent until a downlink map (LUT) has been uplinked once; it then
+            // reloads it from obc_lut_store.bin on every boot. That file is runtime state and
+            // git-ignored, so on a fresh clone preload it with the flown LUT - byte-for-byte what
+            // an uplink from xdos_gs would store.
+            Path store = xdosHome.resolve("obc_lut_store.bin");
+            Path flownLut = xdosHome.resolve("config/rate_group_lut.bin");
+            if (!Files.exists(store) && Files.exists(flownLut)) {
+                Files.copy(flownLut, store);
+                log.info("no uplinked LUT yet - preloaded {} as {}", flownLut, store);
+            }
             pb.redirectOutput(new File(xdosHome.toFile(), "logs/run_stack_ui.log"));
             process = pb.start();
             startedAt = Instant.now();
