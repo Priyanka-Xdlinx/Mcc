@@ -12,31 +12,49 @@ React + Vite ──HTTP/WS──> Spring Boot ──TCP 9100──> xdos_tm_view
 
 ## Requirements
 
-Everything the app needs is in this repository, including the XDLINX core
-team's telemetry test stack in `xdos/` (mission database, downlink map and
-simulator source). Install these tools once:
+Everything the app needs is in this repository. Install these tools once:
 
 | Tool | Version | Used for |
 |---|---|---|
 | JDK | 17 or later | backend |
 | Maven | 3.9 | backend build |
 | Node.js | 22 | web UI build |
-| Python 3 | with `sqlite3` | builds `mcc.db` from `xdos/mib` |
-| C++ toolchain + CMake | Xcode Command Line Tools on macOS; GCC + CMake on Linux | builds the test stack |
+| Python 3.10+ | standard library | `mcc.py` launcher, builds `mcc.db`, runs the recorded telemetry feed |
+
+Optional, only for the live test stack on macOS or Linux: a C++ toolchain with
+CMake (Xcode Command Line Tools on macOS, GCC + CMake on Linux). On Windows the
+recorded feed is always used.
 
 ## First run after cloning
 
-```bash
-# 1. build the test stack once (the feed the app decodes)
-xdos/scripts/build_mac.sh                                   # macOS
-# cmake -S xdos -B xdos/build && cmake --build xdos/build -j  # Linux
+**Windows, macOS or Linux** (Python 3.10 or later):
 
-# 2. build and start everything
+```bash
+python mcc.py start --build --sim     # build everything, start the app and the telemetry feed
+python mcc.py status                  # what is running
+python mcc.py stop                    # stop the feed and the app
+```
+
+`start.sh` / `stop.sh` do the same on macOS and Linux:
+
+```bash
 ./start.sh --build --sim
 ```
 
-Then open <http://localhost:8080/>. `mcc.db`, `frontend/dist` and the jar are
-generated, never committed; `start.sh` rebuilds whatever is missing.
+Then open <http://localhost:8080/>. With no C++ build, **Start feed** (and
+`--sim`) serves real recorded telemetry from `testdata/feed_capture.xmcc`
+through `feed/xmcc_replay.py` on port 9100 — Python standard library only,
+decoded exactly like the live feed.
+
+For the live XDLINX test stack instead, build it once; Start feed then uses it:
+
+```bash
+xdos/scripts/build_mac.sh                                    # macOS
+cmake -S xdos -B xdos/build && cmake --build xdos/build -j   # Linux
+```
+
+Force the recording even when the stack is built: `MCC_FEED=replay ./start.sh --sim`.
+`mcc.db`, `frontend/dist` and the jar are generated, never committed.
 
 ## Run it
 

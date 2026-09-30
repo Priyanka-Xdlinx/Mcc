@@ -34,38 +34,99 @@ public class SimulatorService {
     /** Matches only the simulator binaries - a looser pattern would match this JVM. */
     private static final String KILL_PATTERN =
             "build[^/]*/xdos_(eps|adcs|gps|payload|xlink|uhf|sensor)_sim"
-          + "|build[^/]*/xdos_obc|build[^/]*/xdos_tm_view";
+          + "|build[^/]*/xdos_obc|build[^/]*/xdos_tm_view"
+          + "|feed/xmcc_replay\\.py";
+
+    private static final boolean WINDOWS = System.getProperty("os.name", "").toLowerCase().contains("win");
 
     private final Path xdosHome;
     private volatile Process process;
     private volatile Instant startedAt;
     private volatile String lastError;
+    private volatile String mode;                  // "native" or "replay"
 
     public SimulatorService(@Value("${mcc.xdos-home}") String xdosHome) {
         this.xdosHome = Path.of(xdosHome).toAbsolutePath().normalize();
     }
 
+    /**
+     * Starts a telemetry feed on 127.0.0.1:9100: the native XDLINX test stack when it has been
+     * built, otherwise the recorded feed (feed/xmcc_replay.py, Python standard library only), so
+     * a fresh clone runs without a C++ build. MCC_FEED=replay forces the recorded feed.
+     */
     public synchronized Map<String, Object> start() {
         if (isRunning()) return status();
         lastError = null;
+        boolean forceReplay = "replay".equalsIgnoreCase(System.getenv("MCC_FEED"));
+        String buildDir = System.getenv().getOrDefault("XDOS_BUILD",
+                System.getProperty("os.name", "").toLowerCase().contains("mac") ? "build-mac" : "build");
+        // The native stack is started by a bash script, so on Windows only the recording runs.
+        boolean nativeBuilt = !WINDOWS && Files.exists(xdosHome.resolve(buildDir).resolve("xdos_gs"));
+        if (forceReplay || !nativeBuilt) return startReplay(nativeBuilt ? null : buildDir);
+        return startNative();
+    }
 
+    private Map<String, Object> startReplay(String missingBuildDir) {
+        Path root = xdosHome.getParent();          // the mcc-app repository
+        Path script = root.resolve("feed/xmcc_replay.py");
+        Path capture = root.resolve("testdata/feed_capture.xmcc");
+        String python = findPython();
+        if (!Files.exists(script) || !Files.exists(capture) || python == null) {
+            lastError = "no feed available: " + (python == null ? "python3 not found" : "recorded feed missing at " + capture)
+                      + (missingBuildDir == null ? "" : "; and no native build at " + xdosHome.resolve(missingBuildDir)
+                         + " (build it with xdos/scripts/build_mac.sh on macOS, CMake on Linux)");
+            return status();
+        }
+        try {
+            Files.createDirectories(xdosHome.resolve("logs"));
+            ProcessBuilder pb = new ProcessBuilder(python, script.toString(), "--capture", capture.toString());
+            pb.directory(root.toFile());
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(new File(xdosHome.toFile(), "logs/xmcc_replay.log"));
+            process = pb.start();
+            startedAt = Instant.now();
+            mode = "replay";
+            Files.writeString(pidFile(), Long.toString(process.pid()));
+            log.info("recorded feed started (pid {}): {} via {}{}", process.pid(), capture, python,
+                     missingBuildDir == null ? "" : " - no native test-stack build, so using the recording");
+        } catch (IOException e) {
+            lastError = e.getMessage();
+            log.error("could not start the recorded feed", e);
+        }
+        return status();
+    }
+
+    /** Pid of the recorded feed, so it can be found and stopped after a backend restart on any OS. */
+    private Path pidFile() { return xdosHome.getParent().resolve(".feed.pid"); }
+
+    private java.util.Optional<ProcessHandle> replayFromPidFile() {
+        try {
+            long pid = Long.parseLong(Files.readString(pidFile()).trim());
+            return ProcessHandle.of(pid).filter(ProcessHandle::isAlive);
+        } catch (Exception e) {
+            return java.util.Optional.empty();
+        }
+    }
+
+    /** First python3 that runs: Homebrew, /usr/local, then PATH. */
+    private static String findPython() {
+        String[] cands = WINDOWS ? new String[] {"py", "python", "python3"}
+                                 : new String[] {"/opt/homebrew/bin/python3", "/usr/local/bin/python3", "/usr/bin/python3", "python3"};
+        for (String cand : cands) {
+            try {
+                Process p = new ProcessBuilder(cand, "-c", "pass").redirectErrorStream(true).start();
+                if (p.waitFor(5, java.util.concurrent.TimeUnit.SECONDS) && p.exitValue() == 0) return cand;
+            } catch (Exception ignored) { }
+        }
+        return null;
+    }
+
+    private Map<String, Object> startNative() {
         Path script = xdosHome.resolve("scripts/run_stack.sh");
         if (!Files.exists(script)) {
             lastError = "run_stack.sh not found at " + script;
             return status();
         }
-        // Same rule as xdos/scripts/build_dir.sh: build-mac/ on macOS, build/ elsewhere,
-        // XDOS_BUILD overrides.
-        String buildDir = System.getenv().getOrDefault("XDOS_BUILD",
-                System.getProperty("os.name", "").toLowerCase().contains("mac") ? "build-mac" : "build");
-        Path binary = xdosHome.resolve(buildDir).resolve("xdos_gs");
-        if (!Files.exists(binary)) {
-            lastError = "no native build at " + binary + " - build it first:  "
-                      + ("build-mac".equals(buildDir) ? "xdos/scripts/build_mac.sh"
-                                                      : "cmake -S xdos -B xdos/" + buildDir + " && cmake --build xdos/" + buildDir + " -j");
-            return status();
-        }
-
         try {
             ProcessBuilder pb = new ProcessBuilder(
                     "/bin/bash", script.toString(),
@@ -87,6 +148,7 @@ public class SimulatorService {
             pb.redirectOutput(new File(xdosHome.toFile(), "logs/run_stack_ui.log"));
             process = pb.start();
             startedAt = Instant.now();
+            mode = "native";
             log.info("simulator started (pid {}) in {}", process.pid(), xdosHome);
         } catch (IOException e) {
             lastError = e.getMessage();
@@ -109,11 +171,14 @@ public class SimulatorService {
                 Thread.currentThread().interrupt();
             }
         }
+        replayFromPidFile().ifPresent(ProcessHandle::destroyForcibly);
+        try { Files.deleteIfExists(pidFile()); } catch (IOException ignored) { }
         // run_stack.sh's own children outlive the script when it is killed
-        // abruptly, so sweep them explicitly.
-        runQuiet("/usr/bin/pkill", "-9", "-f", KILL_PATTERN);
+        // abruptly, so sweep them explicitly (no pkill on Windows; nothing native runs there).
+        if (!WINDOWS) runQuiet("/usr/bin/pkill", "-9", "-f", KILL_PATTERN);
         process = null;
         startedAt = null;
+        mode = null;
         log.info("simulator stopped; {} stray process(es) remain", strayProcesses().size());
         return status();
     }
@@ -129,18 +194,20 @@ public class SimulatorService {
     public boolean isRunning() {
         Process p = process;
         if (p != null && p.isAlive()) return true;
-        return !strayProcesses().isEmpty();
+        return replayFromPidFile().isPresent() || !strayProcesses().isEmpty();
     }
 
     /** True when the stack is running but was not started by this backend. */
     public boolean isAdopted() {
         Process p = process;
-        return (p == null || !p.isAlive()) && !strayProcesses().isEmpty();
+        return (p == null || !p.isAlive()) && (replayFromPidFile().isPresent() || !strayProcesses().isEmpty());
     }
 
     /** Anything still matching the simulator pattern - used to prove a clean shutdown. */
     public List<String> strayProcesses() {
         List<String> out = new ArrayList<>();
+        replayFromPidFile().ifPresent(h -> out.add(h.pid() + " feed/xmcc_replay.py"));
+        if (WINDOWS) return out;
         try {
             // Match the binaries themselves, not any command line that merely
             // mentions the path - a shell invocation containing the string would
@@ -166,6 +233,9 @@ public class SimulatorService {
         m.put("adopted", !owned && !procs.isEmpty());
         m.put("pid", owned ? p.pid() : null);
         m.put("startedAt", startedAt == null ? null : startedAt.toString());
+        m.put("mode", mode != null ? mode
+                : procs.stream().anyMatch(l -> l.contains("xmcc_replay")) ? "replay"
+                : procs.isEmpty() ? null : "native");
         m.put("xdosHome", xdosHome.toString());
         m.put("processes", procs);
         m.put("error", lastError);

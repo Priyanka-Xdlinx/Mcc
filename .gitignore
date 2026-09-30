@@ -10,3 +10,4 @@ backend.log
 .backend.pid
 .sim.pid
 .DS_Store
+.feed.pid

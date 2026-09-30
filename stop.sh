@@ -17,7 +17,7 @@ PORT=8080
 
 # Matches only the simulator binaries. A looser pattern such as "xdos_" also
 # matches the shell running this script, which would make it kill itself.
-KILLPAT='build[^/]*/xdos_(eps|adcs|gps|payload|xlink|uhf|sensor)_sim|build[^/]*/xdos_obc|build[^/]*/xdos_tm_view'
+KILLPAT='build[^/]*/xdos_(eps|adcs|gps|payload|xlink|uhf|sensor)_sim|build[^/]*/xdos_obc|build[^/]*/xdos_tm_view|feed/xmcc_replay\.py'
 
 SIM_ONLY=0
 while [ $# -gt 0 ]; do

@@ -48,7 +48,7 @@ def load_apid_map(mib_dir: Path) -> dict[str, int]:
         p = mib_dir / fn
         if not p.exists():
             continue
-        doc = json.loads(p.read_text())
+        doc = json.loads(p.read_text(encoding="utf-8"))
         for key in ("apid_map", "apids", "apid"):
             m = doc.get(key)
             if isinstance(m, dict):
@@ -85,7 +85,7 @@ def main() -> int:
     if out.exists():
         out.unlink()
     db = sqlite3.connect(out)
-    db.executescript((here / "schema.sql").read_text())
+    db.executescript((here / "schema.sql").read_text(encoding="utf-8"))
 
     apid_map = load_apid_map(mib_dir)
     db.executemany("INSERT INTO tier VALUES (?,?,?,?,?)", TIERS)
@@ -102,7 +102,7 @@ def main() -> int:
     stats = {"subsystems": 0, "enums": 0, "enum_values": 0, "messages": 0, "parameters": 0}
 
     for path in sorted(mib_dir.glob("*.json")):
-        doc = json.loads(path.read_text())
+        doc = json.loads(path.read_text(encoding="utf-8"))
         sub = doc.get("subsystem")
         if not sub or not doc.get("messages"):
             continue                                    # ccsds_tc/tm carry no messages
@@ -177,7 +177,7 @@ def main() -> int:
                 stats["parameters"] += 1
 
     # ── Layer 1: the flown lookup table ─────────────────────────────────────
-    twin = json.loads(twin_path.read_text())
+    twin = json.loads(twin_path.read_text(encoding="utf-8"))
     db.execute("INSERT INTO lut VALUES (1,?,?,?,?,?)",
                (twin["crc16"], twin["format_version"], twin["subframe_size"],
                 str(twin_path), _dt.datetime.now().isoformat(timespec="seconds")))

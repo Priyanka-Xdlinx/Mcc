@@ -1,0 +1,6 @@
+# Recorded telemetry and binary LUTs must never be touched by line-ending conversion.
+*.xmcc binary
+*.bin  binary
+*.db   binary
+# Shell scripts run under bash (macOS/Linux, WSL); keep LF everywhere.
+*.sh   text eol=lf
