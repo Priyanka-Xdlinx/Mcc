@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XDOS Ground Segment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F2F4F3; --panel:#FBFCFB; --panel2:#EBEEEC; --ink:#1F2933; --muted:#5C6873;
+  --line:#C2CBCD; --line-soft:#D9DFDF;
+  --tc:#B45309; --tm:#0E7490; --hl:#3E63DD;
+  --tc-soft:#B4530918; --tm-soft:#0E749016; --hl-soft:#3E63DD14;
+  --focus:#3E63DD;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13171B; --panel:#1B2126; --panel2:#161B20; --ink:#DFE6E9; --muted:#8C99A3;
+    --line:#3B454D; --line-soft:#2C343B;
+    --tc:#E8963C; --tm:#38BDD3; --hl:#7C97FF;
+    --tc-soft:#E8963C1c; --tm-soft:#38BDD31a; --hl-soft:#7C97FF1a;
+    --focus:#7C97FF;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13171B; --panel:#1B2126; --panel2:#161B20; --ink:#DFE6E9; --muted:#8C99A3;
+  --line:#3B454D; --line-soft:#2C343B;
+  --tc:#E8963C; --tm:#38BDD3; --hl:#7C97FF;
+  --tc-soft:#E8963C1c; --tm-soft:#38BDD31a; --hl-soft:#7C97FF1a;
+  --focus:#7C97FF;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'IBM Plex Sans',system-ui,sans-serif; font-size:14px; line-height:1.5;
+  min-height:100vh; display:flex; flex-direction:column;
+}
+.wrap{width:min(1240px,100%); margin:0 auto; padding:0 20px; flex:1; display:flex; flex-direction:column;}
+header.top{
+  display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
+  padding:20px 0 10px; border-bottom:1px solid var(--line-soft);
+}
+.brand{font-family:'IBM Plex Sans Condensed',sans-serif; font-weight:700; font-size:19px; letter-spacing:.02em; white-space:nowrap;}
+.brand .sat{color:var(--tm)}
+.legend{display:flex; gap:14px; margin-left:auto; flex-wrap:wrap; align-items:center;}
+.chip{display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted);}
+.chip .sw{width:22px; height:0; border-top:2px solid; display:inline-block;}
+.chip .sw.tc{border-color:var(--tc)} .chip .sw.tm{border-color:var(--tm)}
+.chip .bx{width:14px; height:10px; border:1.6px solid var(--ink); border-radius:2px; display:inline-block;}
+nav.crumbs{
+  display:flex; align-items:center; gap:8px; padding:12px 0 10px;
+  font-family:'IBM Plex Mono',monospace; font-size:12px;
+}
+.crumb{background:none; border:1px solid transparent; color:var(--muted); cursor:pointer;
+  font:inherit; padding:3px 8px; border-radius:3px;}
+.crumb:hover{color:var(--ink); border-color:var(--line)}
+.crumb[aria-current="page"]{color:var(--ink); border-color:var(--line); background:var(--panel); cursor:default; font-weight:600;}
+.crumb-sep{color:var(--line)}
+.backbtn{margin-left:auto; background:var(--panel); border:1px solid var(--line); color:var(--ink);
+  font-family:'IBM Plex Mono',monospace; font-size:12px; padding:4px 12px; border-radius:3px; cursor:pointer;}
+.backbtn:hover{border-color:var(--ink)}
+.backbtn[disabled]{opacity:.35; cursor:default}
+.backbtn[disabled]:hover{border-color:var(--line)}
+.viewhead{padding:2px 0 10px;}
+.viewhead h1{font-family:'IBM Plex Sans Condensed',sans-serif; font-weight:600; font-size:22px; margin:0 0 2px; text-wrap:balance;}
+.viewhead p{margin:0; color:var(--muted); font-size:13px; max-width:78ch;}
+#stage{
+  background:var(--panel); border:1px solid var(--line); border-radius:4px;
+  padding:10px; overflow-x:auto;
+}
+#stage svg{display:block; width:100%; height:auto; min-width:900px;}
+#inspector{
+  margin:10px 0 18px; padding:9px 14px; min-height:38px;
+  background:var(--panel2); border:1px solid var(--line-soft); border-radius:3px;
+  font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+  display:flex; align-items:center; gap:10px;
+}
+#inspector .tag{color:var(--hl); font-weight:600; white-space:nowrap;}
+footer.foot{padding:6px 0 22px; color:var(--muted); font-size:12px;
+  font-family:'IBM Plex Mono',monospace; border-top:1px solid var(--line-soft);}
+/* ── SVG vocabulary ─────────────────────────────────────────────────────── */
+svg text{font-family:'IBM Plex Sans',sans-serif; fill:var(--ink);}
+svg .t-title{font-family:'IBM Plex Sans Condensed',sans-serif; font-weight:600; font-size:13px;}
+svg .t-sub{font-family:'IBM Plex Mono',monospace; font-size:10.5px; fill:var(--muted);}
+svg .t-lbl{font-family:'IBM Plex Mono',monospace; font-size:10.5px; fill:var(--muted);}
+svg .t-lbl.tc{fill:var(--tc)} svg .t-lbl.tm{fill:var(--tm)} svg .t-lbl.hl{fill:var(--hl)}
+svg .t-grp{font-family:'IBM Plex Sans Condensed',sans-serif; font-weight:700; font-size:12px;
+  letter-spacing:.09em; fill:var(--muted);}
+svg .t-big{font-family:'IBM Plex Sans Condensed',sans-serif; font-weight:600; font-size:15px;}
+svg .t-mono{font-family:'IBM Plex Mono',monospace; font-size:11px;}
+svg .t-mono.dim{fill:var(--muted)}
+svg .blk{fill:var(--panel); stroke:var(--line); stroke-width:1.2;}
+svg .blk.tint-tc{fill:var(--tc-soft)} svg .blk.tint-tm{fill:var(--tm-soft)} svg .blk.tint-hl{fill:var(--hl-soft)}
+svg .grpframe{fill:none; stroke:var(--line); stroke-dasharray:5 4; stroke-width:1;}
+svg .flow{fill:none; stroke-width:1.6;}
+svg .flow.tc{stroke:var(--tc)} svg .flow.tm{stroke:var(--tm)}
+svg .flow.nt{stroke:var(--muted)} svg .flow.hl{stroke:var(--hl)}
+svg .flow.dash{stroke-dasharray:5 4}
+svg .seg{stroke:var(--line); stroke-width:1; fill:var(--panel);}
+svg .seg.hl{fill:var(--hl); stroke:var(--hl);}
+svg .seg.hatch{fill:var(--panel2)}
+svg .segname{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-anchor:middle;}
+svg .segname.onhl{fill:var(--panel); font-weight:600;}
+svg .node{cursor:default; outline:none;}
+svg .node.drill{cursor:pointer;}
+svg .node.drill > .blk{stroke:var(--ink); stroke-width:1.7;}
+svg .node.drill:hover > .blk, svg .node.drill:focus-visible > .blk{stroke:var(--hl); stroke-width:2.1;}
+svg .node.drill:focus-visible > .blk{stroke-dasharray:3 2;}
+svg .drillmark{font-family:'IBM Plex Mono',monospace; font-size:10px; fill:var(--muted);}
+svg .node.drill:hover .drillmark{fill:var(--hl)}
+@media (prefers-reduced-motion: no-preference){
+  #stage svg{transition:opacity .13s ease}
+  #stage svg.fadeout{opacity:0}
+}
+</style>
+<style>body{margin:0;padding:0 0 0 0}</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand">XDOS <span class="sat">GROUND SEGMENT</span></div>
+  <div class="legend">
+    <span class="chip"><span class="sw tc"></span>TC uplink</span>
+    <span class="chip"><span class="sw tm"></span>TM downlink</span>
+    <span class="chip"><span class="bx"></span>click to open</span>
+  </div>
+</header>
+
+<nav class="crumbs" id="crumbs" aria-label="Diagram level"></nav>
+
+<div class="viewhead">
+  <h1 id="vtitle"></h1>
+  <p id="vcaption"></p>
+</div>
+
+<div id="stage"></div>
+
+<div id="inspector" aria-live="polite">
+  <span class="tag" id="insp-tag">MAP</span><span id="insp-text"></span>
+</div>
+
+<footer class="foot">xdos-cpp · GS ⇄ OBC over backdoor Ethernet · SCID 625 · all sizes/offsets from the flight code</footer>
+</div>
+
+<script>
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+
+/* ── tiny SVG builder ────────────────────────────────────────────────────── */
+function S(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in (attrs||{})) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function T(parent, x, y, str, cls, anchor){
+  const t = S('text', {x, y, 'class': cls || ''}, parent);
+  if (anchor) t.setAttribute('text-anchor', anchor);
+  t.textContent = str;
+  return t;
+}
+function newDiagram(w, h, label){
+  const svg = S('svg', {viewBox:`0 0 ${w} ${h}`, role:'img', 'aria-label':label});
+  const defs = S('defs', {}, svg);
+  for (const [id, cls] of [['aTc','tc'],['aTm','tm'],['aNt','nt'],['aHl','hl']]){
+    const m = S('marker', {id, viewBox:'0 0 10 10', refX:'8.5', refY:'5',
+      markerWidth:'7', markerHeight:'7', orient:'auto-start-reverse'}, defs);
+    const p = S('path', {d:'M0,0.8 L9,5 L0,9.2 z'}, m);
+    p.setAttribute('style', `fill: var(--${cls==='nt'?'muted':cls})`);
+  }
+  return svg;
+}
+/* block node; drill = view key, desc = inspector line */
+function block(svg, o){
+  const g = S('g', {'class':'node' + (o.drill ? ' drill' : '')}, svg);
+  const r = S('rect', {x:o.x, y:o.y, width:o.w, height:o.h, rx:3,
+    'class':'blk' + (o.tint ? ' tint-'+o.tint : '')}, g);
+  const cx = o.x + o.w/2;
+  const lines = Array.isArray(o.sub) ? o.sub : (o.sub ? [o.sub] : []);
+  const titleY = o.y + (o.h - 14*( (lines.length?1:0) + 0 ) )/2
+               - (lines.length ? (lines.length-1)*7 : 0) + 5;
+  T(g, cx, lines.length ? titleY : o.y + o.h/2 + 5, o.title, 't-title', 'middle');
+  lines.forEach((s, i) => T(g, cx, titleY + 16 + i*13, s, 't-sub', 'middle'));
+  if (o.drill) T(g, o.x + o.w - 7, o.y + 13, '▸', 'drillmark', 'end');
+  if (o.desc || o.drill){
+    g.addEventListener('mouseenter', () => inspect(o.title, o.desc, o.drill));
+    g.addEventListener('mouseleave', () => inspect());
+  }
+  if (o.drill){
+    g.setAttribute('tabindex','0');
+    g.setAttribute('role','button');
+    g.setAttribute('aria-label', 'Open ' + o.title);
+    const go = (e) => { e.stopPropagation(); nav(o.drill); };
+    g.addEventListener('click', go);
+    g.addEventListener('dblclick', go);
+    g.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nav(o.drill); }
+    });
+  }
+  return g;
+}
+function frame(svg, x, y, w, h, label){
+  S('rect', {x, y, width:w, height:h, rx:4, 'class':'grpframe'}, svg);
+  T(svg, x + 12, y - 8, label, 't-grp');
+}
+function flow(svg, pts, o){
+  o = o || {};
+  const cls = 'flow ' + (o.tone||'nt') + (o.dash ? ' dash' : '');
+  const marker = {tc:'aTc', tm:'aTm', nt:'aNt', hl:'aHl'}[o.tone||'nt'];
+  const pl = S('polyline', {points: pts.map(p=>p.join(',')).join(' '), 'class':cls}, svg);
+  if (!o.noArrow) pl.setAttribute('marker-end', `url(#${marker})`);
+  if (o.label){
+    const [lx, ly] = o.at || [ (pts[0][0]+pts[pts.length-1][0])/2, pts[0][1]-7 ];
+    T(svg, lx, ly, o.label, 't-lbl ' + (o.tone && o.tone!=='nt' ? o.tone : ''), o.anchor||'middle');
+  }
+}
+/* horizontal pipeline of blocks with arrows between */
+function pipe(svg, x0, y, items, o){
+  o = o || {};
+  const gap = o.gap || 56, h = o.h || 58;
+  let x = x0; const rects = [];
+  items.forEach((it, i) => {
+    block(svg, Object.assign({x, y, w:it.w, h: it.h || h}, it));
+    rects.push({x, w:it.w});
+    if (i < items.length - 1){
+      const lab = o.labels ? o.labels[i] : null;
+      flow(svg, [[x+it.w+4, y+h/2],[x+it.w+gap-5, y+h/2]],
+        {tone:o.tone, label:lab, at:[x+it.w+gap/2, y+h/2-9]});
+    }
+    x += it.w + gap;
+  });
+  return rects;
+}
+
+/* ── inspector + navigation ──────────────────────────────────────────────── */
+const DEFAULT_INSP = 'Hover a block for details · click outlined blocks (▸) to open their internal architecture · Esc or ◂ back to go up.';
+function inspect(tag, text, drill){
+  $('insp-tag').textContent = tag ? tag.toUpperCase() : 'MAP';
+  $('insp-text').textContent = tag
+    ? (text || '') + (drill ? '  → click to open' : '')
+    : DEFAULT_INSP;
+}
+let stack = ['top'];
+function nav(key){ if (VIEWS[key]){ stack.push(key); render(); } }
+function up(){ if (stack.length > 1){ stack.pop(); render(); } }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') up(); });
+
+function render(){
+  const key = stack[stack.length-1], v = VIEWS[key];
+  const stage = $('stage');
+  const old = stage.firstChild;
+  const draw = () => {
+    stage.innerHTML = '';
+    stage.appendChild(v.build());
+    $('vtitle').textContent = v.title;
+    $('vcaption').textContent = v.caption;
+    const c = $('crumbs'); c.innerHTML = '';
+    stack.forEach((k, i) => {
+      if (i){ const s = document.createElement('span'); s.className='crumb-sep'; s.textContent='▸'; c.appendChild(s); }
+      const b = document.createElement('button');
+      b.className = 'crumb'; b.textContent = VIEWS[k].crumb;
+      if (i === stack.length-1) b.setAttribute('aria-current','page');
+      else b.addEventListener('click', () => { stack = stack.slice(0, i+1); render(); });
+      c.appendChild(b);
+    });
+    const back = document.createElement('button');
+    back.className = 'backbtn'; back.textContent = '◂ back';
+    if (stack.length === 1) back.disabled = true; else back.addEventListener('click', up);
+    c.appendChild(back);
+    inspect();
+  };
+  if (old && matchMedia('(prefers-reduced-motion: no-preference)').matches){
+    old.classList.add('fadeout'); setTimeout(draw, 120);
+  } else draw();
+}
+
+/* ═════════════════════════ VIEW 1 · SYSTEM ══════════════════════════════ */
+function buildTop(){
+  const svg = newDiagram(1180, 560, 'Top-level: ground station tools connected to the OBC over Ethernet, OBC fanning out to six subsystem buses');
+  frame(svg, 24, 40, 400, 496, 'GROUND STATION (operator side)');
+  frame(svg, 668, 40, 488, 496, 'OBC SIMULATOR + SUBSYSTEM SIMULATORS');
+  T(svg, 546, 34, 'BACKDOOR ETHERNET · TCP', 't-grp', 'middle');
+
+  block(svg, {x:52, y:66, w:180, h:46, title:'Operator console',
+    desc:'You. Menus, TC parameter prompts, decoded TM on screen.'});
+  flow(svg, [[142,112],[142,142]], {tone:'nt'});
+
+  block(svg, {x:52, y:142, w:344, h:66, title:'xdos_gs — telecommanding CLI', tint:'tc',
+    sub:['MIB · codec · framing · CCSDS · session'],
+    drill:'gs', desc:'Builds every TC from the MIB, wraps it for the wire, decodes every reply.'});
+
+  block(svg, {x:52, y:268, w:344, h:60, title:'xdos_tm_view — master-frame terminal', tint:'tm',
+    sub:['rate-group stream · 16-subframe browser'],
+    drill:'rategroup', desc:'Standalone terminal for the autonomous 1 Hz housekeeping stream.'});
+
+  block(svg, {x:52, y:376, w:214, h:56, title:'xdos_lut_csv', tint:'hl',
+    sub:['CSV → rate_group_lut.bin'],
+    drill:'rategroup', desc:'Compiles the rate-group command CSV into the binary LUT + GS decode twin.'});
+
+  block(svg, {x:52, y:462, w:344, h:52, title:'MIB Database + config',
+    sub:['mib/*.json · ccsds_tc/tm.json · flight.json'],
+    desc:'Single source of truth: commands, parameters, APIDs, power sequence. Lives only on the ground.'});
+  flow(svg, [[52,490],[38,490],[38,175],[48,175]], {tone:'nt', dash:true});
+  flow(svg, [[38,404],[48,404]], {tone:'nt', dash:true});
+
+  /* ethernet links */
+  flow(svg, [[396,163],[692,163]], {tone:'tc', label:':10000  TC (SOF 1ACF)', at:[544,155]});
+  flow(svg, [[692,187],[396,187]], {tone:'tm', label:':10000  TM (SOF FCA1 · 1432 B)', at:[544,207]});
+  flow(svg, [[692,298],[396,298]], {tone:'tm', label:':10002  rate-group push · 1 Hz', at:[544,290]});
+  flow(svg, [[266,404],[544,404],[544,340],[692,340]],
+    {tone:'tc', label:':10003  LUT uplink · "XLUT"+len+bin', at:[544,396]});
+  flow(svg, [[396,490],[805,490],[805,356]],
+    {tone:'nt', dash:true, label:'EGSE · kill switch + power status (:10001 / EPS)', at:[600,506]});
+
+  block(svg, {x:692, y:120, w:226, h:230, title:'OBC simulator — xdos_obc', tint:'tc',
+    sub:['bridge / router (APID + sniff)','power FSM · kill→10 s→2 s seq',
+         'rate-group engine (bin LUT)','LUT listener :10003','no Database on board'],
+    h:230, drill:'obc', desc:'Routes TCs to the subsystem sims, wraps replies as 1432-byte TM frames, runs the autonomous rate group.'});
+
+  const buses = [
+    ['ADCS sim',   'xdos_adcs_sim',    ':10020 · APID 1', 'CubeSpace framing 1F 7F … 1F FF'],
+    ['UHF sim',    'xdos_uhf_sim',     ':10060 · APID 2', 'OpenLST ESP framing 22 69 · firmware v6.1.3 model'],
+    ['EPS sim',    'xdos_eps_sim',     ':10010 · APID 3', 'Base64 line frames · PDU/BMS/MPPT nodes'],
+    ['GPS sim',    'xdos_gps_sim',     ':10030 · APID 4', 'NovAtel OEM7 binary AA 44 12'],
+    ['Payload sim','xdos_payload_sim', ':10040 · APID 5', '[type|cmd|len] frames · via OBC only'],
+    ['XLINK-S sim','xdos_xlink_sim',   ':10050 · APID 6', 'product-key + service-event frames'],
+  ];
+  buses.forEach((b, i) => {
+    const y = 66 + i*76;
+    block(svg, {x:966, y, w:172, h:60, title:b[0], sub:[b[2], b[1]],
+      drill:'buses', desc:b[3]});
+    flow(svg, [[918, 150 + i*32],[942, 150 + i*32],[942, y+30],[962, y+30]], {tone:'nt'});
+  });
+  T(svg, 692, 372, 'boots idle · transmits nothing on :10002 until a binary LUT is active', 't-mono dim');
+  T(svg, 692, 392, 'bench: same links go to the real OBC (10.10.10.2:7000) + flight hardware', 't-mono dim');
+  return svg;
+}
+
+/* ═════════════════════════ VIEW 2 · XDOS_GS ═════════════════════════════ */
+function buildGs(){
+  const svg = newDiagram(1180, 600, 'Inside xdos_gs: telecommand encode pipeline left to right, telemetry decode pipeline right to left');
+  frame(svg, 24, 46, 1132, 130, 'TELECOMMAND — encode → uplink');
+  pipe(svg, 44, 84, [
+    {w:140, title:'Menu / script', sub:['[1..6] · params'],
+      desc:'Operator picks a TC (UHF-4, EP-19, …); prompt_parameters collects values.'},
+    {w:132, title:'MIB lookup', sub:['name→wire_id'],
+      desc:'mib/*.json resolves the message, node address, parameter map.'},
+    {w:140, title:'codec::encode', sub:['fields → LE bytes'],
+      desc:'UINT/INT/FLOAT/ENUM/HEX/CHAR packed at byte/bit offsets, little-endian.'},
+    {w:150, title:'Native framing', sub:['per-subsystem wrap'], drill:'buses',
+      desc:'EPS base64 · ADCS 1F7F · GPS OEM7 · UHF ESP 2269 · Payload header.'},
+    {w:158, title:'CCSDS TC wrap', sub:['SOF 1ACF · APID · CRC'], drill:'frames', tint:'tc',
+      desc:'TF header + SPP + GS-ID@13 + timecode + TC id/len + CRC-16-CCITT.'},
+    {w:118, title:'TCP :10000', sub:['to OBC'],
+      desc:'One shared socket via the OBC — subsystem identity travels as the APID.'},
+  ], {tone:'tc', gap:52, labels:['name+values','wire_id, fields','payload bytes','native frame','1ACF frame']});
+
+  frame(svg, 24, 226, 1132, 130, 'TELEMETRY — downlink → decode');
+  pipe(svg, 44, 264, [
+    {w:118, title:'TCP :10000', sub:['from OBC'], desc:'The reply to the TC, wrapped by the OBC.'},
+    {w:170, title:'TM frame decode', sub:['FCA1 · CRC · MFC/SFC'], drill:'frames', tint:'tm',
+      desc:'1432-byte frame: headers, GS-ID@16, timecode, counters, CRC check.'},
+    {w:140, title:'Strip padding', sub:['1280 B → true frame'],
+      desc:'TM DATA is zero-padded; each protocol self-describes its real length.'},
+    {w:146, title:'De-framing', sub:['native → payload'], drill:'buses',
+      desc:'Reverse of the native wrap; recovers reply id + raw payload.'},
+    {w:150, title:'MIB TM match', sub:['wire_id → message'],
+      desc:'by_node_wire: reply opcode selects the TM definition (ACK, TELEM, _RSP…).'},
+    {w:168, title:'Decode + format', sub:['values · units · derived'],
+      desc:'codec::decode + format_value: enums, scales, hex — plus UHF CC1110 formulas (MHz, bps, kHz).'},
+  ], {tone:'tm', gap:42, labels:['1432 B','TM DATA','native frame','id + payload','typed fields']});
+  T(svg, 44, 348, 'the decoded lines (with units, enum names, derived values) land back at the operator console', 't-mono dim');
+
+  frame(svg, 24, 402, 1132, 150, 'SIDE SYSTEMS');
+  block(svg, {x:44, y:432, w:250, h:98, title:'Power preflight',
+    sub:['EGSE poll · EPS chan mask','blocks TC if bus is OFF'],
+    desc:'PowerMonitor polls the EPS EGSE; a TC to an unpowered subsystem is stopped before send.'});
+  block(svg, {x:330, y:432, w:250, h:98, title:'XLINK key catalog',
+    sub:['mib/xlink_keys/*.txt','baked into XLINK TCs + LUT'],
+    desc:'Vendor product keys; real hardware NAKs ACCESS_VIOLATION on a wrong key.'});
+  block(svg, {x:616, y:432, w:250, h:98, title:'LUT composer  [g]', tint:'hl',
+    sub:['CSV import · pick editor','build + send .bin → :10003'], drill:'rategroup',
+    desc:'Builds the binary rate-group LUT and uplinks it — the only file that ever crosses to the OBC.'});
+  block(svg, {x:902, y:432, w:234, h:98, title:'Session',
+    sub:['shared-link socket mgmt','TX/RX hex + CCSDS summary'],
+    desc:'transact(): send, receive, unwrap; keeps per-bus sockets in --no-obc mode.'});
+  return svg;
+}
+
+/* ═════════════════════════ VIEW 3 · OBC ═════════════════════════════════ */
+function buildObc(){
+  const svg = newDiagram(1180, 640, 'Inside the OBC: routing lane, reply wrap, power FSM lane, rate-group lane');
+  frame(svg, 24, 46, 1132, 194, 'TC ROUTING → BUS → TM WRAP  (request/reply, port :10000)');
+  pipe(svg, 44, 78, [
+    {w:130, title:'TCP server', sub:[':10000 · GS link'], desc:'Blocking read + tail-gather of split frames.'},
+    {w:130, title:'Gates', sub:['EGSE · power FSM'],
+      desc:'EGSE umbilical short-circuit; everything else drops while the OBC is unpowered.'},
+    {w:150, title:'CCSDS unwrap', sub:['1ACF → APID + tc'], drill:'frames',
+      desc:'CRC-checked; APID identifies the subsystem; native TC bytes recovered.'},
+    {w:150, title:'Route', sub:['APID first · sniff 2nd'], drill:'buses', tint:'tc',
+      desc:'Fallback prefix sniffing: 00…01=EPS, 1F7F=ADCS, AA4412=GPS, 2269=UHF, key-nibble=XLINK.'},
+    {w:150, title:'Bus connection', sub:['lazy TCP · retry ×1'],
+      desc:'Per-subsystem persistent socket to :10010…:10060; TC replayed verbatim.'},
+  ], {tone:'tc', gap:48, labels:['frame','powered?','native TC','subsystem','native TC']});
+  T(svg, 1076, 107, '→ bus', 't-lbl tc', 'middle');
+  flow(svg, [[1024,107],[1108,107]], {tone:'tc', noArrow:false});
+  pipe(svg, 44, 160, [
+    {w:150, title:'Reply gather', sub:['1.5 s + 30 ms quiet'],
+      desc:'Reads the subsystem reply, tolerating segmented TCP delivery.'},
+    {w:150, title:'TC echo store', sub:['last_tc_[sub]'],
+      desc:'The native TC that produced this reply rides along in the TM frame.'},
+    {w:190, title:'TM wrap 1432 B', sub:['MFC · SFC · pkt seq · CRC'], drill:'frames', tint:'tm',
+      desc:'encode(): TM DATA zero-padded to 1280 B; original TC echoed in the 123-byte field.'},
+    {w:130, title:'→ GS', sub:['frames_out++'], desc:'The wrapped reply returns on the same socket.'},
+  ], {tone:'tm', gap:48, labels:['native reply','+ last TC','FCA1 1432 B']});
+  flow(svg, [[28,189],[40,189]], {tone:'tm'});
+  T(svg, 30, 175, 'bus reply', 't-lbl tm');
+
+  frame(svg, 24, 286, 1132, 140, 'POWER FSM  (flight mode)');
+  pipe(svg, 44, 322, [
+    {w:170, title:'Kill-switch watch', sub:['EGSE poll · EPS status'],
+      desc:'OBC is UNPOWERED until channel O1 energises it.'},
+    {w:140, title:'Boot', sub:['10 s'], desc:'obc_boot_s from flight.json.'},
+    {w:300, title:'Default-ON sequence', sub:['ADCS → SBAND → GPS → UHF · 2 s apart'], tint:'hl',
+      desc:'Set_PDU_CH_State per subsystem: CH4, CH5, CH3, CH11.'},
+    {w:200, title:'Enable', sub:['bridge + rate engine'],
+      desc:'Only now does TC routing open and rate-group polling start; power loss stops both.'},
+  ], {tone:'nt', gap:52, labels:['kill ON','booted','done']});
+  T(svg, 44, 410, 'load-shed: SAFE sheds CH10 · CRITICAL sheds CH10/CH4/CH3 · below-critical keeps only OBC (CH1/CH2)', 't-mono dim');
+
+  frame(svg, 24, 462, 1132, 150, 'AUTONOMOUS RATE GROUP');
+  pipe(svg, 44, 498, [
+    {w:190, title:'LUT listener :10003', sub:['XLUT magic · CRC-16 check'],
+      desc:'Validates every entry structurally; JSON LUTs are retired (ERR).'},
+    {w:190, title:'Persist + hot-swap', sub:['obc_lut_store.bin'], tint:'hl',
+      desc:'Accepted LUT survives reboot (auto-reload); engine swaps without restart.'},
+    {w:230, title:'Tier-scheduled polling', sub:['16-slot table · VH/1 H/2 M/4 L/8'],
+      drill:'rategroup', desc:'Polls spread across each 1 s window; failures write the 0xFF down-marker.'},
+    {w:220, title:'Subframe push · 1 Hz', sub:['1280 B · APID 600 → :10002'], tint:'tm',
+      drill:'rategroup', desc:'Slot k = SFC % 16 selects the H/M/L block slices; reserved 5 B zeroed.'},
+  ], {tone:'nt', gap:44, labels:['valid bin','table','blocks']});
+  T(svg, 44, 596, 'no LUT active ⇒ no polls, no subframes, no master frame — the port stays silent', 't-mono dim');
+  return svg;
+}
+
+/* ═════════════════════ VIEW 4 · RATE-GROUP PIPELINE ═════════════════════ */
+function buildRg(){
+  const svg = newDiagram(1180, 620, 'Rate-group pipeline: CSV compiled to a binary LUT, uplinked, executed as tiered subframes, reassembled by xdos_tm_view');
+  frame(svg, 24, 46, 1132, 128, 'GROUND — author + compile + uplink');
+  pipe(svg, 44, 82, [
+    {w:210, title:'rate_group_commands.csv', sub:['tier · tc_id · subsystem · picks'],
+      desc:'One row per command; row order inside a tier IS the OBC↔GS link.'},
+    {w:190, title:'xdos_lut_csv', sub:['MIB resolve · budgets'], tint:'hl',
+      desc:'Row-numbered errors; tier budgets VH 400 / H 800 / M 1200 / L 1400 B enforced.'},
+    {w:200, title:'.bin + GS twin', sub:['deterministic · CRC-16'],
+      desc:'Same CSV ⇒ byte-identical file; the CRC is the shared signature both sides quote.'},
+    {w:170, title:'xdos_gs [g][s]', sub:['uplink :10003'], tint:'tc',
+      desc:'Only the .bin crosses the link; the twin (names, picks) never leaves the ground.'},
+    {w:170, title:'OBC applies', sub:['OK … crc 0x… applied'],
+      desc:'Parse + persist + hot-swap; polling starts on the next window.'},
+  ], {tone:'nt', gap:36, labels:['rows','table','bin','XLUT frame']});
+
+  frame(svg, 24, 220, 1132, 170, 'ON BOARD — one 1280-byte subframe every second (T_sf = 1000 ms)');
+  const segs = [['VH',0,400],['H',400,400],['M',800,300],['L',1100,175],['R',1275,5]];
+  const bx = 64, bw = 1000, by = 268, bh = 44;
+  T(svg, bx, by-12, 'subframe layout (fixed partition, every subframe):', 't-mono dim');
+  segs.forEach(([n, off, len]) => {
+    const x = bx + off/1280*bw, w = len/1280*bw;
+    S('rect', {x, y:by, width:w, height:bh, 'class':'seg' + (n==='R'?' hatch':'')}, svg);
+    if (len > 40) T(svg, x+w/2, by+19, n, 'segname');
+    if (len > 40) T(svg, x+w/2, by+35, len+' B', 't-sub', 'middle');
+    T(svg, x, by+bh+14, String(off), 't-sub');
+  });
+  T(svg, bx+bw, by+bh+14, '1280', 't-sub', 'end');
+  T(svg, bx, by+bh+38,
+    'block spans: VH refreshes every subframe · H per 2 · M per 4 · L per 8 — slot k = SFC % 16 picks the slice',
+    't-mono dim');
+  T(svg, bx, by+bh+58,
+    'master frame = 16 subframes = 20,400 B unique telemetry · failure = picks filled 0xFF',
+    't-mono dim');
+
+  frame(svg, 24, 436, 1132, 148, 'GROUND — xdos_tm_view reassembly (:10002)');
+  pipe(svg, 44, 472, [
+    {w:170, title:'Frame slicer', sub:['resync FCA1 · 1432 B'],
+      desc:'TCP stream cut into frames; CRC + headers decoded.'},
+    {w:190, title:'Slot positioning', sub:['SFC%16 · MF = SFC/16'], tint:'tm',
+      desc:'A dropped frame leaves a visible gap instead of shifting the whole master frame.'},
+    {w:190, title:'Block assembly', sub:['gather H/M/L slices'],
+      desc:'Tier blocks rebuilt from the subframes present; missing slice ⇒ PARTIAL.'},
+    {w:190, title:'Entry decode', sub:['GS twin picks → fields'],
+      desc:'Pick bytes land at their raw offsets; all-0xFF = subsystem DOWN.'},
+    {w:190, title:'[m] / [t] views + log', sub:['MF browser · TM window'],
+      desc:'16-slot browser, per-entry UP/DOWN/PARTIAL, decoded values, auto-log file.'},
+  ], {tone:'tm', gap:36, labels:['frames','slots','blocks','raw payloads']});
+  return svg;
+}
+
+/* ═════════════════════════ VIEW 5 · BUSES ═══════════════════════════════ */
+function buildBuses(){
+  const svg = newDiagram(1180, 590, 'The six subsystem buses: port, APID, native frame shape, and reply convention');
+  const rows = [
+    ['EPS',     ':10010', 'APID 3', '00 │ base64( dest src msg_id data crc8 ) │ 01',
+      'nodes PDU1-8 / BMS / MPPT · replies <TC>_RSP', 'Base64 line frame over RS-485/I2C model.'],
+    ['ADCS',    ':10020', 'APID 1', '1F 7F │ msg_id │ data… │ 1F FF',
+      'poll IS the TM request (empty body)', 'CubeSpace escape-framed protocol.'],
+    ['GPS',     ':10030', 'APID 4', 'AA 44 12 │ header(28) │ data… │ crc32',
+      'LOG command requests BESTPOS / BESTVEL / …', 'NovAtel OEM7 binary.'],
+    ['Payload', ':10040', 'APID 5', '[ type:3b │ cmd_id:10b │ len:11b ] │ data…',
+      'routed via OBC only · single-char ACK', 'Bit-packed 3-byte header.'],
+    ['XLINK-S', ':10050', 'APID 6', 'product_key(16) │ service_event(4) │ U32 data…',
+      'wrong key ⇒ ACCESS_VIOLATION on real HW', 'Key-authenticated service frames.'],
+    ['UHF',     ':10060', 'APID 2', '22 69 │ len │ hwid(2) seq(2) sys op │ data…',
+      'max 254 B · replies ACK 0x10 / NACK 0xFF / TELEM…', 'OpenLST ESP framing · 437 MHz transceiver.'],
+  ];
+  const sims = {EPS:'xdos_eps_sim', ADCS:'xdos_adcs_sim', GPS:'xdos_gps_sim',
+    Payload:'xdos_payload_sim', 'XLINK-S':'xdos_xlink_sim', UHF:'xdos_uhf_sim'};
+  rows.forEach((r, i) => {
+    const y = 40 + i*90;
+    block(svg, {x:32, y, w:150, h:64, title:r[0], sub:[r[1]+' · '+r[2], sims[r[0]]], desc:r[5]});
+    flow(svg, [[186,y+32],[222,y+32]], {tone:'nt', noArrow:true});
+    S('rect', {x:222, y:y+6, width:604, height:52, rx:3, 'class':'blk'}, svg);
+    T(svg, 240, y+29, r[3], 't-mono');
+    T(svg, 240, y+48, 'sync/header replayed verbatim by the OBC — fields parsed only on the ground', 't-sub');
+    T(svg, 848, y+26, r[4], 't-mono dim');
+  });
+  return svg;
+}
+
+/* ═════════════════════════ VIEW 6 · WIRE FRAMES ═════════════════════════ */
+function segbar(svg, x0, y, items, totalLabel){
+  let x = x0;
+  items.forEach(it => {
+    S('rect', {x, y, width:it.w, height:40, 'class':'seg' + (it.hl?' hl':'') + (it.hatch?' hatch':'')}, svg);
+    T(svg, x+it.w/2, y+24, it.n, 'segname' + (it.hl?' onhl':''));
+    T(svg, x+it.w/2, y+56, it.b, 't-sub', 'middle');
+    if (it.off !== undefined) T(svg, x+1, y-6, '@'+it.off, 't-sub');
+    x += it.w;
+  });
+  if (totalLabel) T(svg, x+10, y+24, totalLabel, 't-mono dim');
+}
+function buildFrames(){
+  const svg = newDiagram(1180, 560, 'Byte maps of the CCSDS TC uplink frame and the fixed 1432-byte TM downlink frame; GS-ID bytes highlighted');
+  T(svg, 32, 40, 'TELECOMMAND FRAME (uplink · SOF 1ACF · variable length)', 't-grp');
+  segbar(svg, 32, 66, [
+    {n:'SOF', b:'2 B', off:0, w:56},
+    {n:'TF hdr', b:'5 B', off:2, w:78},
+    {n:'SPP', b:'6 B', off:7, w:84},
+    {n:'GS-ID', b:'1 B', off:13, w:62, hl:true},
+    {n:'Time', b:'8 B', off:14, w:96},
+    {n:'Anc', b:'2 B', off:22, w:56},
+    {n:'TC-ID', b:'2 B', off:24, w:62},
+    {n:'Len', b:'2 B', off:26, w:56},
+    {n:'TC Data', b:'N B (native frame)', off:28, w:330, hatch:true},
+    {n:'CRC', b:'2 B', w:56},
+  ]);
+  T(svg, 32, 152, 'CRC-16-CCITT over TF header → end of data · SCID 625 · APID = subsystem · seq counters per APID', 't-mono dim');
+
+  T(svg, 32, 208, 'TELEMETRY FRAME (downlink · SOF FCA1 · fixed 1432 B)', 't-grp');
+  segbar(svg, 32, 234, [
+    {n:'SOF', b:'2 B', off:0, w:50},
+    {n:'TM hdr', b:'6 B', off:2, w:86},
+    {n:'DFS', b:'2 B', off:8, w:50},
+    {n:'SPP', b:'6 B', off:10, w:80},
+    {n:'GS-ID', b:'1 B', off:16, w:60, hl:true},
+    {n:'Time', b:'8 B', off:17, w:88},
+    {n:'RSV', b:'2 B', off:25, w:50},
+    {n:'TM DATA', b:'1280 B (zero-padded)', off:27, w:400, hatch:true},
+    {n:'TC echo', b:'123 B', off:1307, w:120},
+    {n:'CRC', b:'2 B', off:1430, w:50},
+  ]);
+  T(svg, 32, 320, 'TM hdr carries MFC (global) + SFC (per-APID — the rate-group slot key) · timecode is 16-bit-ms CCS variant', 't-mono dim');
+
+  flow(svg, [[696,298],[696,352],[140,352],[140,394]], {tone:'tm'});
+  T(svg, 706, 344, 'when APID = 600 (rate group)', 't-lbl tm');
+  T(svg, 32, 380, 'TM DATA × rate-group frames (APID 600):', 't-grp');
+  segbar(svg, 32, 402, [
+    {n:'VH', b:'400 B', off:0, w:250},
+    {n:'H slice', b:'400 B', off:400, w:250},
+    {n:'M slice', b:'300 B', off:800, w:188},
+    {n:'L slice', b:'175 B', off:1100, w:110},
+    {n:'R', b:'5 B', w:26, hatch:true},
+  ]);
+  T(svg, 32, 488, 'for normal TC replies, TM DATA instead carries the subsystem’s native reply frame (self-delimiting, padding stripped by the GS)', 't-mono dim');
+  T(svg, 32, 516, 'GS-ID sits at byte 13 (TC) and byte 16 (TM) — first byte of the packet secondary header in both directions · value from ccsds profile ("ground_station_id")', 't-lbl hl');
+  return svg;
+}
+
+/* ── registry + boot ─────────────────────────────────────────────────────── */
+const VIEWS = {
+  top:      {crumb:'SYSTEM',      title:'System view — realtime ground segment',
+             caption:'xdos_gs commands, the OBC simulator routes, the subsystem simulators answer; telemetry returns as fixed 1432-byte frames. Click any outlined block to open its internal architecture.',
+             build:buildTop},
+  gs:       {crumb:'XDOS_GS',     title:'xdos_gs — telecommanding + telemetry decode',
+             caption:'Every TC is data-driven from the MIB: encode → native framing → CCSDS wrap. Every reply runs the same chain backwards into typed, unit-formatted fields.',
+             build:buildGs},
+  obc:      {crumb:'OBC',         title:'OBC simulator (xdos_obc) — bridge, power FSM, rate group',
+             caption:'The OBC carries no Database: it routes by APID, replays opaque bytes, wraps replies, and runs the binary rate-group LUT on its own clock.',
+             build:buildObc},
+  rategroup:{crumb:'RATE GROUP',  title:'Rate-group pipeline — CSV to master frame',
+             caption:'One CSV defines the whole housekeeping set; the OBC executes it as tiered 1 Hz subframes; xdos_tm_view reassembles 16 of them into a master frame.',
+             build:buildRg},
+  buses:    {crumb:'BUSES',       title:'Subsystem simulators — six native protocols',
+             caption:'Each simulator speaks its subsystem’s real vendor framing. The OBC only sniffs sync bytes and replays; all meaning stays in the ground MIB.',
+             build:buildBuses},
+  frames:   {crumb:'WIRE FRAMES', title:'Wire formats — TC and TM byte maps',
+             caption:'The two CCSDS frames that cross the Ethernet link, byte by byte. GS-ID highlighted in both directions.',
+             build:buildFrames},
+};
+render();
+</script>
+</body>
+</html>

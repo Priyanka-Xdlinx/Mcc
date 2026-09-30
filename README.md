@@ -1,6 +1,6 @@
 # MCC app — XMCC telemetry decoder
 
-Ingests the XDOS ground station's `XMCC` feed on **port 9100**, decodes every
+Ingests the `XMCC` telemetry feed of the XDLINX core team's test stack (`xdos/`) on **port 9100**, decodes every
 parameter into engineering units, stores it in SQLite and serves a live
 dashboard. The simulator can be started and stopped from the browser.
 
@@ -12,8 +12,31 @@ React + Vite ──HTTP/WS──> Spring Boot ──TCP 9100──> xdos_tm_view
 
 ## Requirements
 
-Already present on this machine: Java 17, Maven 3.9, Node 22, SQLite 3.51.
-Nothing needs installing.
+Everything the app needs is in this repository, including the XDLINX core
+team's telemetry test stack in `xdos/` (mission database, downlink map and
+simulator source). Install these tools once:
+
+| Tool | Version | Used for |
+|---|---|---|
+| JDK | 17 or later | backend |
+| Maven | 3.9 | backend build |
+| Node.js | 22 | web UI build |
+| Python 3 | with `sqlite3` | builds `mcc.db` from `xdos/mib` |
+| C++ toolchain + CMake | Xcode Command Line Tools on macOS; GCC + CMake on Linux | builds the test stack |
+
+## First run after cloning
+
+```bash
+# 1. build the test stack once (the feed the app decodes)
+xdos/scripts/build_mac.sh                                   # macOS
+# cmake -S xdos -B xdos/build && cmake --build xdos/build -j  # Linux
+
+# 2. build and start everything
+./start.sh --build --sim
+```
+
+Then open <http://localhost:8080/>. `mcc.db`, `frontend/dist` and the jar are
+generated, never committed; `start.sh` rebuilds whatever is missing.
 
 ## Run it
 
@@ -55,7 +78,7 @@ rm -rf ../backend/src/main/resources/static
 mkdir -p ../backend/src/main/resources/static
 cp -r dist/* ../backend/src/main/resources/static/
 cd ../backend && mvn -DskipTests package
-MCC_DB=../mcc.db MCC_XDOS_HOME="../../updated xdos" \
+MCC_DB=../mcc.db MCC_XDOS_HOME=../xdos \
   java -jar target/mcc-backend-1.0.0.jar
 ```
 </details>

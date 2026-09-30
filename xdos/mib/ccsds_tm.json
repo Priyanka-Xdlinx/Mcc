@@ -1,0 +1,97 @@
+{
+  "profile_name": "xdos_ccsds_tm_v1",
+  "description": "XDOS CCSDS TM downlink frame profile — satellite→ground. Fixed 1432-byte frame per the TM sheet. SOF FCA1 (TC uses 1ACF). Identity (spacecraft_id) and apid_map are the single source of truth in ccsds_tc.json; this profile references them so the two directions never drift.",
+  "version": "1.0",
+  "spec_refs": [
+    "CCSDS 132.0-B TM Space Data Link Protocol (widened counters, RM-ID in VCID slot)",
+    "CCSDS 133.0-B-2 Space Packet Protocol",
+    "CCSDS 301.0-B-4 Time Code Formats (CCS, customized millisecond)"
+  ],
+
+  "references_profile": "ccsds_tc.json",
+  "_identity_note": "spacecraft_id + apid_map inherited from the referenced TC profile at load time. Do not duplicate them here.",
+
+  "constants": {
+    "sof": "FCA1",
+    "frame_length_bytes": 1432,
+    "tm_data_bytes": 1280,
+    "gs_tc_echo_bytes": 123,
+    "default_radio_module_id": 1,
+    "ground_station_id": 0,
+    "idle_apid": 2047,
+    "_idle_apid_hex": "0x7FF"
+  },
+
+  "enabled_by_default": true,
+  "framing_mode": "fixed_length",
+
+  "layout": [
+    {
+      "section": "Start of Frame",
+      "fields": [
+        { "name": "sof", "bits": 16, "type": "constant", "value": "0xFCA1" }
+      ]
+    },
+    {
+      "section": "TM Primary Header",
+      "fields": [
+        { "name": "tf_version_number",  "bits": 2,  "type": "constant", "value": 0 },
+        { "name": "spacecraft_id",      "bits": 10, "type": "config",   "from": "spacecraft_id" },
+        { "name": "radio_module_id",    "bits": 4,  "type": "config",   "from": "default_radio_module_id",
+          "_note": "occupies the standard VCID+OCF slot; interim value echoes the RM that received the TC" },
+        { "name": "master_frame_count", "bits": 16, "type": "counter",  "scope": "global",   "wrap": 65536 },
+        { "name": "sub_frame_count",     "bits": 16, "type": "counter",  "scope": "per_apid", "wrap": 65536 }
+      ]
+    },
+    {
+      "section": "TM Frame Data Field Status",
+      "fields": [
+        { "name": "secondary_header_flag", "bits": 1,  "type": "constant", "value": 1 },
+        { "name": "synch_flag",            "bits": 1,  "type": "constant", "value": 0 },
+        { "name": "packet_order_flag",     "bits": 1,  "type": "constant", "value": 0 },
+        { "name": "segment_length_id",     "bits": 2,  "type": "constant", "value": 3 },
+        { "name": "first_header_pointer",  "bits": 11, "type": "user",     "default": 0,
+          "_note": "0 = packet starts at first byte (one packet per frame, no spanning); 0x7FF none, 0x7FE idle-only" }
+      ]
+    },
+    {
+      "section": "Space Packet Primary Header",
+      "fields": [
+        { "name": "packet_version_number", "bits": 3,  "type": "constant", "value": 0 },
+        { "name": "packet_type",           "bits": 1,  "type": "constant", "value": 0, "_note": "0 = telemetry" },
+        { "name": "secondary_header_flag", "bits": 1,  "type": "constant", "value": 1 },
+        { "name": "apid",                  "bits": 11, "type": "lookup",   "from": "apid_map" },
+        { "name": "sequence_flag",         "bits": 2,  "type": "constant", "value": 3 },
+        { "name": "packet_sequence_count", "bits": 14, "type": "counter",  "scope": "per_apid", "wrap": 16384 },
+        { "name": "packet_data_length",    "bits": 16, "type": "computed", "compute": "pkt_data_field_octets_minus_1" }
+      ]
+    },
+    {
+      "section": "Packet Secondary Header",
+      "fields": [
+        { "name": "ground_station_id", "bits": 8,  "type": "config",   "from": "ground_station_id" },
+        { "name": "time_code_field",   "bits": 64, "type": "computed", "compute": "ccs_time_code_16b_ms",
+          "_note": "yr-offset(8, base 2000) | month(8) | dom(8) | hour(8) | minute(8) | second(8) | ms(16)" },
+        { "name": "rsv",               "bits": 16, "type": "constant", "value": 0 }
+      ]
+    },
+    {
+      "section": "User Data",
+      "fields": [
+        { "name": "tm_data",   "bits": 10240, "type": "payload",  "octets": 1280,
+          "pad": "0x00", "_note": "native subsystem TM bytes, zero-padded to 1280" },
+        { "name": "gs_tc_cmd", "bits": 984,   "type": "echo",     "octets": 123,
+          "pad": "0x00", "_note": "last TC forwarded to this subsystem, zero-padded to 123, truncated if longer" }
+      ]
+    },
+    {
+      "section": "Frame Error Control Field",
+      "fields": [
+        { "name": "crc16", "bits": 16, "type": "computed", "compute": "crc16_ccitt",
+          "init": "0xFFFF", "poly": "0x1021",
+          "coverage": "tm_primary_header_to_gs_tc_cmd_end",
+          "_note": "same engine as TC: over everything after SOF, CRC excluded" }
+      ]
+    }
+  ]
+}

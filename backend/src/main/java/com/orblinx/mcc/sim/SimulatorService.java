@@ -54,10 +54,15 @@ public class SimulatorService {
             lastError = "run_stack.sh not found at " + script;
             return status();
         }
-        Path binary = xdosHome.resolve("build-mac/xdos_gs");
+        // Same rule as xdos/scripts/build_dir.sh: build-mac/ on macOS, build/ elsewhere,
+        // XDOS_BUILD overrides.
+        String buildDir = System.getenv().getOrDefault("XDOS_BUILD",
+                System.getProperty("os.name", "").toLowerCase().contains("mac") ? "build-mac" : "build");
+        Path binary = xdosHome.resolve(buildDir).resolve("xdos_gs");
         if (!Files.exists(binary)) {
-            lastError = "no native build at " + binary
-                      + " - build it first:  scripts/build_mac.sh";
+            lastError = "no native build at " + binary + " - build it first:  "
+                      + ("build-mac".equals(buildDir) ? "xdos/scripts/build_mac.sh"
+                                                      : "cmake -S xdos -B xdos/" + buildDir + " && cmake --build xdos/" + buildDir + " -j");
             return status();
         }
 

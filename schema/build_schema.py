@@ -2,10 +2,10 @@
 """
 build_schema.py - build mcc.db from the mission database.
 
-Reads `updated xdos/mib/*.json` and `updated xdos/config/rate_group_lut_bin_gs.json`
+Reads `xdos/mib/*.json` and `xdos/config/rate_group_lut_bin_gs.json`
 and writes a SQLite database holding the decode schema plus the flown lookup table.
 
-`updated xdos/` is the authoritative tree. The older top-level `mib/` copy is
+`xdos/` (the XDLINX core team's tree, vendored into this repository) is the authoritative source. The older top-level `mib/` copy is
 stale: its adcs.json stores `scale` as the reciprocal (10000 where the current
 copy says 0.0001), and two EPS BMS message ids are swapped. Building from it
 would put every scaled ADCS reading 10^8 out.
@@ -70,9 +70,9 @@ def resolve_apid(apid_map: dict[str, int], subsystem: str) -> int | None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     here = Path(__file__).resolve().parent
-    root = here.parent.parent                      # ~/Desktop/mcc-xdlinx
-    ap.add_argument("--xdos", default=str(root / "updated xdos"))
-    ap.add_argument("--mib",  default=str(root / "updated xdos" / "mib"))
+    root = here.parent                             # the mcc-app repository
+    ap.add_argument("--xdos", default=str(root / "xdos"))
+    ap.add_argument("--mib",  default=str(root / "xdos" / "mib"))
     ap.add_argument("--out",  default=str(here.parent / "mcc.db"))
     ap.add_argument("--all-directions", action="store_true",
                     help="also load TC and EVENT definitions (default: TM only)")

@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>xdos_gs Internals</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#F3F5F7; --surface:#FFFFFF; --ink:#1B2530; --muted:#5A6875;
+    --line:#D6DDE4; --line-soft:#E4E9EE;
+    --up:#AD570C; --up-soft:#F6E7D8;      /* uplink / TC  (amber)   */
+    --dn:#0E6E8C; --dn-soft:#DCEEF4;      /* downlink / TM (teal)   */
+    --ok:#2E7D4F; --bad:#B3261E; --warn:#8A6D1A;
+    --code-bg:#EDF0F3; --chip-bg:#E8ECEF;
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0F151C; --surface:#161E27; --ink:#DCE3EA; --muted:#8B98A5;
+      --line:#2A3641; --line-soft:#222D38;
+      --up:#E5A24A; --up-soft:#3A2B17;
+      --dn:#57B9D8; --dn-soft:#12303C;
+      --ok:#5FBB86; --bad:#E58077; --warn:#D3B35C;
+      --code-bg:#1D2732; --chip-bg:#202B36;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0F151C; --surface:#161E27; --ink:#DCE3EA; --muted:#8B98A5;
+    --line:#2A3641; --line-soft:#222D38;
+    --up:#E5A24A; --up-soft:#3A2B17;
+    --dn:#57B9D8; --dn-soft:#12303C;
+    --ok:#5FBB86; --bad:#E58077; --warn:#D3B35C;
+    --code-bg:#1D2732; --chip-bg:#202B36;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size:16.5px; line-height:1.62;
+  }
+  h1,h2,h3,h4{font-family:Archivo,"Helvetica Neue",Arial,sans-serif; line-height:1.15; text-wrap:balance; margin:0}
+  code,pre,kbd,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  code{background:var(--code-bg); padding:.08em .35em; border-radius:3px; font-size:.84em}
+  pre{background:var(--code-bg); border:1px solid var(--line-soft); padding:14px 16px; border-radius:6px;
+      overflow-x:auto; font-size:13px; line-height:1.55; margin:1em 0}
+  pre code{background:none; padding:0; font-size:inherit}
+  a{color:var(--dn); text-decoration-thickness:1px; text-underline-offset:2px}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--dn); outline-offset:2px}
+
+  .wrap{display:grid; grid-template-columns:250px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto}
+  @media (max-width:1023px){ .wrap{grid-template-columns:minmax(0,1fr)} nav.toc{position:static; border-right:none; border-bottom:1px solid var(--line); height:auto; max-height:none} }
+
+  nav.toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:34px 22px 34px 26px; border-right:1px solid var(--line);
+    font-family:Archivo,sans-serif; font-size:13px;
+  }
+  nav.toc .brand{font-weight:800; font-size:17px; letter-spacing:-.01em; margin-bottom:2px}
+  nav.toc .sub{font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-bottom:22px}
+  nav.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px}
+  nav.toc a{color:var(--muted); text-decoration:none; display:flex; gap:9px; line-height:1.35}
+  nav.toc a:hover{color:var(--ink)}
+  nav.toc a .n{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--up); min-width:18px; padding-top:1px}
+
+  main{padding:44px 40px 90px; min-width:0}
+  @media (max-width:640px){ main{padding:28px 18px 70px} }
+  main > section{max-width:78ch; margin:0 auto 58px}
+  main > header.hero{max-width:78ch; margin:0 auto 54px}
+
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--up); margin-bottom:10px; display:flex; align-items:center; gap:10px}
+  .eyebrow::after{content:""; height:1px; background:var(--line); flex:1}
+  section h2{font-size:27px; font-weight:700; letter-spacing:-.015em; margin-bottom:14px}
+  section h3{font-size:18px; font-weight:700; margin:30px 0 8px}
+  section h4{font-size:15px; font-weight:600; margin:22px 0 6px}
+  p{margin:.75em 0}
+  .hero h1{font-size:clamp(34px,6vw,52px); font-weight:800; letter-spacing:-.025em}
+  .hero .tag{font-family:"IBM Plex Mono",monospace; color:var(--muted); font-size:13px; margin-top:10px}
+  .hero p.lead{font-size:19px; margin-top:18px}
+  .kv{display:flex; flex-wrap:wrap; gap:8px; margin-top:22px}
+  .kv span{font-family:"IBM Plex Mono",monospace; font-size:11.5px; background:var(--chip-bg); border:1px solid var(--line-soft);
+    padding:4px 10px; border-radius:99px; color:var(--muted)}
+
+  figure{margin:26px 0; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:18px 16px 10px}
+  figure .scroll{overflow-x:auto}
+  figure svg{display:block; max-width:100%; height:auto; margin:0 auto; color:var(--ink)}
+  figure.wide svg{min-width:640px}
+  figcaption{font-family:Archivo,sans-serif; font-size:12.5px; color:var(--muted); margin-top:10px; padding:0 4px 6px; line-height:1.5}
+  figcaption b{color:var(--ink); font-weight:600}
+
+  table{border-collapse:collapse; width:100%; font-size:14px; margin:14px 0; font-family:Archivo,sans-serif}
+  .tblwrap{overflow-x:auto}
+  th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.1em;
+     color:var(--muted); text-align:left; padding:7px 12px 7px 0; border-bottom:1px solid var(--line); white-space:nowrap}
+  td{padding:8px 12px 8px 0; border-bottom:1px solid var(--line-soft); vertical-align:top; line-height:1.5}
+  td:first-child{white-space:nowrap}
+  td code{font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  .num{font-variant-numeric:tabular-nums}
+
+  .pill{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; padding:1px 7px; border-radius:3px; letter-spacing:.04em}
+  .pill.up{background:var(--up-soft); color:var(--up)}
+  .pill.dn{background:var(--dn-soft); color:var(--dn)}
+  .pill.k{background:var(--chip-bg); color:var(--muted)}
+
+  .note{border-left:3px solid var(--up); background:var(--surface); padding:10px 16px; margin:16px 0; font-size:15px; border-radius:0 6px 6px 0}
+  .note.dn{border-left-color:var(--dn)}
+
+  .keymap{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; margin:16px 0}
+  .keymap .key{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:10px 12px; font-size:13.5px; font-family:Archivo,sans-serif; line-height:1.45}
+  .keymap kbd{background:var(--chip-bg); border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:1px 7px; font-size:12px; margin-right:6px}
+  .keymap .d{color:var(--muted)}
+
+  .file-tree{font-size:13px}
+  svg .box{fill:var(--surface); stroke:currentColor; stroke-width:1.1}
+  svg .boxsoft{fill:var(--chip-bg); stroke:var(--muted); stroke-width:1}
+  svg .lbl{font-family:Archivo,sans-serif; font-size:12.5px; fill:currentColor}
+  svg .lblb{font-family:Archivo,sans-serif; font-size:13px; font-weight:700; fill:currentColor}
+  svg .m{font-family:"IBM Plex Mono",monospace; font-size:10.5px; fill:var(--muted)}
+  svg .mu{font-family:"IBM Plex Mono",monospace; font-size:10.5px; fill:var(--up)}
+  svg .md{font-family:"IBM Plex Mono",monospace; font-size:10.5px; fill:var(--dn)}
+  svg .edge{stroke:currentColor; stroke-width:1.2; fill:none}
+  svg .edge.up{stroke:var(--up)}
+  svg .edge.dn{stroke:var(--dn)}
+  svg .edge.dash{stroke-dasharray:5 4; stroke:var(--muted)}
+  svg .fld{stroke:currentColor; stroke-width:1; fill:var(--surface)}
+  svg .fld.up{fill:var(--up-soft)}
+  svg .fld.dn{fill:var(--dn-soft)}
+  svg .fld.mut{fill:var(--chip-bg); stroke:var(--muted)}
+
+  @media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+  section{scroll-margin-top:24px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">xdos_gs Internals</div>
+  <div class="sub">Ground Station CLI · from source</div>
+  <ol>
+    <li><a href="#overview"><span class="n">01</span>Overview</a></li>
+    <li><a href="#context"><span class="n">02</span>System context &amp; ports</a></li>
+    <li><a href="#startup"><span class="n">03</span>Startup sequence</a></li>
+    <li><a href="#layers"><span class="n">04</span>Layered architecture</a></li>
+    <li><a href="#menu"><span class="n">05</span>Main menu reference</a></li>
+    <li><a href="#pipeline"><span class="n">06</span>The telecommand pipeline</a></li>
+    <li><a href="#frames"><span class="n">07</span>Frame formats</a></li>
+    <li><a href="#flows"><span class="n">08</span>Subsystem flows</a></li>
+    <li><a href="#render"><span class="n">09</span>Telemetry rendering</a></li>
+    <li><a href="#power"><span class="n">10</span>Power &amp; EGSE monitor</a></li>
+    <li><a href="#lut"><span class="n">11</span>Binary rate-group LUT</a></li>
+    <li><a href="#script"><span class="n">12</span>Script mode &amp; history</a></li>
+    <li><a href="#support"><span class="n">13</span>Supporting modules</a></li>
+    <li><a href="#reference"><span class="n">14</span>Quick reference</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>xdos_gs Internals</h1>
+  <div class="tag">xdos-cpp / src/cli/main.cpp · C++17 · Apache-2.0</div>
+  <p class="lead"><code>xdos_gs</code> is the XDOS satellite's operator ground-station CLI: an interactive
+  terminal program that loads the mission database (MIB), connects over TCP to the on-board computer
+  (OBC) — or directly to subsystem simulators — and lets an operator browse, parameterise, send
+  telecommands (TC) and read back decoded telemetry (TM) for six subsystems:
+  ADCS, EPS, GPS, Payload, XLINK-S and UHF. This document explains every block and function of the
+  program, derived entirely from the source code.</p>
+  <div class="kv">
+    <span>binary: build/xdos_gs</span>
+    <span>entry: src/cli/main.cpp (2 942 lines)</span>
+    <span>core lib: xdos_core</span>
+    <span>launch: scripts/run_cli.sh</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════ 01 OVERVIEW ══════════════════════════ -->
+<section id="overview">
+  <div class="eyebrow">01 · Overview</div>
+  <h2>What xdos_gs is, and what it is built from</h2>
+  <p>The CMake target (<code>CMakeLists.txt:63</code>) compiles four translation units and links the
+  shared <code>xdos_core</code> library:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Source</th><th>Role</th></tr>
+    <tr><td><code>src/cli/main.cpp</code></td><td>The whole interactive CLI: menus, flows, power monitor, LUT composer, <code>main()</code>.</td></tr>
+    <tr><td><code>src/cli/value_format.cpp</code></td><td>Operator-facing value formatting (units, scale, enum symbols, UHF derived values).</td></tr>
+    <tr><td><code>src/lut/binary_lut_builder.cpp</code></td><td>Compiles the composed rate-group table into the OBC's binary LUT file.</td></tr>
+    <tr><td><code>src/lut/rate_group_csv.cpp</code></td><td>Parses the operator's CSV master list into the LUT builder's source JSON.</td></tr>
+  </table></div>
+  <p>From <code>xdos_core</code> it uses: the MIB loader (<code>src/mib</code>), the payload codec
+  (<code>src/codec/codec.cpp</code>), the CCSDS TC and TM codecs (<code>src/codec/ccsds_*.cpp</code>),
+  the five native framing modules (<code>src/framing</code>), the XLink codec and key catalog
+  (<code>src/subsystems</code>), the session layer (<code>src/session</code>), the TCP transport
+  (<code>src/transport</code>), and the EGSE bench protocol (<code>src/common/egse.cpp</code>).</p>
+
+  <h3>The operator's mental model</h3>
+  <p>The program is a loop over one idea: <em>pick a message from the database, fill in its
+  parameters, push it down a stack of encoders onto a TCP socket, then pull the reply back up the
+  same stack and print it in engineering units.</em> Everything else — the power bar, the CCSDS
+  toggle, history, the LUT composer — is support machinery around that loop.</p>
+  <pre><code>startup banner → connect → main menu (1…6 / p / g / c / ! / h / r / q)
+  → pick subsystem → list TCs (filter, search, pages) → enter ID → params → send
+  → TX/RX hex dumps + decoded TM → back to the list</code></pre>
+</section>
+
+<!-- ══════════════════════════ 02 CONTEXT ══════════════════════════ -->
+<section id="context">
+  <div class="eyebrow">02 · System context</div>
+  <h2>Where the CLI sits on the network</h2>
+  <p>By default (<code>--via-obc</code>) the ground station opens <b>one</b> TCP connection to the
+  OBC bridge and multiplexes every subsystem over it — from the GS's point of view the subsystems
+  are not buses but <em>APIDs inside CCSDS frames</em>. With <code>--no-obc</code> it instead opens
+  one socket per subsystem simulator, reproducing the genuine bus-per-subsystem topology.
+  Three side channels bypass the flight link entirely: the EGSE "umbilical" to the EPS sim,
+  the EGSE status port on the OBC, and the LUT upload listener on the OBC.</p>
+
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 860 430" role="img" aria-label="Network block diagram: xdos_gs connects to the OBC bridge over one TCP link carrying TC and TM; the OBC fans out to six subsystem simulators on ports 10010 to 10060; dashed direct links exist in no-obc mode; EGSE and LUT side channels use OBC port offsets.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+        <marker id="arUp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--up)"/></marker>
+        <marker id="arDn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--dn)"/></marker>
+        <marker id="arMut" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>
+      </defs>
+
+      <!-- GS -->
+      <rect class="box" x="20" y="130" width="150" height="96" rx="6"/>
+      <text class="lblb" x="95" y="158" text-anchor="middle">xdos_gs</text>
+      <text class="lbl" x="95" y="176" text-anchor="middle">operator CLI</text>
+      <text class="m" x="95" y="196" text-anchor="middle">Session · codecs</text>
+      <text class="m" x="95" y="210" text-anchor="middle">PowerMonitor</text>
+
+      <!-- OBC -->
+      <rect class="box" x="330" y="118" width="160" height="120" rx="6"/>
+      <text class="lblb" x="410" y="146" text-anchor="middle">xdos_obc</text>
+      <text class="lbl" x="410" y="164" text-anchor="middle">bridge / router</text>
+      <text class="m" x="410" y="184" text-anchor="middle">:P      TC/TM routing</text>
+      <text class="m" x="410" y="199" text-anchor="middle">:P+1  EGSE status</text>
+      <text class="m" x="410" y="214" text-anchor="middle">:P+2  rate-group TM</text>
+      <text class="m" x="410" y="229" text-anchor="middle">:P+3  LUT upload</text>
+
+      <!-- main link -->
+      <line class="edge up" x1="170" y1="160" x2="326" y2="160" marker-end="url(#arUp)"/>
+      <text class="mu" x="248" y="151" text-anchor="middle">TC uplink (CCSDS 1ACF)</text>
+      <line class="edge dn" x1="326" y1="192" x2="170" y2="192" marker-end="url(#arDn)"/>
+      <text class="md" x="248" y="209" text-anchor="middle">TM downlink (FCA1, 1432 B)</text>
+
+      <!-- sims -->
+      <g>
+        <rect class="box" x="660" y="20"  width="180" height="40" rx="5"/>
+        <text class="lbl" x="676" y="44">EPS sim</text><text class="m" x="826" y="44" text-anchor="end">:10010</text>
+        <rect class="box" x="660" y="70"  width="180" height="40" rx="5"/>
+        <text class="lbl" x="676" y="94">ADCS sim</text><text class="m" x="826" y="94" text-anchor="end">:10020</text>
+        <rect class="box" x="660" y="120" width="180" height="40" rx="5"/>
+        <text class="lbl" x="676" y="144">GPS sim</text><text class="m" x="826" y="144" text-anchor="end">:10030</text>
+        <rect class="box" x="660" y="170" width="180" height="40" rx="5"/>
+        <text class="lbl" x="676" y="194">Payload server</text><text class="m" x="826" y="194" text-anchor="end">:10040</text>
+        <rect class="box" x="660" y="220" width="180" height="40" rx="5"/>
+        <text class="lbl" x="676" y="244">XLINK-S sim / HW</text><text class="m" x="826" y="244" text-anchor="end">:10050</text>
+        <rect class="box" x="660" y="270" width="180" height="40" rx="5"/>
+        <text class="lbl" x="676" y="294">UHF sim</text><text class="m" x="826" y="294" text-anchor="end">:10060</text>
+      </g>
+
+      <!-- OBC to sims -->
+      <line class="edge" x1="490" y1="150" x2="656" y2="40"  marker-end="url(#ar)"/>
+      <line class="edge" x1="490" y1="160" x2="656" y2="90"  marker-end="url(#ar)"/>
+      <line class="edge" x1="490" y1="170" x2="656" y2="140" marker-end="url(#ar)"/>
+      <line class="edge" x1="490" y1="185" x2="656" y2="190" marker-end="url(#ar)"/>
+      <line class="edge" x1="490" y1="200" x2="656" y2="240" marker-end="url(#ar)"/>
+      <line class="edge" x1="490" y1="215" x2="656" y2="290" marker-end="url(#ar)"/>
+      <text class="m" x="573" y="128" text-anchor="middle">native framing per bus</text>
+
+      <!-- no-obc dashed -->
+      <path class="edge dash" d="M95 130 C 95 40, 400 10, 656 30" marker-end="url(#arMut)"/>
+      <text class="m" x="300" y="34" text-anchor="middle">--no-obc: direct sockets per subsystem (no Payload link)</text>
+
+      <!-- EGSE -->
+      <path class="edge dash" d="M95 226 C 95 350, 400 372, 656 306" marker-end="url(#arMut)"/>
+      <text class="m" x="330" y="372" text-anchor="middle">EGSE umbilical → EPS sim :10010  (status poll + kill switch, works with OBC unpowered)</text>
+      <path class="edge dash" d="M170 218 C 260 268, 330 262, 396 242" marker-end="url(#arMut)"/>
+      <text class="m" x="268" y="277" text-anchor="middle">EGSE OBC status :P+1 · LUT .bin :P+3</text>
+    </svg>
+    </div>
+    <figcaption><b>Network context.</b> One flight link (amber TC up, teal TM down) carries all six
+    subsystems as APIDs; the OBC de-multiplexes to the native buses. Dashed paths are bench-harness
+    side channels and the <code>--no-obc</code> direct topology. <code>P</code> is the OBC routing
+    port (10000 with <code>run_cli.sh</code>; the compiled default in <code>GsConfig</code> is
+    10.10.10.2:7000 for real bench hardware).</figcaption>
+  </figure>
+
+  <h3><code>struct GsConfig</code> — runtime endpoints (main.cpp:57)</h3>
+  <p>A plain value struct filled by argument parsing and passed around by reference. Defaults:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+    <tr><td><code>via_obc</code></td><td class="num">true</td><td>Route everything through the OBC bridge on one socket.</td></tr>
+    <tr><td><code>obc_host / obc_port</code></td><td class="num">10.10.10.2 : 7000</td><td>Bench default (real OBC). <code>run_cli.sh</code> overrides to 127.0.0.1:10000 for the sim stack.</td></tr>
+    <tr><td><code>eps/adcs/gps/payload/uhf_port</code></td><td class="num">10010 / 10020 / 10030 / 10040 / 10060</td><td>Direct-connect simulator ports, used only with <code>--no-obc</code> (Payload is never direct — see §08).</td></tr>
+    <tr><td><code>xlink_host / xlink_port</code></td><td class="num">127.0.0.1 : 10050</td><td>Direct XLink endpoint; real hardware lives at 192.168.1.1:51003 per the XLink spec.</td></tr>
+    <tr><td><code>xlink_key</code></td><td class="num">"" (zero key)</td><td>32-hex product key. Empty = all-zero key: the simulator accepts it, real hardware NAKs.</td></tr>
+  </table></div>
+</section>
+
+<!-- ══════════════════════════ 03 STARTUP ══════════════════════════ -->
+<section id="startup">
+  <div class="eyebrow">03 · Startup</div>
+  <h2>What <code>main()</code> does before the first prompt</h2>
+  <p><code>main()</code> (main.cpp:2760) runs a strictly ordered boot sequence. Each step degrades
+  gracefully — a missing CCSDS profile or key file prints a warning and the CLI keeps working in a
+  reduced mode.</p>
+  <ol>
+    <li><b>Winsock init.</b> <code>xdos::net::Startup</code> — a no-op on POSIX, <code>WSAStartup</code> on Windows.</li>
+    <li><b>Flag parsing.</b> <code>--no-color</code>, <code>--no-obc</code>/<code>--via-obc</code>,
+      <code>--obc-host/-port</code>, <code>--xlink-host/-port/-key</code>, <code>--script FILE</code>, <code>--help</code>.</li>
+    <li><b>MIB load.</b> <code>mib.load_dir(find_mib_dir())</code> reads every <code>mib/*.json</code>
+      alphabetically, then <code>print_mib_stats()</code> prints per-subsystem TC/TM counts.</li>
+    <li><b>CCSDS TC codec.</b> Loads <code>mib/ccsds_tc.json</code>; on success attaches it to the
+      Session, records the ground-station ID into <code>g_link_gs_id</code>, and honours the profile's
+      <code>enabled_by_default</code> flag.</li>
+    <li><b>CCSDS TM codec.</b> Loads <code>mib/ccsds_tm.json</code> into the file-scope singleton
+      <code>g_tm_codec</code>, attaches it, and records the default radio-module ID into
+      <code>g_link_radio_id</code>. The TM profile re-reads the TC profile so spacecraft ID and APID
+      map can never drift between directions.</li>
+    <li><b>XLink key catalog.</b> Scans <code>mib/xlink_keys/*.txt</code>, loads the first parseable
+      vendor file via <code>xlink::KeyCatalog::load()</code>, applies its first entry as the active
+      128-bit product key, and stashes the catalog in the <code>xlink_catalog()</code> singleton for
+      the interactive picker.</li>
+    <li><b>Banner + Logger.</b> <code>print_banner()</code> shows the link mode; constructing
+      <code>Logger</code> opens the timestamped session log file.</li>
+    <li><b>Connect.</b> <code>connect_session()</code> — see below.</li>
+    <li><b>Script mode short-circuit.</b> If <code>--script</code> was given, <code>run_script()</code>
+      executes the file and the process exits — no menus, no power monitor.</li>
+    <li><b>PowerMonitor.</b> Constructed from the MIB + <code>FlightConfig::load()</code>, published
+      through the global <code>g_pm</code>, and its 2-second background poll thread started.</li>
+    <li><b>Main loop.</b> Draw menu → read one line → dispatch on its first character (§05) — until
+      <kbd>q</kbd>, then stop the monitor, disconnect all sockets and exit.</li>
+  </ol>
+
+  <h3><code>connect_session()</code> (main.cpp:211)</h3>
+  <p>Applies <code>--xlink-key</code> if present (warning on bad hex), then branches on the topology:</p>
+  <ul>
+    <li><b>via OBC:</b> calls <code>sess.set_shared_link(true)</code>, configures the single OBC
+    endpoint into the shared slot and opens it. Prints <span class="pill k">CONNECTED</span> or a
+    <span class="pill k">FAILED</span> line with a checklist hint (kill switch, OBC booted, cabling,
+    subnet, port).</li>
+    <li><b>--no-obc:</b> configures ADCS/EPS/GPS/UHF at <code>127.0.0.1</code> on their sim ports plus
+    the XLink endpoint, connects each and prints a per-bus OK/FAILED line. Payload is deliberately
+    <em>not</em> configured — payload TC/TM is routed through the OBC only. Returns true if
+    <em>any</em> bus connected.</li>
+  </ul>
+
+  <h3><code>find_project_root()</code> / <code>find_mib_dir()</code> (main.cpp:2292)</h3>
+  <p>The CLI can be launched from the repo root, <code>build/</code>, <code>scripts/</code> or anywhere
+  else, so resource paths are never CWD-relative. <code>find_project_root()</code> walks up from both
+  the current directory and the executable's own location (<code>/proc/self/exe</code> on Linux,
+  <code>GetModuleFileNameA</code> on Windows) and returns the first ancestor containing a
+  <code>mib/</code> or <code>config/</code> directory. <code>find_mib_dir()</code> appends
+  <code>mib</code>. The LUT composer anchors its <code>config/</code> outputs the same way.</p>
+
+  <h3><code>class Logger</code> — the logging tee (main.cpp:77)</h3>
+  <p>Every operator-visible exchange is written twice: to <code>stdout</code> with ANSI colour, and to
+  a session log file named <code>TCTM_Payload_MM_DD_HH_MM.txt</code> (created in the CWD at startup).
+  <code>operator&lt;&lt;</code> streams any value, prints it, then copies it to the file with ANSI
+  escape sequences stripped (it skips from <code>\033</code> to the terminating <code>m</code>), and
+  flushes after every write so a crash loses nothing. Flows receive a <code>Logger&amp;</code> and use
+  it in place of <code>std::cout</code> for anything worth keeping.</p>
+</section>
+
+<!-- ══════════════════════════ 04 LAYERS ══════════════════════════ -->
+<section id="layers">
+  <div class="eyebrow">04 · Architecture</div>
+  <h2>The layered stack inside the process</h2>
+  <p>The code is organised as strict layers. UI flows never touch sockets; the transport never sees
+  JSON. A command descends through four transformations and its reply ascends through the same four
+  in reverse.</p>
+
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 780 470" role="img" aria-label="Internal layer stack: CLI flows call Session, which uses the MIB codec, native framing, and optional CCSDS codecs, and sends via TcpClient. The TC path descends the stack; the TM path ascends it.">
+      <defs>
+        <marker id="a2u" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--up)"/></marker>
+        <marker id="a2d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--dn)"/></marker>
+      </defs>
+
+      <rect class="box" x="120" y="16" width="540" height="58" rx="6"/>
+      <text class="lblb" x="390" y="40" text-anchor="middle">CLI flows — main.cpp</text>
+      <text class="m" x="390" y="58" text-anchor="middle">subsystem_flow · payload_flow · xlink_flow · power_flow · binary_lut_flow · run_script</text>
+
+      <rect class="box" x="120" y="102" width="540" height="58" rx="6"/>
+      <text class="lblb" x="390" y="126" text-anchor="middle">Session — src/session</text>
+      <text class="m" x="390" y="144" text-anchor="middle">send_tc · send_tm_request · send_tc_data · send_raw · send_xlink_tc · transact()</text>
+
+      <rect class="box" x="120" y="188" width="255" height="72" rx="6"/>
+      <text class="lblb" x="247" y="212" text-anchor="middle">MIB codec — src/codec</text>
+      <text class="m" x="247" y="230" text-anchor="middle">codec::encode / decode</text>
+      <text class="m" x="247" y="245" text-anchor="middle">json values ⇄ payload bytes</text>
+
+      <rect class="box" x="405" y="188" width="255" height="72" rx="6"/>
+      <text class="lblb" x="532" y="212" text-anchor="middle">Native framing — src/framing</text>
+      <text class="m" x="532" y="230" text-anchor="middle">eps · adcs · gps · payload · uhf</text>
+      <text class="m" x="532" y="245" text-anchor="middle">(+ xlink codec in src/subsystems)</text>
+
+      <rect class="box" x="120" y="290" width="540" height="58" rx="6"/>
+      <text class="lblb" x="390" y="314" text-anchor="middle">CCSDS codecs — optional wrap, toggled with [c]</text>
+      <text class="m" x="390" y="332" text-anchor="middle">CcsdsCodec (TC, SOF 1ACF)  ·  CcsdsTmCodec (TM, SOF FCA1, 1432 B)</text>
+
+      <rect class="box" x="120" y="378" width="540" height="52" rx="6"/>
+      <text class="lblb" x="390" y="400" text-anchor="middle">TcpClient — src/transport</text>
+      <text class="m" x="390" y="417" text-anchor="middle">connect / send / recv (poll + timeout) — bytes go on the wire as-is</text>
+
+      <!-- down TC path -->
+      <line class="edge up" x1="150" y1="74"  x2="150" y2="98"  marker-end="url(#a2u)"/>
+      <line class="edge up" x1="150" y1="160" x2="150" y2="184" marker-end="url(#a2u)"/>
+      <line class="edge up" x1="150" y1="260" x2="150" y2="286" marker-end="url(#a2u)"/>
+      <line class="edge up" x1="150" y1="348" x2="150" y2="374" marker-end="url(#a2u)"/>
+      <text class="mu" x="140" y="230" text-anchor="end" transform="rotate(-90 140 230)">TC: encode ↓</text>
+
+      <!-- up TM path -->
+      <line class="edge dn" x1="630" y1="374" x2="630" y2="348" marker-end="url(#a2d)"/>
+      <line class="edge dn" x1="630" y1="286" x2="630" y2="260" marker-end="url(#a2d)"/>
+      <line class="edge dn" x1="630" y1="184" x2="630" y2="160" marker-end="url(#a2d)"/>
+      <line class="edge dn" x1="630" y1="98"  x2="630" y2="74"  marker-end="url(#a2d)"/>
+      <text class="md" x="648" y="230" transform="rotate(90 648 230)">TM: decode ↑</text>
+
+      <text class="m" x="390" y="455" text-anchor="middle">The MIB (src/mib) is read by every layer above the transport; XLINK-S bypasses codec+framing via its own monolithic codec.</text>
+    </svg>
+    </div>
+    <figcaption><b>Layer stack.</b> A TC descends the amber path (values → payload bytes → native
+    frame → optional CCSDS frame → socket); the reply ascends the teal path in reverse. XLINK-S has
+    its own encoder because its U32-word bit-packing would be mangled by the generic byte-offset
+    codec.</figcaption>
+  </figure>
+
+  <h3>Small utilities used everywhere (main.cpp:114–208)</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Function / type</th><th>What it does</th></tr>
+    <tr><td><code>classify_tc(name)</code></td><td>Heuristic <span class="pill k">SET</span>/<span class="pill k">GET</span>/<span class="pill k">ACT</span> classifier. <code>LOG</code>→GET, <code>UNLOG/UNLOGALL</code>→ACTION; otherwise tokenises the lower-cased name on <code>_</code> and looks for get/read/query/request/readings/status (GET) or set/config/configure/write/enable/disable (SET); anything else is an ACTION.</td></tr>
+    <tr><td><code>tag_str(kind)</code></td><td>Renders the coloured <code>[SET]</code>/<code>[GET]</code>/<code>[ACT]</code> tag used in every listing.</td></tr>
+    <tr><td><code>read_line(prompt)</code></td><td>Prints a hint-coloured prompt, reads one line from stdin; empty string on EOF.</td></tr>
+    <tr><td><code>trim(s)</code>, <code>parse_int(s)</code></td><td>Whitespace trim; strict full-string integer parse returning <code>optional&lt;int&gt;</code>.</td></tr>
+    <tr><td><code>fmt_bytes(b)</code></td><td>Hex dump ("<code>1f 7f 84 …</code>") used for every TX/RX line.</td></tr>
+    <tr><td><code>icontains(h, n)</code></td><td>Case-insensitive substring search — powers the <code>/keyword</code> TC search.</td></tr>
+    <tr><td><code>struct HistoryEntry</code> / <code>class CommandHistory</code></td><td>Ring of the last 10 sent commands (subsystem, id, name, node, synthesized flag, timestamp) behind the <kbd>!</kbd> menu.</td></tr>
+    <tr><td><code>struct LastSent</code></td><td>Remembers the most recent TC per <code>subsystem_flow</code> invocation (subsystem, id, synthesized).</td></tr>
+    <tr><td><code>g_link_gs_id</code>, <code>g_link_radio_id</code></td><td>File-scope link identity (GS-ID, radio-module RM-ID) seeded from the CCSDS profiles; printed beside every TX/RX dump by <code>log_tx_link()</code> / <code>log_rx_link()</code>.</td></tr>
+  </table></div>
+</section>
+
+<!-- ══════════════════════════ 05 MENU ══════════════════════════ -->
+<section id="menu">
+  <div class="eyebrow">05 · Main menu</div>
+  <h2>The dispatch loop and every key</h2>
+  <p><code>print_main_menu()</code> (main.cpp:483) draws, in order: the live power bar
+  (<code>render_power_bar</code>, §10), a row of per-bus connection dots
+  (● connected / ○ down, from <code>sess.connected()</code>), and the option list. Options appear
+  conditionally: <kbd>4</kbd> only when CCSDS is ON <em>and</em> routing via OBC, <kbd>c</kbd> only
+  when a CCSDS profile loaded, <kbd>!</kbd> only when history is non-empty. The loop in
+  <code>main()</code> dispatches on the first character of the line:</p>
+
+  <div class="keymap">
+    <div class="key"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> <span class="d">ADCS / EPS / GPS →</span> <code>subsystem_flow()</code></div>
+    <div class="key"><kbd>4</kbd> <span class="d">Payload server →</span> <code>payload_flow()</code> <span class="d">(needs CCSDS ON + via-OBC; otherwise prints why)</span></div>
+    <div class="key"><kbd>5</kbd> <span class="d">XLINK-S transceiver →</span> <code>xlink_flow()</code></div>
+    <div class="key"><kbd>6</kbd> <span class="d">UHF (437 MHz OpenLST) →</span> <code>subsystem_flow()</code></div>
+    <div class="key"><kbd>p</kbd> <span class="d">Power control →</span> <code>power_flow()</code></div>
+    <div class="key"><kbd>g</kbd> <span class="d">Binary rate-group LUT →</span> <code>binary_lut_flow()</code></div>
+    <div class="key"><kbd>c</kbd> <span class="d">Toggle CCSDS framing ON/OFF (Session-wide)</span></div>
+    <div class="key"><kbd>!</kbd> <span class="d">Repeat a recent command →</span> <code>show_and_replay_history()</code></div>
+    <div class="key"><kbd>h</kbd> <span class="d">Help →</span> <code>show_main_help()</code></div>
+    <div class="key"><kbd>r</kbd> <span class="d">Reconnect: disconnect_all() + connect_session()</span></div>
+    <div class="key"><kbd>q</kbd> <span class="d">Quit (stops PowerMonitor, closes sockets)</span></div>
+  </div>
+
+  <p>Inside any TC listing the prompt accepts: a numeric ID, a spec-level ID
+  (<code>EP-3</code>, <code>UHF-4</code> — loose forms accepted), <code>?ID</code> for details
+  without sending (<code>show_tc_details()</code>), <code>/keyword</code> for name search,
+  <kbd>Enter</kbd> for next page (20 per page) or back, <kbd>b</kbd> for back and <kbd>h</kbd> for
+  <code>show_tc_listing_help()</code>.</p>
+</section>
+
+<!-- ══════════════════════════ 06 PIPELINE ══════════════════════════ -->
+<section id="pipeline">
+  <div class="eyebrow">06 · Core mechanism</div>
+  <h2>The telecommand pipeline, end to end</h2>
+  <p>This is the heart of the program. When the operator confirms a TC, the flow calls
+  <code>send_and_report()</code> (main.cpp:960), which delegates the wire work to
+  <code>Session</code> and then renders the result. The full journey of one EPS command:</p>
+
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 820 560" role="img" aria-label="Nine-step pipeline of one telecommand: preflight power check, codec encode, native framing, CCSDS wrap, TCP exchange, TM frame unwrap, padding strip, native unframe, MIB decode and display.">
+      <defs>
+        <marker id="a3u" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--up)"/></marker>
+        <marker id="a3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--dn)"/></marker>
+      </defs>
+
+      <!-- left: TC down -->
+      <g>
+        <rect class="box" x="30" y="20" width="360" height="52" rx="6"/>
+        <text class="lblb" x="46" y="42">1 · Preflight (send_and_report)</text>
+        <text class="m" x="46" y="60">OBC not On, or target channel OFF?  → "send anyway? [y/N]"</text>
+
+        <rect class="box" x="30" y="96" width="360" height="52" rx="6"/>
+        <text class="lblb" x="46" y="118">2 · codec::encode(msg, values)</text>
+        <text class="m" x="46" y="136">json params → payload bytes (LE, scale, enums, bit/byte offsets)</text>
+
+        <rect class="box" x="30" y="172" width="360" height="52" rx="6"/>
+        <text class="lblb" x="46" y="194">3 · wrap_native(sub, wire_id, payload)</text>
+        <text class="m" x="46" y="212">EPS: [dst][src][id][data][CRC-8] → Base64 → 00…01</text>
+
+        <rect class="box" x="30" y="248" width="360" height="52" rx="6"/>
+        <text class="lblb" x="46" y="270">4 · CcsdsCodec::encode (if [c] ON)</text>
+        <text class="m" x="46" y="288">native frame becomes TC-Data; tc_id = wire id; CRC-16 appended</text>
+
+        <rect class="box" x="30" y="324" width="360" height="52" rx="6"/>
+        <text class="lblb" x="46" y="346">5 · TcpClient::send → recv(8192, 1500 ms)</text>
+        <text class="m" x="46" y="364">RTT timed; empty reply → "(no response within N ms)"</text>
+      </g>
+
+      <!-- right: TM up -->
+      <g>
+        <rect class="box" x="430" y="324" width="360" height="52" rx="6"/>
+        <text class="lblb" x="446" y="346">6 · looks_like_tm? → CcsdsTmCodec::decode</text>
+        <text class="m" x="446" y="364">1432-B FCA1 frame checked (CRC-16); else legacy 1ACF unwrap</text>
+
+        <rect class="box" x="430" y="248" width="360" height="52" rx="6"/>
+        <text class="lblb" x="446" y="270">7 · strip_tm_padding(sub, tm_data)</text>
+        <text class="m" x="446" y="288">trim 1280-B zero-padded TM DATA back to the true native frame</text>
+
+        <rect class="box" x="430" y="172" width="360" height="52" rx="6"/>
+        <text class="lblb" x="446" y="194">8 · unwrap_native(sub, frame)</text>
+        <text class="m" x="446" y="212">framing + CRC checked → response msg_id + raw payload</text>
+
+        <rect class="box" x="430" y="96" width="360" height="52" rx="6"/>
+        <text class="lblb" x="446" y="118">9 · codec::decode(tm, payload)</text>
+        <text class="m" x="446" y="136">payload bytes → json values, looked up via by_node_wire()</text>
+
+        <rect class="box" x="430" y="20" width="360" height="52" rx="6"/>
+        <text class="lblb" x="446" y="42">10 · Render (send_and_report)</text>
+        <text class="m" x="446" y="60">TM header, decoded table in MIB order, ✓/✗ ACK banner, RTT</text>
+      </g>
+
+      <!-- arrows -->
+      <line class="edge up" x1="210" y1="72"  x2="210" y2="92"  marker-end="url(#a3u)"/>
+      <line class="edge up" x1="210" y1="148" x2="210" y2="168" marker-end="url(#a3u)"/>
+      <line class="edge up" x1="210" y1="224" x2="210" y2="244" marker-end="url(#a3u)"/>
+      <line class="edge up" x1="210" y1="300" x2="210" y2="320" marker-end="url(#a3u)"/>
+      <line class="edge dn" x1="610" y1="320" x2="610" y2="300" marker-end="url(#a3d)"/>
+      <line class="edge dn" x1="610" y1="244" x2="610" y2="224" marker-end="url(#a3d)"/>
+      <line class="edge dn" x1="610" y1="168" x2="610" y2="148" marker-end="url(#a3d)"/>
+      <line class="edge dn" x1="610" y1="92"  x2="610" y2="72"  marker-end="url(#a3d)"/>
+      <line class="edge" x1="390" y1="350" x2="426" y2="350" marker-end="url(#a3d)" stroke="var(--dn)"/>
+      <text class="m" x="410" y="341" text-anchor="middle">wire</text>
+
+      <!-- wire annotation -->
+      <rect class="boxsoft" x="30" y="420" width="760" height="118" rx="6"/>
+      <text class="lblb" x="46" y="446">What the operator sees for steps 4–10</text>
+      <text class="m" x="46" y="468">▸ Set_PDU_CH_State   [CCSDS]        ← header + Setting: … summary (SET/ACT only)</text>
+      <text class="m" x="46" y="484">TX 1a cf 04 00 … / RX fc a1 …      ← full hex dumps (fmt_bytes)</text>
+      <text class="m" x="46" y="500">TX link GS-ID=… → RM-ID=… / RX link RM→GS   ← log_tx_link / log_rx_link</text>
+      <text class="m" x="46" y="516">TM frame SCID … MFC/SFC … APID … CRC OK + UTC timestamp  ← log_tm_frame_header</text>
+      <text class="m" x="46" y="532">decoded: parameter table → ✓ Acknowledged / ✗ Rejected → Sent hh:mm:ss RTT n ms</text>
+    </svg>
+    </div>
+    <figcaption><b>One TC, ten steps.</b> Steps 2–5 are <code>Session::transact()</code>'s encode
+    half; 6–9 its decode half; 1 and 10 belong to <code>send_and_report()</code> in the CLI. With
+    CCSDS toggled OFF, steps 4 and 6–7 vanish and the native frame goes on the wire bare.</figcaption>
+  </figure>
+
+  <h3><code>send_and_report()</code> in detail (main.cpp:960)</h3>
+  <ol>
+    <li><b>Flight-power preflight.</b> Reads the PowerMonitor snapshot. If the OBC is not
+      <code>On</code> (with a tailored hint: turn the kill switch on, or wait for boot/sequencing) or
+      the target subsystem's PDU channel reads 0, it warns "⚠ …" and asks
+      <code>send anyway? [y/N]</code> — the doomed command is abortable before it hits the wire.</li>
+    <li><b>Three send paths.</b> <code>wrap_log=true</code> → GPS GET, rebuilt as
+      <code>LOG(message_id=…, trigger=4 ONCE)</code> through <code>send_tc()</code>;
+      <code>empty_payload_request=true</code> → ADCS GET via <code>send_tm_request()</code>
+      (empty-payload TC frame carrying the TM's id); otherwise a plain <code>send_tc()</code>.</li>
+    <li><b>Pre-send summary.</b> For SETs, a "<code>Setting: name=value, …</code>" line built with
+      <code>format_value()</code>; EPS channel-mask bytes are suppressed and replaced by a
+      "channels ON = CH4 (ADCS), …" summary resolved through the MIB channel map. ACTIONs get an
+      "<code>Action: name</code>" line.</li>
+    <li><b>Wire dumps and link identity.</b> CCSDS header summary + inner native bytes (if wrapped),
+      full TX hex, <code>log_tx_link()</code>; then RX hex, <code>log_rx_link()</code>,
+      <code>log_tm_frame_header()</code> (SCID, RM, master/sub frame counters, APID, sequence,
+      payload size, CRC verdict, UTC timecode, GS-ID).</li>
+    <li><b>Decoded-value rendering</b> — the subject of §09.</li>
+    <li><b>ACK banner.</b> For SET/ACT replies containing a <code>Status</code> field:
+      <code>Status==1</code> → "✓ Acknowledged by &lt;board&gt; — values written / action executed",
+      else "✗ Rejected (Status=N)".</li>
+    <li><b>Timing.</b> Wall-clock "Sent hh:mm:ss" and the measured RTT in ms.</li>
+  </ol>
+
+  <h3><code>Session</code> — the five send paths (src/session/session.cpp)</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Method</th><th>Used by</th><th>Behaviour</th></tr>
+    <tr><td><code>send_tc</code></td><td>all standard TCs</td><td>MIB lookup by name, node→RS485 address resolution (EPS broadcast fallback), <code>codec::encode</code>, then <code>transact()</code>.</td></tr>
+    <tr><td><code>send_tm_request</code></td><td>ADCS GETs</td><td>Empty payload; the frame's msg_id <em>is</em> the TM id — CubeSpace idiom for "send me this TM".</td></tr>
+    <tr><td><code>send_tc_data</code></td><td>Payload 600/601/602</td><td>Caller supplies the data field verbatim (variable-length name/args the fixed-offset codec can't express); framing + CCSDS as usual.</td></tr>
+    <tr><td><code>send_raw</code></td><td>(raw hex path)</td><td>No MIB, no native framing; bytes go into TC-Data directly if CCSDS is on.</td></tr>
+    <tr><td><code>send_xlink_tc</code></td><td>XLINK-S flow</td><td>Bypasses codec+framing entirely: <code>xlink::codec::encode_frame</code> builds key+event+data; reply is reassembled across TCP segments (2.5 s deadline, 40 ms quiet-window) because a 1432-byte TM frame can arrive fragmented; response trimmed to 20 B header + U32-aligned RSP length; ACK/NAK flags surfaced (<code>error="XLink NAK"</code>).</td></tr>
+  </table></div>
+  <p><code>transact()</code> implements steps 3–9 of the diagram for the first four paths.
+  <code>strip_tm_padding()</code> knows each subsystem's frame delimiter: Payload's 3-byte header
+  declares its exact length, GPS's OEM7 header gives header-len + payload-len + CRC32, UHF's ESP
+  length byte is exact, EPS trims at the terminal <code>0x01</code>, ADCS at the
+  <code>1F FF</code> trailer, and XLink passes through untrimmed (fixed-offset decode ignores
+  padding). The <code>ExchangeResult</code> struct returned to the CLI carries every intermediate
+  representation — <code>tx_payload</code>, <code>tx_native</code>, <code>tx_frame</code>,
+  <code>rx_frame</code>, <code>rx_native</code>, <code>rx_payload</code>, decoded JSON, CCSDS/TM
+  header decodes, RTT and an error string — which is what makes the CLI's rich reporting possible.</p>
+
+  <h3>Shared-link indexing</h3>
+  <p><code>Session::idx()</code> maps every subsystem to slot −1 (<code>kObcIdx</code>) when
+  <code>shared_link_</code> is set, so all six subsystems share the one OBC socket; in
+  <code>--no-obc</code> mode each subsystem gets its own slot and socket. <code>connect()</code>,
+  <code>connected()</code> and <code>transact()</code> all go through this indirection — the flows
+  never know which topology is active.</p>
+</section>
+
+<!-- ══════════════════════════ 07 FRAMES ══════════════════════════ -->
+<section id="frames">
+  <div class="eyebrow">07 · Wire formats</div>
+  <h2>Frame formats, layer by layer</h2>
+
+  <h3>CCSDS TC uplink frame — <code>CcsdsCodec</code>, SOF <code>1ACF</code></h3>
+  <p>Profile-driven from <code>mib/ccsds_tc.json</code> (spacecraft ID, VCID, GS-ID, APID map,
+  default-enable). The CRC-16-CCITT covers TF-header start through TC-Data end.</p>
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 800 120" role="img" aria-label="CCSDS TC frame byte layout: SOF 2, transfer frame header 5, packet header 6, ground station ID 1, time code 8, ancillary length 2, TC ID 2, TC length 2, TC data N, CRC 2.">
+      <g>
+        <rect class="fld mut" x="10"  y="30" width="52"  height="40"/><text class="lbl" x="36"  y="54" text-anchor="middle">SOF</text>
+        <rect class="fld"     x="62"  y="30" width="74"  height="40"/><text class="lbl" x="99"  y="54" text-anchor="middle">TF hdr</text>
+        <rect class="fld"     x="136" y="30" width="80"  height="40"/><text class="lbl" x="176" y="54" text-anchor="middle">Pkt hdr</text>
+        <rect class="fld"     x="216" y="30" width="56"  height="40"/><text class="lbl" x="244" y="54" text-anchor="middle">GS-ID</text>
+        <rect class="fld"     x="272" y="30" width="92"  height="40"/><text class="lbl" x="318" y="54" text-anchor="middle">TimeCode</text>
+        <rect class="fld"     x="364" y="30" width="66"  height="40"/><text class="lbl" x="397" y="54" text-anchor="middle">AncLen</text>
+        <rect class="fld up"  x="430" y="30" width="56"  height="40"/><text class="lbl" x="458" y="54" text-anchor="middle">TC-ID</text>
+        <rect class="fld up"  x="486" y="30" width="60"  height="40"/><text class="lbl" x="516" y="54" text-anchor="middle">TC-Len</text>
+        <rect class="fld up"  x="546" y="30" width="180" height="40"/><text class="lbl" x="636" y="54" text-anchor="middle">TC-Data (native frame)</text>
+        <rect class="fld mut" x="726" y="30" width="52"  height="40"/><text class="lbl" x="752" y="54" text-anchor="middle">CRC</text>
+        <text class="m" x="36"  y="86" text-anchor="middle">2 · 1ACF</text>
+        <text class="m" x="99"  y="86" text-anchor="middle">5</text>
+        <text class="m" x="176" y="86" text-anchor="middle">6</text>
+        <text class="m" x="244" y="86" text-anchor="middle">1</text>
+        <text class="m" x="318" y="86" text-anchor="middle">8 · centisec</text>
+        <text class="m" x="397" y="86" text-anchor="middle">2</text>
+        <text class="m" x="458" y="86" text-anchor="middle">2 · wire id</text>
+        <text class="m" x="516" y="86" text-anchor="middle">2</text>
+        <text class="m" x="636" y="86" text-anchor="middle">N</text>
+        <text class="m" x="752" y="86" text-anchor="middle">2 · CCITT</text>
+        <line class="edge" x1="62" y1="16" x2="726" y2="16"/>
+        <text class="m" x="394" y="10" text-anchor="middle">CRC-16 coverage</text>
+        <line class="edge" x1="62" y1="12" x2="62" y2="20"/><line class="edge" x1="726" y1="12" x2="726" y2="20"/>
+      </g>
+    </svg>
+    </div>
+    <figcaption><b>TC uplink frame</b> (widths not to scale). The native subsystem frame rides inside
+    TC-Data; the TC-ID field mirrors the subsystem wire id. Encode stamps fresh frame/packet sequence
+    counters per APID and the current UTC time code.</figcaption>
+  </figure>
+
+  <h3>CCSDS TM downlink frame — <code>CcsdsTmCodec</code>, SOF <code>FCA1</code>, fixed 1432 B</h3>
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 800 120" role="img" aria-label="CCSDS TM downlink frame layout, 1432 bytes total: SOF 2, TM primary header 6, data field status 2, space packet primary header 6, secondary header 11, TM data 1280, ground station TC echo 123, frame error control 2.">
+      <g>
+        <rect class="fld mut" x="10"  y="30" width="48"  height="40"/><text class="lbl" x="34"  y="54" text-anchor="middle">SOF</text>
+        <rect class="fld"     x="58"  y="30" width="92"  height="40"/><text class="lbl" x="104" y="54" text-anchor="middle">TM Pri hdr</text>
+        <rect class="fld"     x="150" y="30" width="56"  height="40"/><text class="lbl" x="178" y="54" text-anchor="middle">DFS</text>
+        <rect class="fld"     x="206" y="30" width="82"  height="40"/><text class="lbl" x="247" y="54" text-anchor="middle">SPP Pri</text>
+        <rect class="fld"     x="288" y="30" width="82"  height="40"/><text class="lbl" x="329" y="54" text-anchor="middle">SPP Sec</text>
+        <rect class="fld dn"  x="370" y="30" width="250" height="40"/><text class="lbl" x="495" y="54" text-anchor="middle">TM DATA (padded)</text>
+        <rect class="fld"     x="620" y="30" width="128" height="40"/><text class="lbl" x="684" y="54" text-anchor="middle">GS TC echo</text>
+        <rect class="fld mut" x="748" y="30" width="42"  height="40"/><text class="lbl" x="769" y="54" text-anchor="middle">FECF</text>
+        <text class="m" x="34"  y="86" text-anchor="middle">2 · FCA1</text>
+        <text class="m" x="104" y="86" text-anchor="middle">6 · SCID RM MFC SFC</text>
+        <text class="m" x="178" y="86" text-anchor="middle">2</text>
+        <text class="m" x="247" y="86" text-anchor="middle">6 · APID seq len</text>
+        <text class="m" x="329" y="86" text-anchor="middle">11 · GS-ID time</text>
+        <text class="m" x="495" y="86" text-anchor="middle">1280 · native TM, zero-padded</text>
+        <text class="m" x="684" y="86" text-anchor="middle">123 · last TC fwd'd</text>
+        <text class="m" x="769" y="86" text-anchor="middle">2</text>
+      </g>
+    </svg>
+    </div>
+    <figcaption><b>TM downlink frame</b> (widths not to scale; total exactly 1432 B). The 1280-byte
+    TM DATA field is why <code>strip_tm_padding()</code> exists — the true native frame must be
+    recovered from the zero fill. The TM time code uses 16-bit milliseconds where the TC side uses
+    8-bit centiseconds; that is the one deliberate secondary-header difference.</figcaption>
+  </figure>
+
+  <h3>Native subsystem framings (src/framing, src/subsystems)</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Subsystem</th><th>Wire shape</th><th>Integrity</th></tr>
+    <tr><td>EPS</td><td><code>0x00 · base64([dst][src=201][msg_id][data][CRC-8]) · 0x01</code> — RS485 message, Base64-armoured; GS spoofs OBC1 (addr 201) as source. Broadcast addr 0.</td><td>CRC-8 poly 0x07</td></tr>
+    <tr><td>ADCS</td><td><code>1F 7F · escaped(msg_id‖data) · 1F FF</code> — CubeSpace UART; inner <code>0x1F</code> doubled.</td><td>framing only</td></tr>
+    <tr><td>GPS</td><td><code>AA 44 12 · 28-B OEM7 header · data · CRC-32</code> — NovAtel binary; header carries msg id + data length.</td><td>CRC-32 (0xEDB88320)</td></tr>
+    <tr><td>Payload</td><td><code>[3b type | 10b command id | 11b length] · data</code> — 3-byte big-endian header; carried as CCSDS TC-Data under APID 5.</td><td>CCSDS CRC only</td></tr>
+    <tr><td>UHF</td><td><code>22 69 · len · [hwid=FFFF][seqnum][system=1][opcode][data]</code> — OpenLST ESP frame, max 254 B.</td><td>framing only</td></tr>
+    <tr><td>XLINK-S</td><td><code>product_key(16) · service_event(4) · data</code> — LE U32-word bit-packing; event's top nibble = GET/SET/ACK/NAK flag, low 28 bits = event id.</td><td>key auth (HW NAKs wrong key)</td></tr>
+  </table></div>
+</section>
+
+<!-- ══════════════════════════ 08 FLOWS ══════════════════════════ -->
+<section id="flows">
+  <div class="eyebrow">08 · Interactive flows</div>
+  <h2>The four commanding flows</h2>
+
+  <h3><code>subsystem_flow()</code> — ADCS, EPS, GPS, UHF (main.cpp:1303)</h3>
+  <p>The generic flow. Its supporting cast:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Function</th><th>Role</th></tr>
+    <tr><td><code>all_tcs(mib, sub)</code></td><td>Builds the listing: every MIB TC, plus <em>synthesized</em> GET entries for every TM on GPS ("via LOG") and ADCS ("empty-payload TM request") — so telemetry reads look like ordinary commands.</td></tr>
+    <tr><td><code>struct TcEntry</code></td><td>One listing row: id, wire id, name, spec param_id ("EP-019"), node (EPS board), kind, synthesized flag.</td></tr>
+    <tr><td><code>list_tcs_clean()</code></td><td>Paged (20/row) filtered printer. EPS/UHF rows lead with the spec ID (numeric msg_id collides across PDU/BMS/MPPT boards, so it is hidden); others show <code>ID n</code>.</td></tr>
+    <tr><td><code>show_tc_details()</code></td><td>The <code>?ID</code> view: kind, wire id, length, board, doc ref, description and the full parameter table (offset, size, type, unit) — without sending.</td></tr>
+    <tr><td><code>prompt_parameters()</code></td><td>Asks for each parameter with a <code>[0]</code> default; floats accepted for FLOAT/DOUBLE; unparseable input silently becomes 0. EPS channel-mask bytes divert to the picker below.</td></tr>
+    <tr><td><code>channel_mask_range()</code> / <code>prompt_channel_mask_byte()</code></td><td>Detects "CH1 to CH8 …" mask parameters, lists each bit's channel with its subsystem name from the MIB, and accepts <kbd>Enter</kbd>/0/none, all/255/0xFF, hex, or a comma list ("1,3,5") — out-of-range channels are ignored with a warning.</td></tr>
+  </table></div>
+  <p>Flow logic: for listings over 20 entries a kind filter is offered first
+  (<kbd>s</kbd>/<kbd>g</kbd>/<kbd>a</kbd>/<kbd>Enter</kbd>=all). Input resolution tries, in order:
+  exact spec-ID match (alnum-normalised, so <code>ep19</code> works), numeric-tail match
+  (<code>3</code> ⇒ <code>EP-003</code>) with an <em>ambiguity guard</em> that lists all colliding
+  IDs instead of guessing, then plain numeric msg_id. Dispatch picks the right send path
+  (LOG-wrap, empty-payload, or normal with prompted params) and records <code>LastSent</code>;
+  after sending, the listing redraws.</p>
+
+  <h3><code>payload_flow()</code> — Payload server via OBC (main.cpp:1598)</h3>
+  <p>Menu-driven from <code>mib/payload.json</code>. A payload command is a 3-byte
+  <code>[type|cmd|len]</code> header + data, carried under APID 5 with the command ID mirrored into
+  CCSDS TC-ID. Entry forms are hand-built per command ID:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Cmd</th><th>Name</th><th>Prompted input</th></tr>
+    <tr><td class="num">545 / 546</td><td>Container ON / OFF</td><td><code>prompt_payload_id()</code> — 0 MSI, 1 SCANWAY, 2 SAR; sent via <code>send_tc</code> with a one-byte "Payload ID".</td></tr>
+    <tr><td class="num">600</td><td>Custom payload sequence</td><td>Payload ID + operation name (≤16 chars) + arguments (≤128 chars) via <code>prompt_text()</code>; packed by <code>make_sequence_data()</code> and sent through <code>send_tc_data</code>.</td></tr>
+    <tr><td class="num">601 / 602</td><td>Capture MSI / SCANWAY</td><td>Target implied by the command ID; optional capture-parameter string as the raw data field.</td></tr>
+  </table></div>
+  <p><code>payload_report()</code> decodes both directions with <code>framing::payload::decode</code>:
+  it prints the sent frame's type/cmd/len breakdown, the CCSDS summary, inner + TX/RX hex, then
+  validates the reply — declared vs actual length, echoed command ID — and renders the single-character
+  acknowledgement: <code>'A'</code> green "command performed", anything else red. The payload server
+  returns no telemetry, only this ACK.</p>
+
+  <h3><code>xlink_flow()</code> — the RF transceiver (main.cpp:1740)</h3>
+  <p>Lists every XLINK-S TC with its spec ID and 32-bit event number, and shows the currently active
+  product key (or a warning that the zero key will be NAK'd by real hardware). Accepts a menu number,
+  <code>XL-N</code>, or the service name. GET/SET is decided per service:
+  <code>VERSION</code>/<code>HOUSE_KEEPING</code>/<code>XPA_INF</code> are GET-only;
+  <code>IDLE</code>, <code>RESET</code>, <code>UART_BD_SAVE</code>, <code>IP_ADR_SAVE</code>,
+  <code>RF_XMT_DATA</code>, <code>XMT_IDLE_FRM</code> and <code>GPIO_*</code> are SET-only; the rest
+  ask <code>[g]et or [s]et?</code>. SETs prompt for every field except <code>product_key</code>,
+  <code>service_event</code> and Reserved fields, accepting enum names or numbers. The exchange goes
+  through <code>send_xlink_tc</code>; the report shows TX/RX, the TM frame header when routed via the
+  OBC, a ✓ ACK / ✗ NAK banner ("wrong key or bad params"), then the decoded response.</p>
+  <p><code>xlink_pick_key()</code> lists the vendor catalog's (XmtSymbFreq, RcvSymbFreq)
+  configurations from <code>xlink_catalog()</code>, applies the picked entry's 128-bit key to the
+  Session and prints its capability flags — real hardware NAKs "ACCESS_VIOLATION" when the key
+  doesn't match the transceiver's configured symbol rates.</p>
+</section>
+
+<!-- ══════════════════════════ 09 RENDER ══════════════════════════ -->
+<section id="render">
+  <div class="eyebrow">09 · Display layer</div>
+  <h2>Turning decoded JSON into an operator's view</h2>
+  <p>Raw decoded values are a flat JSON object. A family of renderers in main.cpp turns them into
+  the annotated engineering view:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Function</th><th>What it renders</th></tr>
+    <tr><td><code>format_value()</code> <span class="d">(value_format.cpp)</span></td><td>The universal cell formatter: ENUM → "3 (Normal)", FLOAT/scaled INT → "23.45 °C", CHAR words → ASCII string, 1-byte flags → "1 (ON)" via <code>flag_labels_for()</code>.</td></tr>
+    <tr><td><code>detect_eps_channel_mask_kind()</code></td><td>Spots TM messages carrying a "CH1 to CH8 … / CH9 to CH16 …" byte pair and extracts the kind keyword (Enable/Disable, Over Current Flag…).</td></tr>
+    <tr><td><code>channel_state_labels()</code></td><td>Maps the kind to bit labels: ON/OFF, OVERCURRENT/ok, FAULT/ok, SET/clr.</td></tr>
+    <tr><td><code>render_eps_channel_state()</code></td><td>Combines the two mask bytes and prints all 16 channels, each with its subsystem name from the MIB channel map ("Channel 4 (ADCS) : ON"), green/dim per state. The raw mask bytes are then hidden from the flat listing.</td></tr>
+    <tr><td><code>detect_eps_mppt_mask_kind()</code> / <code>render_eps_mppt_state()</code></td><td>Same treatment for the 10-bit MPPT mask; notes that MPPT 8–10 are unused on NL16U.</td></tr>
+    <tr><td><em>version grouping</em> <span class="d">(lambda in send_and_report)</span></td><td>Collapses Major/Minor/Patch triplets into one "Firmware version = 1.2.3" line (EPS FW, comm-protocol pair, ADCS identification).</td></tr>
+    <tr><td><em>MIB-order walk</em></td><td>Parameters print in spec order (not JSON-alphabetical); "CH&lt;n&gt; …" names get the channel's subsystem injected; unknown keys and <code>_array</code> records are flagged separately.</td></tr>
+    <tr><td><code>uhf_derived_text()</code> <span class="d">(value_format.cpp)</span></td><td>For UHF radio-config replies, appends engineering values computed from raw CC1110 registers with the datasheet formulas: carrier MHz, data rate, bandwidth, deviation, channel spacing, sync word.</td></tr>
+    <tr><td><code>render_xlink_decoded()</code> + <code>xlink_row()</code>/<code>xlink_section()</code></td><td>XLINK-S–flavoured grouping: <b>VERSION</b> → firmware date-code + one line per file in program memory (ASCII names, SOLL_PROG/RUNNING flags); <b>HOUSE_KEEPING</b> → CPU rails, temperatures, per-RCV-channel lock state (disabled / SYNC-locked / no-sync) with a derived bit-error rate from the BCH counters, XMT channel state, uptime from 10 ms ticks; <b>DEVICE_CONF</b> → RF frequencies, key-locked symbol rates, per-channel XMT/RCV config with ~40 calibration-debug fields suppressed. Anything else falls back to a flat listing.</td></tr>
+  </table></div>
+</section>
+
+<!-- ══════════════════════════ 10 POWER ══════════════════════════ -->
+<section id="power">
+  <div class="eyebrow">10 · Bench harness</div>
+  <h2>The EGSE power monitor and the [p] menu</h2>
+  <p>The EGSE "umbilical" is a tiny sim-control protocol <em>outside</em> the flight database —
+  it models the physical bench lines (kill switch, status telemetry) that work even when the OBC is
+  unpowered. Frame: <code>'X' 'G' 'S' 'E' · cmd(1) · len(1) · payload</code>, with three commands:
+  <code>EPS_STATUS_REQ</code> (0x01→0x81), <code>KILL_SET</code> (0x02→0x82) and
+  <code>OBC_STATUS_REQ</code> (0x11→0x91).</p>
+
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 800 300" role="img" aria-label="PowerMonitor background thread polls the EPS simulator's EGSE port and the OBC's dedicated status port every two seconds, stores a snapshot behind a mutex, and feeds the status bar, the power menu, change announcements and the send preflight check.">
+      <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+      <rect class="box" x="20" y="90" width="220" height="110" rx="6"/>
+      <text class="lblb" x="130" y="116" text-anchor="middle">PowerMonitor</text>
+      <text class="m" x="130" y="134" text-anchor="middle">background thread</text>
+      <text class="m" x="130" y="152" text-anchor="middle">poll() every 2 s</text>
+      <text class="m" x="130" y="170" text-anchor="middle">snap() → PowerSnap</text>
+      <text class="m" x="130" y="186" text-anchor="middle">(mutex-guarded copy)</text>
+
+      <rect class="box" x="330" y="30" width="200" height="60" rx="6"/>
+      <text class="lblb" x="430" y="55" text-anchor="middle">EPS sim EGSE</text>
+      <text class="m" x="430" y="73" text-anchor="middle">:10010 · EpsStatus / KILL_SET</text>
+
+      <rect class="box" x="330" y="120" width="200" height="60" rx="6"/>
+      <text class="lblb" x="430" y="145" text-anchor="middle">OBC EGSE status</text>
+      <text class="m" x="430" y="163" text-anchor="middle">:P+1 · ObcStatus (boot FSM)</text>
+
+      <line class="edge" x1="240" y1="115" x2="326" y2="65" marker-end="url(#a4)"/>
+      <text class="m" x="278" y="76" text-anchor="middle">400 ms poll</text>
+      <line class="edge" x1="240" y1="150" x2="326" y2="150" marker-end="url(#a4)"/>
+
+      <rect class="boxsoft" x="20" y="230" width="740" height="52" rx="6"/>
+      <text class="lbl" x="390" y="252" text-anchor="middle">consumers: render_power_bar() status line · power_flow() [p] menu · send_and_report() preflight · announce_changes() event lines</text>
+      <text class="m" x="390" y="270" text-anchor="middle">kill → ON/OFF · OBC state changes · EPS mode changes · per-subsystem power ON/OFF flashes</text>
+      <line class="edge" x1="130" y1="200" x2="130" y2="226" marker-end="url(#a4)"/>
+
+      <text class="m" x="640" y="60">EpsStatus: kill · mode · orbit phase ·</text>
+      <text class="m" x="640" y="76">Vbatt · SoC · chan_mask · shed_mask</text>
+      <text class="m" x="640" y="150">ObcStatus: Unpowered / Booting(n s)</text>
+      <text class="m" x="640" y="166">/ Sequencing(k/N) / On</text>
+    </svg>
+    </div>
+    <figcaption><b>EGSE monitoring path.</b> The OBC status rides a dedicated port (routing port + 1)
+    so the frequent polls never contend with TC/TM traffic. A snapshot copy keeps the UI thread
+    lock-free.</figcaption>
+  </figure>
+
+  <h3><code>class PowerMonitor</code> (main.cpp:300)</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Member</th><th>Behaviour</th></tr>
+    <tr><td><em>constructor</em></td><td>Builds the power-menu item list from <code>FlightConfig.power_menu</code>: each entry maps a display name to EPS channel bits (<code>FlightConfig::bits</code>) and a Subsystem for TC gating, with channel labels resolved from the MIB.</td></tr>
+    <tr><td><code>start()/stop()</code></td><td>Runs <code>poll()</code> in a thread every 2 s (20 × 100 ms sleeps so shutdown is responsive).</td></tr>
+    <tr><td><code>poll()</code></td><td>Two short-timeout TCP round-trips (EPS status, OBC status), atomically swaps the snapshot, and after the first poll calls <code>announce_changes()</code>.</td></tr>
+    <tr><td><code>announce_changes()</code></td><td>Diffs old vs new snapshot and flashes one-liners over the prompt (<code>\r\033[K</code>): kill switch transitions, OBC state, EPS mode, and per-item channel power ON/OFF.</td></tr>
+    <tr><td><code>send_kill(on)</code></td><td>Opens its own EGSE connection, sends <code>KILL_SET</code>, verifies the 0x82 reply, refreshes.</td></tr>
+    <tr><td><code>powered(sub)</code></td><td>1 / 0 / −1 (unknown) from the channel mask — the basis of the preflight warning and menu dots.</td></tr>
+    <tr><td><code>render_power_bar()</code> <span class="d">(free fn)</span></td><td>The one-line summary above the menu: ●-dots per subsystem (green/red/amber-boot/dim-unknown), OBC "boot 7s" or "seq 2/4" countdowns, battery volts, EPS mode, ☀ sunlit / ☾ eclipse with mm:ss remaining (<code>fmt_mmss</code>), and kill state.</td></tr>
+  </table></div>
+
+  <h3><code>power_flow()</code> — the [p] menu (main.cpp:2324)</h3>
+  <p>A friendly replacement for hand-building <code>Set_PDU_CH_State</code> masks. It lists each
+  configured subsystem with a live dot and its channel labels; selecting one performs a
+  <b>read-modify-write toggle</b>: <code>new_mask = current_mask XOR item_bits</code>, split into the
+  two mask bytes and sent as a <em>real</em> EPS TC through the OBC via <code>send_and_report</code>.
+  Guards refuse when the bus is dead (kill OFF) or the OBC isn't <code>On</code> yet.
+  <kbd>k</kbd> toggles the EGSE kill switch — turning it OFF requires a y/N confirm since it
+  de-powers everything including the OBC; turning it ON prints the expected boot sequence
+  (ADCS → GPS → SBAND, staggered).</p>
+</section>
+
+<!-- ══════════════════════════ 11 LUT ══════════════════════════ -->
+<section id="lut">
+  <div class="eyebrow">11 · Rate-group LUT</div>
+  <h2>The [g] binary rate-group LUT composer</h2>
+  <p>The OBC autonomously polls subsystems on four priority tiers and packs the picked response
+  bytes into 1280-byte Master-Frame subframes. <em>What</em> it polls and <em>which bytes</em> it
+  keeps is defined by a binary look-up table that the operator composes, builds and uplinks from
+  this menu. Two artifacts are produced, anchored at the project's <code>config/</code> directory
+  (<code>blut_config_dir()</code>):</p>
+  <ul>
+    <li><code>rate_group_lut.bin</code> — the OBC binary, the <b>only</b> thing ever uplinked;</li>
+    <li><code>rate_group_lut_bin_gs.json</code> — the ground-only "twin" holding ids, names and pick
+      params for logging/debug, and the resume state for later edits. It never leaves the ground.</li>
+  </ul>
+
+  <figure class="wide">
+    <div class="scroll">
+    <svg viewBox="0 0 820 330" role="img" aria-label="LUT workflow: compose or import CSV, build produces the binary plus ground twin, send uploads only the binary as an XLUT frame to the OBC's LUT port; below, the 1280-byte subframe splits into VH, H, M, L segments and 5 reserved bytes.">
+      <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+        <marker id="a5u" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="var(--up)"/></marker></defs>
+
+      <rect class="box" x="20" y="24" width="210" height="84" rx="6"/>
+      <text class="lblb" x="125" y="48" text-anchor="middle">Composer (source json)</text>
+      <text class="m" x="125" y="66" text-anchor="middle">[a]dd · [p]icks · [t]ier · [d]elete</text>
+      <text class="m" x="125" y="82" text-anchor="middle">[i]mport CSV master list</text>
+      <text class="m" x="125" y="98" text-anchor="middle">resume from GS twin</text>
+
+      <rect class="box" x="300" y="24" width="220" height="84" rx="6"/>
+      <text class="lblb" x="410" y="48" text-anchor="middle">BinaryLutBuilder::build</text>
+      <text class="m" x="410" y="66" text-anchor="middle">resolve TC + RSP via MIB</text>
+      <text class="m" x="410" y="82" text-anchor="middle">picks → byte ranges, merge,</text>
+      <text class="m" x="410" y="98" text-anchor="middle">pack offsets, budget check</text>
+
+      <rect class="box" x="590" y="10" width="210" height="50" rx="6"/>
+      <text class="lbl" x="695" y="31" text-anchor="middle">rate_group_lut.bin</text>
+      <text class="m" x="695" y="48" text-anchor="middle">CRC-16 signed · uplinked</text>
+      <rect class="box" x="590" y="72" width="210" height="50" rx="6"/>
+      <text class="lbl" x="695" y="93" text-anchor="middle">rate_group_lut_bin_gs.json</text>
+      <text class="m" x="695" y="110" text-anchor="middle">GS twin · never uplinked</text>
+
+      <line class="edge" x1="230" y1="66" x2="296" y2="66" marker-end="url(#a5)"/>
+      <line class="edge" x1="520" y1="48" x2="586" y2="34" marker-end="url(#a5)"/>
+      <line class="edge" x1="520" y1="84" x2="586" y2="96" marker-end="url(#a5)"/>
+      <text class="m" x="553" y="26" text-anchor="middle">[b]uild</text>
+
+      <path class="edge up" d="M695 60 C 695 150, 500 168, 340 172" marker-end="url(#a5u)"/>
+      <text class="mu" x="560" y="152" text-anchor="middle">[s]end: 'XLUT' + u32 len + file  →  OBC :P+3  →  "OK"</text>
+
+      <!-- subframe bar -->
+      <text class="lblb" x="20" y="228">Subframe layout (1280 B, period T_sf = 1000 ms)</text>
+      <rect class="fld up"  x="20"  y="244" width="240" height="38"/><text class="lbl" x="140" y="267" text-anchor="middle">VH — every subframe</text>
+      <rect class="fld"     x="260" y="244" width="240" height="38"/><text class="lbl" x="380" y="267" text-anchor="middle">H — ×2 blocks</text>
+      <rect class="fld"     x="500" y="244" width="180" height="38"/><text class="lbl" x="590" y="267" text-anchor="middle">M — ×4</text>
+      <rect class="fld"     x="680" y="244" width="105" height="38"/><text class="lbl" x="732" y="267" text-anchor="middle">L — ×8</text>
+      <rect class="fld mut" x="785" y="244" width="15"  height="38"/>
+      <text class="m" x="140" y="300" text-anchor="middle">[0:400] · budget 400 B</text>
+      <text class="m" x="380" y="300" text-anchor="middle">[400:800] · 400×2 = 800 B</text>
+      <text class="m" x="590" y="300" text-anchor="middle">[800:1100] · 300×4 = 1200 B</text>
+      <text class="m" x="732" y="300" text-anchor="middle">[1100:1275] · 175×8</text>
+      <text class="m" x="793" y="300" text-anchor="middle">5 rsvd</text>
+    </svg>
+    </div>
+    <figcaption><b>LUT workflow and subframe geometry</b> (per docs/binary_lut_design.md). Lower
+    tiers multiplex across 2/4/8 subframes, so their block budgets exceed their per-subframe
+    window.</figcaption>
+  </figure>
+
+  <h3>Composer functions (main.cpp:2416–2758)</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Function</th><th>Role</th></tr>
+    <tr><td><code>binary_lut_flow()</code></td><td>The menu loop. On entry, offers to resume the existing GS twin for editing. Every iteration re-runs <code>build()</code> so the per-tier byte-budget summary and errors are always current. Keys: a/i/p/t/d/l/b/s/q.</td></tr>
+    <tr><td><code>blut_print_summary()</code></td><td>Per-tier "cmds, used / budget" lines (red when over budget) plus builder warnings and errors.</td></tr>
+    <tr><td><code>blut_add_command()</code></td><td>Adds one entry. ADCS: pick a TM (the poll <em>is</em> the TM request). GPS: pick a log (TC is always <code>LOG</code>, log id recorded). EPS/XLINK: lists TCs having a <code>_RSP</code> TM; UHF: replies drop the <code>GET_</code> prefix instead. Then a tier (VH/H/M/L) and the picks.</td></tr>
+    <tr><td><code>blut_select_picks()</code></td><td>Shows the response's parameter map (offset/size/name/type from <code>response_param_map()</code>) and accepts: comma list of numbers/names, <code>bytes OFF:SIZE</code> raw ranges, or <kbd>Enter</kbd> = full payload.</td></tr>
+    <tr><td><code>blut_list()</code></td><td>Flat numbered listing of all entries across tiers, returning a {tier, index} map that the edit keys ([p]icks / [t]ier / [d]elete) index into.</td></tr>
+    <tr><td><code>blut_twin_to_source()</code></td><td>Reverses a GS twin back into composer source (resume-for-edit), translating "&lt;full payload&gt;" / "&lt;bytes&gt;" pick markers.</td></tr>
+    <tr><td><code>kBlutBin()/kBlutTwin()/blut_config_dir()</code></td><td>Project-root-anchored output paths — launching from <code>build/</code> or <code>scripts/</code> no longer breaks [b]uild.</td></tr>
+    <tr><td><em>[s]end handler</em></td><td>Strict rule: only the binary crosses the link. Reads the .bin, frames it as <code>'XLUT' + u32 length + body</code>, connects to <code>obc_port+3</code>, and prints the OBC's "OK…" or error reply.</td></tr>
+  </table></div>
+
+  <p>The binary itself (see <code>binary_lut_builder.hpp</code>) is a 50-byte header
+  (magic <code>XLUT</code>, version, segment sizes, entry counts, segment offsets, file length,
+  CRC-16-CCITT signature) followed by entries of
+  <code>sync A55A · apid · flags · tc_len · pre-built native TC bytes · tm_raw_len · pick_count ×
+  {src_off, size, block_off}</code>. Deliberately id-less: entry <em>position</em> within its
+  segment is the only OBC↔GS link, protected by the shared CRC. The XLink product key from the
+  loaded catalog is baked into replayed XLINK TC bytes. <code>rate_group_csv.cpp</code> parses the
+  operator's CSV master list (<code>tier,tc_id,subsystem,tc_name,picks</code>, RFC-4180 quoting,
+  per-row error reporting) into the same source JSON for the [i]mport path.</p>
+</section>
+
+<!-- ══════════════════════════ 12 SCRIPT ══════════════════════════ -->
+<section id="script">
+  <div class="eyebrow">12 · Automation</div>
+  <h2>Script mode and command history</h2>
+  <h3><code>run_script()</code> (main.cpp:2140)</h3>
+  <p>With <code>--script FILE</code> the CLI runs the file and exits. Each non-blank, non-<code>#</code>
+  line is <code>SUBSYSTEM TC_ID</code> — the TC resolved by spec ID, then wire id, then name — plus a
+  <code>WAIT n</code> command that sleeps n seconds. Every TC is sent with default-zero parameters
+  through the same <code>send_and_report()</code> path (so preflight checks, dumps and decoding all
+  still apply), and every problem is reported with its line number without stopping the run.</p>
+  <pre><code># example script
+EPS EP-3
+WAIT 2
+ADCS 42
+GPS LOG</code></pre>
+  <h3><code>show_and_replay_history()</code> (main.cpp:2222)</h3>
+  <p>The <kbd>!</kbd> menu lists up to 10 recent commands with ages ("34s ago"), and re-sends the
+  picked one: synthesized entries replay through their LOG-wrap / empty-payload path; ordinary TCs
+  replay with default-zero parameters (the simple-and-safe choice — no interactive re-prompt).</p>
+</section>
+
+<!-- ══════════════════════════ 13 SUPPORT ══════════════════════════ -->
+<section id="support">
+  <div class="eyebrow">13 · Supporting modules</div>
+  <h2>The xdos_core pieces the CLI stands on</h2>
+
+  <h3>MIB — <code>src/mib/mib.{hpp,cpp}</code></h3>
+  <p>The Mission Information Base loads per-subsystem JSON files (<code>mib/adcs.json</code>,
+  <code>eps.json</code>, <code>gps.json</code>, <code>payload.json</code>, <code>xlink.json</code>,
+  <code>ccsds_*.json</code>…) into immutable structures: <code>SubsystemDef → Message →
+  Parameter</code>, plus <code>EnumType</code>, <code>Node</code> (EPS boards with RS485 addresses)
+  and <code>ChannelInfo</code> (the EPS power-channel map used throughout the UI). Lookups are O(1)
+  by name, by (subsystem, direction, wire_id), and by (…, node, wire_id) — the node variant exists
+  because EPS wire ids repeat across PDU/BMS/MPPT boards. <code>by_param_id()</code> accepts loose
+  spec-ID input ("EP-019", "EP-19", "ep19", "19") and returns nullptr on ambiguity rather than
+  guessing.</p>
+
+  <h3>Payload codec — <code>src/codec/codec.{hpp,cpp}</code></h3>
+  <p><code>encode(msg, values)</code> / <code>decode(msg, payload)</code> translate between JSON
+  value maps and payload bytes using the message's parameter table. Two offset modes selected by
+  <code>Message.offset_unit</code>: <code>"bits"</code> (ADCS/XLink — bit-packed LE) and
+  <code>"bytes"</code> (EPS/GPS — byte-aligned LE). Scaled integers multiply on encode / divide on
+  decode; ENUMs accept value or name; missing fields default to zero; variable-length trailing
+  arrays (GPS HWMONITOR/PSRDOP/VERSION) decode greedily into a <code>_array</code> list.</p>
+
+  <h3>Transport — <code>src/transport/tcp_transport.{hpp,cpp}</code></h3>
+  <p><code>TcpClient</code> is a minimal blocking client: <code>connect(host, port, timeout)</code>,
+  mutex-guarded <code>send</code>, and <code>recv(max, timeout)</code> that returns when at least one
+  byte arrives or the timeout/connection-loss hits. Bytes travel unmodified — all framing is the
+  caller's job. (<code>TcpServer</code> in the same header serves the simulators, not the GS.)</p>
+
+  <h3>XLink codec &amp; keys — <code>src/subsystems/xlink_{codec,keys}.{hpp,cpp}</code></h3>
+  <p><code>encode_frame()</code>/<code>decode_frame()</code> implement the monolithic XLink wire
+  format: 16-byte LE product key, 4-byte <code>service_event</code> (top nibble
+  GET/SET/ACK/NAK flag, low 28 bits event id), then a U32-word-aligned bit-packed data block —
+  fields never span a word boundary, which is why the generic codec can't be reused.
+  <code>parse_key_hex()</code> reads the "aabbccdd-…" key form. <code>KeyCatalog::load()</code>
+  parses the vendor's per-device key file: serial number, MAC, unit model, and one
+  <code>KeyEntry</code> (symbol-rate pair → 128-bit key + capability flags) per supported
+  configuration.</p>
+
+  <h3>EGSE — <code>src/common/egse.{hpp,cpp}</code></h3>
+  <p>Builders and parsers for the <code>XGSE</code> bench frames used by the PowerMonitor:
+  <code>make_req</code>, <code>make_kill_set</code>, <code>parse_eps_status</code>,
+  <code>parse_obc_status</code>, plus name tables (<code>obc_state_name</code>,
+  <code>eps_mode_name</code>). <code>EpsStatus</code> carries kill, mode, orbit phase + remaining
+  seconds, battery mV, SoC, effective channel mask and autonomous shed mask; <code>ObcStatus</code>
+  carries the boot FSM state (Unpowered/Booting/Sequencing/On), countdown and sequence progress.</p>
+
+  <h3>FlightConfig — <code>src/common/flight_config.hpp</code></h3>
+  <p>Header-only loader for <code>config/flight.json</code> with compiled fallbacks: OBC boot/stagger
+  timings, the power-menu (name → EPS channel list) that seeds the PowerMonitor, the default-ON
+  sequence, battery thresholds and shed policy, orbit phase durations, and the EGSE endpoints.
+  <code>bits()</code> converts channel lists to 16-bit masks.</p>
+
+  <h3>Colour — <code>src/common/color.hpp</code></h3>
+  <p>ANSI helpers used in every print: <code>header/ok/err/warn/hint/addr</code> and the
+  <code>set_tag/get_tag/act_tag</code> trio; <code>set_use_color(false)</code> backs the
+  <code>--no-color</code> flag.</p>
+</section>
+
+<!-- ══════════════════════════ 14 REFERENCE ══════════════════════════ -->
+<section id="reference">
+  <div class="eyebrow">14 · Quick reference</div>
+  <h2>Flags, ports and keys at a glance</h2>
+
+  <h3>Command-line flags</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Flag</th><th>Effect</th></tr>
+    <tr><td><code>--via-obc / --no-obc</code></td><td>One shared OBC link (default) vs direct per-subsystem sockets.</td></tr>
+    <tr><td><code>--obc-host H · --obc-port P</code></td><td>OBC endpoint (compiled default 10.10.10.2:7000; run_cli.sh passes 127.0.0.1:10000).</td></tr>
+    <tr><td><code>--xlink-host H · --xlink-port P</code></td><td>Direct XLink endpoint, only with --no-obc (sim 10050, real HW 192.168.1.1:51003).</td></tr>
+    <tr><td><code>--xlink-key HEX32</code></td><td>Product key; overrides/precedes the auto-loaded catalog key.</td></tr>
+    <tr><td><code>--script FILE</code></td><td>Batch mode: run the file, exit.</td></tr>
+    <tr><td><code>--no-color</code></td><td>Strip ANSI colours.</td></tr>
+    <tr><td><code>--help / -h</code></td><td>Usage text, exit 0.</td></tr>
+  </table></div>
+
+  <h3>Port map (P = OBC routing port)</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Port</th><th>Purpose</th><th>Used by</th></tr>
+    <tr><td class="num">P</td><td>TC/TM routing — the flight link</td><td>Session (shared slot)</td></tr>
+    <tr><td class="num">P + 1</td><td>OBC EGSE status (boot FSM)</td><td>PowerMonitor::poll</td></tr>
+    <tr><td class="num">P + 2</td><td>Rate-group Master-Frame stream</td><td>standalone <code>xdos_tm_view</code> terminal (not this CLI)</td></tr>
+    <tr><td class="num">P + 3</td><td>Binary LUT upload listener</td><td>binary_lut_flow [s]end</td></tr>
+    <tr><td class="num">10010–10060</td><td>EPS / ADCS / GPS / Payload / XLink / UHF sims</td><td>--no-obc direct mode; EPS 10010 doubles as the EGSE umbilical</td></tr>
+  </table></div>
+
+  <h3>Prompt cheat-sheet</h3>
+  <div class="keymap">
+    <div class="key"><kbd>42</kbd> <span class="d">send TC 42 (params prompted)</span></div>
+    <div class="key"><kbd>EP-3</kbd> <span class="d">send by spec ID (EPS/UHF style)</span></div>
+    <div class="key"><kbd>?42</kbd> <span class="d">details without sending</span></div>
+    <div class="key"><kbd>/attitude</kbd> <span class="d">search TC names</span></div>
+    <div class="key"><kbd>Enter</kbd> <span class="d">next page / back / default value</span></div>
+    <div class="key"><kbd>b</kbd> <span class="d">back one level</span></div>
+  </div>
+
+  <p class="note">Everything in this document was read from the source tree at
+  <code>xdos-cpp/</code> — primarily <code>src/cli/main.cpp</code> with the session, codec, framing,
+  transport, MIB, EGSE and LUT modules it links. Line references point at the current revision and
+  will drift as the code evolves; the structure they describe is stable.</p>
+</section>
+</main>
+</div>
+</body>
+</html>

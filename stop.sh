@@ -4,7 +4,7 @@
 #   ./stop.sh           stop the simulator and the backend
 #   ./stop.sh --sim     stop only the simulator, leave the backend up
 #
-# Deliberately does NOT call "updated xdos"/scripts/kill_all.sh: that script
+# Deliberately does NOT call xdos/scripts/kill_all.sh: that script
 # misses xdos_tm_view and xdos_sensor_sim while printing "all XDOS processes
 # terminated", and since the headless-EOF fix a stray tm_view waits on a signal
 # forever. The pattern below is run_stack.sh's own, which does cover them.

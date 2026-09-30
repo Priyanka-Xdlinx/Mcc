@@ -1,0 +1,81 @@
+{
+  "_comment": "Flight power-sequence configuration. Bindings are by EPS PDU channel ID (O-numbers from the NL Spacehawk Master_Sheet); labels live in mib/eps.json 'channels'. Times are real seconds; sims scale them by --time-scale.",
+  "obc_boot_s": 10,
+  "stagger_s": 2,
+  "restore_period_s": 10,
+  "obc_channels": [
+    1,
+    2
+  ],
+  "power_menu": [
+    {
+      "name": "ADCS",
+      "channels": [
+        4
+      ]
+    },
+    {
+      "name": "GPS",
+      "channels": [
+        3
+      ],
+      "note": "O3 avionics bus \u2014 includes GNSS (user-confirmed)"
+    },
+    {
+      "name": "SBAND",
+      "channels": [
+        5
+      ]
+    },
+    {
+      "name": "PAYLOAD",
+      "channels": [
+        10
+      ]
+    },
+    {
+      "name": "UHF",
+      "channels": [
+        11
+      ],
+      "note": "O11 UHF transceiver (OpenLST), 12V"
+    }
+  ],
+  "default_on_sequence": [
+    "ADCS",
+    "SBAND",
+    "GPS",
+    "UHF"
+  ],
+  "battery_thresholds_v": {
+    "full": 12.0,
+    "normal": 11.1,
+    "safe": 9.9,
+    "critical": 9.0
+  },
+  "hysteresis_v": 0.15,
+  "load_shed": {
+    "safe_channels": [
+      10
+    ],
+    "critical_channels": [
+      10,
+      4,
+      3
+    ],
+    "below_critical_keep_channels": [
+      1,
+      2
+    ]
+  },
+  "orbit": {
+    "sunlit_s": 3300,
+    "eclipse_s": 2100
+  },
+  "egse": {
+    "eps_host": "127.0.0.1",
+    "eps_port": 10010,
+    "obc_host": "127.0.0.1",
+    "obc_port": 10000
+  }
+}

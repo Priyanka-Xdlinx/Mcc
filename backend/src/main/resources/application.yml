@@ -15,7 +15,7 @@ spring:
 mcc:
   # Absolute paths keep the app runnable from any working directory.
   db: ${MCC_DB:../mcc.db}
-  xdos-home: ${MCC_XDOS_HOME:../../updated xdos}
+  xdos-home: ${MCC_XDOS_HOME:../xdos}
   feed:
     host: 127.0.0.1
     port: 9100

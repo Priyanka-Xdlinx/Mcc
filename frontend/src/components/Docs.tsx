@@ -137,7 +137,7 @@ function BuildDoc() {
             <tr><td>Storage</td><td><code>store/TelemetryRepo.java</code>, <code>SchemaRepo.java</code></td><td>Latest value per parameter plus history in SQLite; loads the MIB and LUT tables at start and checks the LUT CRC-16.</td></tr>
             <tr><td>API</td><td><code>api/*Controller.java</code></td><td>The REST endpoints in the Swagger section, plus the WebSocket in Live stream.</td></tr>
             <tr><td>Feed control</td><td><code>sim/SimulatorService.java</code></td><td>Starts and stops the XDLINX stack with one fixed command; nothing from a request reaches a shell.</td></tr>
-            <tr><td>Schema builder</td><td><code>schema/build_schema.py</code></td><td>Builds <code>mcc.db</code> from the mission database JSON (<code>updated xdos/mib/*.json</code>) and the LUT twin (<code>config/rate_group_lut_bin_gs.json</code>). Never from the flattened CSV, which lacks endianness.</td></tr>
+            <tr><td>Schema builder</td><td><code>schema/build_schema.py</code></td><td>Builds <code>mcc.db</code> from the mission database JSON (<code>xdos/mib/*.json</code>) and the LUT twin (<code>config/rate_group_lut_bin_gs.json</code>). Never from the flattened CSV, which lacks endianness.</td></tr>
             <tr><td>Dashboard</td><td><code>frontend/src</code></td><td>React 18 + TypeScript, built by Vite into <code>backend/src/main/resources/static</code>.</td></tr>
           </tbody>
         </table>

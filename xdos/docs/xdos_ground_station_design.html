@@ -1,0 +1,1323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="XDOS Ground Station — software architecture and design. Process layout, CCSDS TC/TM wire formats, and the binary rate-group telemetry LUT.">
+<style>
+:root{color-scheme:light dark}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>XDOS Ground Station — Software Architecture and Design</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --paper:#FAFBFB; --surface:#FFFFFF; --surface-2:#F1F5F6; --surface-3:#E8EEF0;
+  --ink:#101A1F; --ink-2:#3C4C53; --ink-3:#6B7C83;
+  --rule:#DCE4E7; --rule-2:#BECBD0;
+  --cyan:#007D98; --cyan-bright:#009EBE;
+  --amber:#A2670F; --moss:#2F6D4D; --violet:#544880;
+  --fill-cyan:#E3F2F7; --fill-amber:#FAEFDD; --fill-moss:#E5F2EA;
+  --fill-violet:#EEECF7; --fill-neutral:#F1F5F6;
+  --shadow:0 1px 2px rgba(16,26,31,.05);
+  --measure:66ch;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0A1216; --surface:#0F1A1F; --surface-2:#152329; --surface-3:#1C2E35;
+    --ink:#E7F0F2; --ink-2:#B2C3C9; --ink-3:#82979E;
+    --rule:#20323A; --rule-2:#2C424A;
+    --cyan:#3FBEDA; --cyan-bright:#5AD3EE;
+    --amber:#DDA75B; --moss:#6DBE92; --violet:#A296D8;
+    --fill-cyan:#10323C; --fill-amber:#31270F; --fill-moss:#123020;
+    --fill-violet:#211E39; --fill-neutral:#152329;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0A1216; --surface:#0F1A1F; --surface-2:#152329; --surface-3:#1C2E35;
+  --ink:#E7F0F2; --ink-2:#B2C3C9; --ink-3:#82979E;
+  --rule:#20323A; --rule-2:#2C424A;
+  --cyan:#3FBEDA; --cyan-bright:#5AD3EE;
+  --amber:#DDA75B; --moss:#6DBE92; --violet:#A296D8;
+  --fill-cyan:#10323C; --fill-amber:#31270F; --fill-moss:#123020;
+  --fill-violet:#211E39; --fill-neutral:#152329;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:16.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui{font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif}
+code,kbd,.mono{font-family:"IBM Plex Mono","SF Mono",Menlo,Consolas,monospace}
+
+/* ── masthead ─────────────────────────────────────────────── */
+.masthead{
+  border-bottom:1px solid var(--rule); background:var(--surface);
+  padding:34px 28px 30px;
+}
+.masthead-in{max-width:1180px;margin:0 auto}
+.brand{
+  font-family:"IBM Plex Sans",sans-serif; font-size:10.5px; font-weight:600;
+  letter-spacing:.19em; text-transform:uppercase; color:var(--ink-3);
+  display:flex; align-items:center; gap:10px; margin-bottom:20px;
+}
+.brand-mark{width:13px;height:13px;flex:none}
+.brand .sep{color:var(--rule-2)}
+h1{
+  font-size:38px; font-weight:600; line-height:1.1; letter-spacing:-.018em;
+  margin:0 0 10px; text-wrap:balance;
+}
+.standfirst{
+  font-size:18px; color:var(--ink-2); margin:0 0 24px;
+  max-width:60ch; line-height:1.5;
+}
+.meta{
+  display:flex; flex-wrap:wrap; gap:0 28px; row-gap:10px;
+  font-family:"IBM Plex Sans",sans-serif; font-size:12px; color:var(--ink-3);
+  padding-top:20px; border-top:1px solid var(--rule);
+}
+.meta b{color:var(--ink-2);font-weight:600}
+.chip{
+  display:inline-block; padding:2px 8px; border-radius:3px;
+  background:var(--fill-moss); color:var(--moss); font-weight:600;
+  font-size:11px; letter-spacing:.02em;
+}
+.chip.warn{background:var(--fill-amber);color:var(--amber)}
+
+/* ── shell ────────────────────────────────────────────────── */
+.shell{
+  max-width:1180px; margin:0 auto; padding:0 28px 90px;
+  display:grid; grid-template-columns:198px minmax(0,1fr); gap:52px;
+  align-items:start;
+}
+nav.toc{
+  position:sticky; top:24px; padding-top:44px;
+  font-family:"IBM Plex Sans",sans-serif; font-size:12.5px;
+  max-height:calc(100vh - 48px); overflow-y:auto;
+}
+nav.toc .toc-h{
+  font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:600; margin-bottom:12px;
+}
+nav.toc ol{list-style:none;margin:0;padding:0;counter-reset:s}
+nav.toc li{counter-increment:s}
+nav.toc a{
+  display:grid; grid-template-columns:22px 1fr; gap:6px;
+  padding:5px 0 5px 8px; color:var(--ink-2); text-decoration:none;
+  border-left:2px solid transparent; line-height:1.35;
+}
+nav.toc a::before{content:counter(s);color:var(--ink-3);font-variant-numeric:tabular-nums}
+nav.toc a:hover{color:var(--ink)}
+nav.toc a.on{color:var(--cyan);border-left-color:var(--cyan);font-weight:500}
+nav.toc a.on::before{color:var(--cyan)}
+nav.toc a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:2px}
+
+main{min-width:0;padding-top:44px}
+
+/* ── sections ─────────────────────────────────────────────── */
+section{scroll-margin-top:24px;margin-bottom:56px}
+h2{
+  font-size:14px; font-weight:600; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--cyan); margin:0 0 6px;
+  display:flex; align-items:baseline; gap:11px;
+}
+h2 .num{
+  font-variant-numeric:tabular-nums; color:var(--ink-3); font-weight:500;
+  font-size:12px; letter-spacing:0;
+}
+.section-title{
+  font-family:"IBM Plex Sans",sans-serif; font-size:26px; font-weight:600;
+  letter-spacing:-.012em; margin:0 0 20px; padding-bottom:14px;
+  border-bottom:1px solid var(--rule); text-wrap:balance;
+}
+h3{
+  font-size:16.5px; font-weight:600; margin:32px 0 8px;
+  letter-spacing:-.005em; color:var(--ink);
+}
+p{margin:0 0 14px;max-width:var(--measure)}
+main ul{margin:0 0 16px;padding:0;list-style:none;max-width:var(--measure)}
+main ul li{
+  position:relative; padding-left:20px; margin-bottom:8px;
+}
+main ul li::before{
+  content:""; position:absolute; left:3px; top:.62em;
+  width:5px; height:5px; border-radius:50%; background:var(--cyan);
+}
+main ul li b{font-weight:600}
+code{
+  font-size:.855em; background:var(--surface-2); color:var(--ink-2);
+  padding:1px 5px; border-radius:3px; border:1px solid var(--rule);
+  white-space:nowrap;
+}
+
+/* ── key facts ────────────────────────────────────────────── */
+.facts{
+  border:1px solid var(--rule); border-radius:4px; background:var(--surface);
+  padding:4px 18px; margin:0 0 26px; box-shadow:var(--shadow);
+}
+.facts dl{
+  margin:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 34px;
+}
+.facts div{
+  display:flex; justify-content:space-between; gap:14px; align-items:baseline;
+  padding:9px 0; border-bottom:1px solid var(--rule);
+  font-family:"IBM Plex Sans",sans-serif; font-size:12.5px;
+}
+.facts div:nth-last-child(-n+2){border-bottom:0}
+@media (max-width:600px){.facts dl{grid-template-columns:1fr}
+  .facts div:nth-last-child(2){border-bottom:1px solid var(--rule)}}
+.facts dt{color:var(--ink-3)}
+.facts dd{
+  margin:0; color:var(--ink); font-weight:500; text-align:right;
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── figures ──────────────────────────────────────────────── */
+figure{
+  margin:26px 0 30px; padding:0;
+}
+.fig-frame{
+  border:1px solid var(--rule); border-radius:4px; background:var(--surface);
+  padding:16px 18px; overflow-x:auto; box-shadow:var(--shadow);
+}
+figure svg{display:block;width:100%;min-width:660px;height:auto}
+figcaption{
+  font-family:"IBM Plex Sans",sans-serif; font-size:12px; color:var(--ink-3);
+  margin-top:10px; line-height:1.5;
+}
+figcaption b{color:var(--ink-2);font-weight:600}
+
+/* svg vocabulary */
+.n{stroke-width:1.2}
+.n-cyan{fill:var(--fill-cyan);stroke:var(--cyan)}
+.n-amber{fill:var(--fill-amber);stroke:var(--amber)}
+.n-moss{fill:var(--fill-moss);stroke:var(--moss)}
+.n-violet{fill:var(--fill-violet);stroke:var(--violet)}
+.n-plain{fill:var(--surface);stroke:var(--rule-2)}
+.n-flat{fill:var(--fill-neutral);stroke:var(--rule-2)}
+.t{fill:var(--ink);font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600}
+.t-s{fill:var(--ink-3);font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;font-weight:400}
+.t-m{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:9.5px}
+.t-lane{font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.1em}
+.t-frame{fill:var(--ink-3);font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.08em}
+.frame{fill:none;stroke:var(--rule-2);stroke-dasharray:3 3;stroke-width:1}
+.ln{fill:none;stroke-width:1.5}
+.ln-cyan{stroke:var(--cyan)} .ln-amber{stroke:var(--amber)}
+.ln-moss{stroke:var(--moss)} .ln-violet{stroke:var(--violet)}
+.ln-ink{stroke:var(--rule-2)}
+.mk-cyan{fill:var(--cyan)} .mk-amber{fill:var(--amber)}
+.mk-moss{fill:var(--moss)} .mk-violet{fill:var(--violet)}
+.mk-ink{fill:var(--rule-2)}
+.c-cyan{fill:var(--cyan)} .c-amber{fill:var(--amber)} .c-moss{fill:var(--moss)}
+.disc{fill:var(--cyan)} .disc-m{fill:var(--moss)}
+.disc-t{fill:var(--surface);font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;font-weight:600}
+.band{fill:var(--fill-cyan);stroke:var(--cyan);stroke-width:1}
+.band-a{fill:var(--fill-amber);stroke:var(--amber);stroke-width:1}
+.band-t{font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.04em}
+/* strip vocabulary — declared after .t/.t-s/.n-* so these win on equal specificity */
+.s-cyan{fill:var(--surface);stroke:var(--cyan);stroke-width:1.2}
+.s-cyan-hi{fill:var(--fill-cyan);stroke:var(--cyan);stroke-width:1.8}
+.s-moss{fill:var(--surface);stroke:var(--moss);stroke-width:1.2}
+.s-moss-hi{fill:var(--fill-moss);stroke:var(--moss);stroke-width:1.8}
+.r1,.r2,.r3,.r4{fill:var(--cyan);stroke:var(--cyan);stroke-width:1.2}
+.r1{fill-opacity:.20} .r2{fill-opacity:.13} .r3{fill-opacity:.07} .r4{fill-opacity:.03}
+.t-inv{fill:var(--surface)}
+.t-amber{fill:var(--amber);font-weight:600}
+
+/* ── tables ───────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto;margin:8px 0 26px}
+table{
+  border-collapse:collapse; width:100%; min-width:520px;
+  font-family:"IBM Plex Sans",sans-serif; font-size:12.5px;
+  background:var(--surface); border:1px solid var(--rule);
+}
+caption{
+  caption-side:top; text-align:left; font-size:11px; font-weight:600;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3);
+  padding:0 0 8px;
+}
+th{
+  text-align:left; font-weight:600; color:var(--ink);
+  background:var(--surface-2); padding:8px 12px;
+  border-bottom:1px solid var(--rule-2); white-space:nowrap;
+}
+td{padding:8px 12px;border-bottom:1px solid var(--rule);color:var(--ink-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.m,th.m{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink);white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+td b{color:var(--ink);font-weight:600}
+
+/* ── notes ────────────────────────────────────────────────── */
+.note{
+  border-left:2px solid var(--cyan); background:var(--surface-2);
+  padding:13px 17px; margin:20px 0; border-radius:0 3px 3px 0;
+  font-size:15px; max-width:var(--measure);
+}
+.note.amber{border-left-color:var(--amber)}
+.note .lbl{
+  font-family:"IBM Plex Sans",sans-serif; font-size:10px; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--cyan);
+  display:block; margin-bottom:5px;
+}
+.note.amber .lbl{color:var(--amber)}
+.note p{margin:0;max-width:none}
+
+/* ── two-up ───────────────────────────────────────────────── */
+.two-up{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:22px; margin:20px 0 26px;
+}
+.panel{
+  border:1px solid var(--rule); border-radius:4px; padding:16px 18px;
+  background:var(--surface); box-shadow:var(--shadow);
+}
+.panel h4{
+  font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase;
+  margin:0 0 10px; color:var(--ink-3);
+}
+.panel.good h4{color:var(--moss)}
+.panel.next h4{color:var(--amber)}
+.panel ul{margin:0;max-width:none;font-size:14.5px}
+.panel ul li{margin-bottom:9px}
+.panel ul li:last-child{margin-bottom:0}
+.panel.good ul li::before{background:var(--moss)}
+.panel.next ul li::before{background:var(--amber)}
+
+/* ── glossary ─────────────────────────────────────────────── */
+.gloss{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:0 34px; font-family:"IBM Plex Sans",sans-serif; font-size:12.5px;
+}
+.gloss div{
+  display:grid; grid-template-columns:92px 1fr; gap:12px;
+  padding:8px 0; border-bottom:1px solid var(--rule); align-items:baseline;
+}
+.gloss dt{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink);font-weight:500}
+.gloss dd{margin:0;color:var(--ink-2);line-height:1.45}
+
+footer{
+  border-top:1px solid var(--rule); margin-top:20px; padding:22px 0 0;
+  font-family:"IBM Plex Sans",sans-serif; font-size:11.5px; color:var(--ink-3);
+  display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;gap:0}
+  nav.toc{position:static;max-height:none;padding-top:32px;
+    border-bottom:1px solid var(--rule);padding-bottom:18px}
+  nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 20px}
+  main{padding-top:32px}
+  h1{font-size:30px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-in">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 12 12" aria-hidden="true">
+        <circle cx="6" cy="6" r="5.2" fill="none" stroke="var(--cyan-bright)" stroke-width="1.4"/>
+        <path d="M6 .8a5.2 5.2 0 0 1 0 10.4Z" fill="var(--cyan-bright)"/>
+      </svg>
+      <span>XDLinx Space Labs</span><span class="sep">/</span>
+      <span>Ground Segment</span><span class="sep">/</span>
+      <span>Internal technical review</span>
+    </div>
+    <h1>XDOS Ground Station</h1>
+    <p class="standfirst">Software architecture and design — the operator console, the on-board-computer bridge, the CCSDS wire contracts, and the binary look-up table that lets the flight computer downlink housekeeping telemetry without carrying a subsystem database.</p>
+    <div class="meta">
+      <span><b>Version</b> 1.0 / Rev 00</span>
+      <span><b>Date</b> 3 September 2026</span>
+      <span><b>Status</b> <span class="chip">Frame layout final · LUT path implemented</span></span>
+      <span><b>Classification</b> <span class="chip warn">Proprietary &amp; Confidential</span></span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+<nav class="toc" aria-label="Document sections">
+  <div class="toc-h">Contents</div>
+  <ol>
+    <li><a href="#s1"><span>Introduction</span></a></li>
+    <li><a href="#s2"><span>System overview</span></a></li>
+    <li><a href="#s3"><span>Software architecture</span></a></li>
+    <li><a href="#s4"><span>Telecommand path</span></a></li>
+    <li><a href="#s5"><span>CCSDS framing</span></a></li>
+    <li><a href="#s6"><span>Rate-group LUT</span></a></li>
+    <li><a href="#s7"><span>Simulation &amp; power</span></a></li>
+    <li><a href="#s8"><span>Verification</span></a></li>
+    <li><a href="#s9"><span>Build &amp; operations</span></a></li>
+    <li><a href="#s10"><span>Status &amp; next steps</span></a></li>
+    <li><a href="#s11"><span>Glossary</span></a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ══ 1 ══════════════════════════════════════════════════ -->
+<section id="s1">
+  <h2><span class="num">01</span> Introduction</h2>
+  <p class="section-title">What this system is, and what this document covers</p>
+
+  <p>The XDOS ground station is the Level-1/Level-2 ground software for the XDOS satellite. It gives an operator a single console from which every subsystem can be commanded, models the spacecraft closely enough that the whole command-and-telemetry path can be exercised on a desk, and decodes the housekeeping telemetry the on-board computer sends down on its own schedule.</p>
+
+  <div class="facts">
+    <dl>
+      <div><dt>Language</dt><dd>C++17</dd></div>
+      <div><dt>Source size</dt><dd>~19 000 lines</dd></div>
+      <div><dt>Spacecraft ID</dt><dd>625 · 0x271</dd></div>
+      <div><dt>Subsystems modelled</dt><dd>6</dd></div>
+      <div><dt>MIB definitions</dt><dd>418 messages</dd></div>
+      <div><dt>Subframe</dt><dd>1280 B @ 1 Hz</dd></div>
+      <div><dt>Master frame</dt><dd>16 subframes · 16 s</dd></div>
+      <div><dt>Test suite</dt><dd>110 cases · all pass</dd></div>
+    </dl>
+  </div>
+
+  <h3>Scope</h3>
+  <p>This document records what has been built, how the pieces fit together, and what the wire contracts are. It is written for an internal technical review: it assumes familiarity with spacecraft telecommanding but not with this codebase, and every figure in it is quoted from the working tree rather than from a plan. It covers the process architecture and network interfaces, the layered structure of the codebase, the telecommand path end to end, the CCSDS frame formats, the binary rate-group look-up table, the simulation environment and power model, and the verification status.</p>
+  <p>Out of scope: the radio-frequency layer, the flight software running on the real on-board computer, and the spacecraft platform itself. Where this document refers to the on-board computer, it means the bench model implemented in this repository, which presents the same interfaces as the flight article.</p>
+</section>
+
+<!-- ══ 2 ══════════════════════════════════════════════════ -->
+<section id="s2">
+  <h2><span class="num">02</span> System overview</h2>
+  <p class="section-title">Five processes, one host, every link a plain TCP socket</p>
+
+  <p>An operator works in the telecommanding CLI; that CLI talks to the on-board computer, which routes each command to the subsystem that owns it. In parallel, and without being asked, the on-board computer polls a set of housekeeping telecommands on a fixed cadence and pushes the results to a separate telemetry terminal.</p>
+  <p>Because every link carries the real wire format over an ordinary socket, any node in the diagram can be replaced by hardware without changing the software on either side of it. Substituting the real on-board computer for the bench model is a matter of pointing the CLI at a different address and port.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 1000 412" role="img" aria-label="Block diagram: the ground segment holding xdos_gs, xdos_tm_view, LUT authoring and the EGSE monitor; four labelled TCP links to the on-board computer holding the frame bridge, CCSDS codecs, rate-group engine, binary LUT store and power FSM; and a shared bus from the on-board computer to six subsystem simulators on ports 10010 to 10060.">
+        <defs>
+          <marker id="f1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" class="mk-cyan"/></marker>
+          <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" class="mk-amber"/></marker>
+          <marker id="f1m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" class="mk-moss"/></marker>
+          <marker id="f1v" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 z" class="mk-violet"/></marker>
+          <marker id="f1i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="mk-ink"/></marker>
+        </defs>
+
+        <text class="t-frame" x="8" y="26">GROUND SEGMENT — operator host</text>
+        <text class="t-frame" x="392" y="26">ON-BOARD COMPUTER — xdos_obc</text>
+        <text class="t-frame" x="790" y="26">SUBSYSTEM SIMULATORS</text>
+        <rect class="frame" x="8" y="34" width="250" height="366" rx="5"/>
+        <rect class="frame" x="392" y="34" width="268" height="366" rx="5"/>
+        <rect class="frame" x="790" y="34" width="202" height="366" rx="5"/>
+
+        <!-- ground -->
+        <rect class="n n-cyan" x="22" y="62" width="222" height="66" rx="4"/>
+        <text class="t" x="133" y="86" text-anchor="middle">xdos_gs</text>
+        <text class="t-s" x="133" y="101" text-anchor="middle">operator CLI — telecommanding</text>
+        <text class="t-s" x="133" y="114" text-anchor="middle">MIB-driven listings and decode</text>
+
+        <rect class="n n-moss" x="22" y="165" width="222" height="70" rx="4"/>
+        <text class="t" x="133" y="189" text-anchor="middle">xdos_tm_view</text>
+        <text class="t-s" x="133" y="204" text-anchor="middle">master-frame telemetry viewer</text>
+        <text class="t-s" x="133" y="217" text-anchor="middle">tier-indexed, slot-aligned</text>
+
+        <rect class="n n-amber" x="22" y="255" width="222" height="70" rx="4"/>
+        <text class="t" x="133" y="279" text-anchor="middle">LUT authoring</text>
+        <text class="t-m" x="133" y="294" text-anchor="middle">rate_group_commands.csv</text>
+        <text class="t-m" x="133" y="307" text-anchor="middle">xdos_lut_csv · [g] composer</text>
+
+        <rect class="n n-violet" x="22" y="338" width="222" height="48" rx="4"/>
+        <text class="t" x="133" y="359" text-anchor="middle">EGSE power monitor</text>
+        <text class="t-s" x="133" y="374" text-anchor="middle">umbilical poll — [p] menu</text>
+
+        <!-- obc -->
+        <rect class="n n-cyan" x="406" y="62" width="240" height="66" rx="4"/>
+        <text class="t" x="526" y="86" text-anchor="middle">Frame bridge / router</text>
+        <text class="t-s" x="526" y="101" text-anchor="middle">APID routing · CRC check</text>
+        <text class="t-s" x="526" y="114" text-anchor="middle">CCSDS wrap and unwrap</text>
+
+        <rect class="n n-cyan" x="406" y="138" width="240" height="44" rx="4"/>
+        <text class="t" x="526" y="157" text-anchor="middle">CCSDS TC / TM codecs</text>
+        <text class="t-m" x="526" y="172" text-anchor="middle">SOF 1ACF · SOF FCA1 (1432 B)</text>
+
+        <rect class="n n-moss" x="406" y="192" width="240" height="66" rx="4"/>
+        <text class="t" x="526" y="216" text-anchor="middle">Rate-group engine</text>
+        <text class="t-s" x="526" y="231" text-anchor="middle">16-slot schedule · picks → blocks</text>
+        <text class="t-s" x="526" y="244" text-anchor="middle">assembles the 1280 B subframe</text>
+
+        <rect class="n n-amber" x="406" y="268" width="240" height="44" rx="4"/>
+        <text class="t" x="526" y="287" text-anchor="middle">Binary LUT store</text>
+        <text class="t-m" x="526" y="302" text-anchor="middle">obc_lut_store.bin · CRC-16</text>
+
+        <rect class="n n-violet" x="406" y="340" width="240" height="44" rx="4"/>
+        <text class="t" x="526" y="359" text-anchor="middle">Power FSM</text>
+        <text class="t-s" x="526" y="374" text-anchor="middle">UNPOWERED → BOOTING → SEQUENCING → ON</text>
+
+        <!-- links ground <-> obc -->
+        <line class="ln ln-cyan" x1="244" y1="95" x2="406" y2="95" marker-start="url(#f1c)" marker-end="url(#f1c)"/>
+        <text class="t-m" x="325" y="80" text-anchor="middle">TCP P · 10000</text>
+        <text class="t-s" x="325" y="91" text-anchor="middle">CCSDS TC / TM</text>
+
+        <line class="ln ln-moss" x1="406" y1="200" x2="244" y2="200" marker-end="url(#f1m)"/>
+        <text class="t-m" x="325" y="185" text-anchor="middle">TCP P+2 · 10002</text>
+        <text class="t-s" x="325" y="196" text-anchor="middle">master-frame push, 1 Hz</text>
+
+        <line class="ln ln-amber" x1="244" y1="290" x2="406" y2="290" marker-end="url(#f1a)"/>
+        <text class="t-m" x="325" y="275" text-anchor="middle">TCP P+3 · 10003</text>
+        <text class="t-s" x="325" y="286" text-anchor="middle">binary LUT uplink</text>
+
+        <line class="ln ln-violet" x1="244" y1="362" x2="406" y2="362" marker-start="url(#f1v)" marker-end="url(#f1v)"/>
+        <text class="t-m" x="325" y="347" text-anchor="middle">TCP P+1 · 10001</text>
+        <text class="t-s" x="325" y="358" text-anchor="middle">EGSE power status</text>
+
+        <!-- bus -->
+        <text class="t-s" x="712" y="48" text-anchor="middle">native subsystem framing</text>
+        <text class="t-m" x="712" y="60" text-anchor="middle">TCP 10010 – 10060</text>
+        <line class="ln ln-ink" x1="646" y1="95" x2="762" y2="95"/>
+        <line class="ln ln-moss" x1="646" y1="225" x2="762" y2="225" stroke-dasharray="4 3"/>
+        <text class="t-s" x="700" y="241" text-anchor="middle" font-style="italic">autonomous polls</text>
+        <line class="ln ln-ink" x1="762" y1="85" x2="762" y2="365"/>
+        <line class="ln ln-ink" x1="762" y1="85" x2="804" y2="85" marker-end="url(#f1i)"/>
+        <line class="ln ln-ink" x1="762" y1="141" x2="804" y2="141" marker-end="url(#f1i)"/>
+        <line class="ln ln-ink" x1="762" y1="197" x2="804" y2="197" marker-end="url(#f1i)"/>
+        <line class="ln ln-ink" x1="762" y1="253" x2="804" y2="253" marker-end="url(#f1i)"/>
+        <line class="ln ln-ink" x1="762" y1="309" x2="804" y2="309" marker-end="url(#f1i)"/>
+        <line class="ln ln-ink" x1="762" y1="365" x2="804" y2="365" marker-end="url(#f1i)"/>
+
+        <!-- sims -->
+        <rect class="n n-plain" x="804" y="62" width="174" height="46" rx="4"/>
+        <text class="t" x="891" y="81" text-anchor="middle">EPS sim<tspan class="t-m" dx="8">10010</tspan></text>
+        <text class="t-s" x="891" y="97" text-anchor="middle">orbit / SOC / Vbatt engine</text>
+
+        <rect class="n n-plain" x="804" y="118" width="174" height="46" rx="4"/>
+        <text class="t" x="891" y="137" text-anchor="middle">ADCS sim<tspan class="t-m" dx="8">10020</tspan></text>
+        <text class="t-s" x="891" y="153" text-anchor="middle">quaternion + PD controller</text>
+
+        <rect class="n n-plain" x="804" y="174" width="174" height="46" rx="4"/>
+        <text class="t" x="891" y="193" text-anchor="middle">GPS sim<tspan class="t-m" dx="8">10030</tspan></text>
+        <text class="t-s" x="891" y="209" text-anchor="middle">Keplerian orbit propagator</text>
+
+        <rect class="n n-plain" x="804" y="230" width="174" height="46" rx="4"/>
+        <text class="t" x="891" y="249" text-anchor="middle">Payload sim<tspan class="t-m" dx="8">10040</tspan></text>
+        <text class="t-s" x="891" y="265" text-anchor="middle">container + capture server</text>
+
+        <rect class="n n-plain" x="804" y="286" width="174" height="46" rx="4"/>
+        <text class="t" x="891" y="305" text-anchor="middle">XLINK-S sim<tspan class="t-m" dx="8">10050</tspan></text>
+        <text class="t-s" x="891" y="321" text-anchor="middle">keyed S-band transceiver</text>
+
+        <rect class="n n-plain" x="804" y="342" width="174" height="46" rx="4"/>
+        <text class="t" x="891" y="361" text-anchor="middle">UHF sim<tspan class="t-m" dx="8">10060</tspan></text>
+        <text class="t-s" x="891" y="377" text-anchor="middle">OpenLST transceiver</text>
+      </svg>
+    </div>
+    <figcaption><b>Figure 1 — System block diagram.</b> Each side channel is a separate port, so an unprompted 1 Hz telemetry stream can never contend with a command reply on the routing port. Solid lines carry commanded traffic; the dashed line is the rate-group engine polling on its own schedule.</figcaption>
+  </figure>
+
+  <p>Three characteristics of the layout are worth drawing out before the detail:</p>
+  <ul>
+    <li><b>Side channels are physically separate.</b> Pushed telemetry, EGSE power status and look-up-table uplinks each get their own port.</li>
+    <li><b>Routing is by identity, not by content.</b> The bridge selects a subsystem from the APID inside the CCSDS frame; it never parses the subsystem payload.</li>
+    <li><b>The on-board computer is database-free.</b> It carries no command definitions at all. What it polls, and which response bytes it keeps, are uplinked to it as an opaque binary table.</li>
+  </ul>
+
+  <h3>Network interfaces and port allocation</h3>
+  <p>Ports are allocated relative to a single routing port, written <code>P</code>. It is 10000 in simulation and 7000 on the bench; the three side channels always sit at <code>P+1</code>, <code>P+2</code> and <code>P+3</code>, so moving between environments changes one number.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption>Port allocation</caption>
+      <thead><tr><th class="m">Port</th><th>Link</th><th>Direction</th><th>Carries</th></tr></thead>
+      <tbody>
+        <tr><td class="m">P&nbsp;&nbsp;= 10000</td><td>TC / TM routing</td><td>GS ⇄ OBC</td><td>CCSDS telecommand frames and their responses — the flight link</td></tr>
+        <tr><td class="m">P+1 = 10001</td><td>EGSE umbilical status</td><td>GS → OBC</td><td>The on-board computer's power state during boot and load-shed recovery. Kept off the routing port because sharing it caused reply contention.</td></tr>
+        <tr><td class="m">P+2 = 10002</td><td>Rate-group stream</td><td>OBC → GS</td><td>1280-byte subframes wrapped in 1432-byte telemetry frames, pushed once per second to every connected viewer</td></tr>
+        <tr><td class="m">P+3 = 10003</td><td>Binary LUT uplink</td><td>GS → OBC</td><td>The literal bytes <code>XLUT</code>, a 32-bit big-endian length and the file; the listener replies OK or ERR</td></tr>
+        <tr><td class="m">10010 – 10060</td><td>Subsystem buses</td><td>OBC ⇄ Sim</td><td>Native subsystem framing, one TCP port per subsystem</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Subsystem identity and APID map</h3>
+  <p>Spacecraft identity and the APID map are defined once, in the telecommand profile, and the telemetry profile references that same file. Uplink and downlink therefore cannot drift apart: there is only one place where the spacecraft ID and the subsystem APIDs are written down.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption>Subsystem identity, ports and native framing</caption>
+      <thead><tr><th>Subsystem</th><th>APID</th><th class="m">Port</th><th>Native framing prefix</th><th>MIB definitions</th></tr></thead>
+      <tbody>
+        <tr><td><b>ADCS</b></td><td class="m">1 · 0x001</td><td class="m">10020</td><td class="m">1F 7F &lt;id&gt; … 1F FF</td><td>220 messages · 79 enums</td></tr>
+        <tr><td><b>UHF</b></td><td class="m">2 · 0x002</td><td class="m">10060</td><td class="m">OpenLST framing</td><td>41 messages</td></tr>
+        <tr><td><b>EPS</b></td><td class="m">3 · 0x003</td><td class="m">10010</td><td class="m">00 &lt;base64 telegram&gt; 01</td><td>82 messages · 16 PDU channels</td></tr>
+        <tr><td><b>GPS</b></td><td class="m">4 · 0x004</td><td class="m">10030</td><td class="m">AA 44 12 …</td><td>19 messages</td></tr>
+        <tr><td><b>Payload</b></td><td class="m">5 · 0x005</td><td class="m">10040</td><td class="m">[type | cmd | len] + data</td><td>10 messages</td></tr>
+        <tr><td><b>XLINK-S</b></td><td class="m">6 · 0x006</td><td class="m">10050</td><td class="m">product key + event frame</td><td>46 messages</td></tr>
+        <tr><td><b>Rate group</b></td><td class="m">600 · 0x258</td><td class="m">—</td><td>telemetry only — master-frame push</td><td>n/a — position-indexed</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="lbl">Note</span>
+    <p>The on-board computer originally identified subsystems by sniffing the first one to three bytes of each frame — the native framing prefix above. With CCSDS framing in place, routing uses the inner packet's APID instead; the prefixes remain the wire format on the subsystem buses.</p>
+  </div>
+</section>
+
+<!-- ══ 3 ══════════════════════════════════════════════════ -->
+<section id="s3">
+  <h2><span class="num">03</span> Software architecture</h2>
+  <p class="section-title">One static library carries every layer; the executables are thin shells over it</p>
+
+  <p>Dependencies point downward only. Third-party code is limited to a vendored nlohmann/json header and Catch2 v3 for the test target; everything else is C++17 standard library plus the platform socket API, which keeps the Windows port to a single compatibility header.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Layers of the codebase</caption>
+      <thead><tr><th>Layer</th><th class="m">Source</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td><b>Applications</b></td><td class="m">src/cli · obc · simulator</td><td>xdos_gs, xdos_tm_view, xdos_obc, xdos_lut_csv, six subsystem simulators, xdos_tests</td></tr>
+        <tr><td><b>Session &amp; subsystems</b></td><td class="m">src/session · src/subsystems</td><td>Connection sessions with shared-link slots, the subsystem plugin registry, the XLINK-S keyed codec</td></tr>
+        <tr><td><b>Codec</b></td><td class="m">src/codec</td><td>CCSDS telecommand codec, CCSDS telemetry codec, and the earlier non-CCSDS codec kept for direct-to-simulator mode</td></tr>
+        <tr><td><b>Framing</b></td><td class="m">src/framing</td><td>One module per subsystem wire format: adcs, eps, gps, payload, uhf, xlink</td></tr>
+        <tr><td><b>Data model</b></td><td class="m">src/mib · src/lut</td><td>The MIB loader; the binary LUT builder, its CSV grammar and the on-disk format definition</td></tr>
+        <tr><td><b>Common &amp; transport</b></td><td class="m">src/common · src/transport</td><td>CRC-16-CCITT, hex and colour helpers, the EGSE model, shared types, the POSIX/WinSock shim, TCP client and server</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Data-driven by design</h3>
+  <p>Almost nothing about a subsystem is compiled in. Command listings, field offsets and sizes, enumerations, units, PDU channel labels and the CCSDS frame layout are all read from JSON at start-up, so a database revision changes behaviour without a rebuild — and the same profile drives encoding and decoding, so the two directions cannot disagree.</p>
+  <ul>
+    <li><code>mib/*.json</code> — one file per subsystem: every telecommand and telemetry message with its parameters, offsets, sizes, types, units and enumerations. 418 messages in total.</li>
+    <li><code>mib/ccsds_tc.json</code>, <code>mib/ccsds_tm.json</code> — the frame profiles: spacecraft identity, APID map, field layout, rate-group APID.</li>
+    <li><code>config/flight.json</code> — the power sequence: boot time, stagger, switch-on order, battery thresholds, load-shed sets, orbit period.</li>
+    <li><code>config/rate_group_commands.csv</code> — the master list of housekeeping commands from which the binary LUT is compiled.</li>
+  </ul>
+</section>
+
+<!-- ══ 4 ══════════════════════════════════════════════════ -->
+<section id="s4">
+  <h2><span class="num">04</span> Telecommand path</h2>
+  <p class="section-title">Ten steps from an operator keystroke to a decoded, unit-tagged response</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 1000 306" role="img" aria-label="Flow diagram in two lanes. Uplink: select the telecommand, enter parameters, build the native frame, wrap in a CCSDS telecommand frame, send on the flight link. Then the frame crosses the link. Execution and downlink: verify and unwrap, route to the subsystem, simulator executes, wrap the reply as telemetry, decode and display.">
+        <defs>
+          <marker id="f2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="mk-cyan"/></marker>
+          <marker id="f2m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="mk-moss"/></marker>
+        </defs>
+
+        <text class="t-lane c-cyan" x="10" y="16">UPLINK · GROUND → ON-BOARD COMPUTER</text>
+        <g>
+          <rect class="n n-cyan" x="10" y="26" width="176" height="104" rx="4"/>
+          <circle class="disc" cx="30" cy="46" r="9"/><text class="disc-t" x="30" y="49.5" text-anchor="middle">1</text>
+          <text class="t" x="46" y="50">Select the TC</text>
+          <text class="t-s" x="22" y="72">MIB listing plus synthesized</text>
+          <text class="t-s" x="22" y="85">GET entries for GPS and ADCS;</text>
+          <text class="t-s" x="22" y="98">?ID shows the parameter table</text>
+          <text class="t-s" x="22" y="111">without sending anything</text>
+
+          <rect class="n n-cyan" x="211" y="26" width="176" height="104" rx="4"/>
+          <circle class="disc" cx="231" cy="46" r="9"/><text class="disc-t" x="231" y="49.5" text-anchor="middle">2</text>
+          <text class="t" x="247" y="50">Enter parameters</text>
+          <text class="t-s" x="223" y="72">One prompt per parameter with</text>
+          <text class="t-s" x="223" y="85">a [0] default. EPS channel-mask</text>
+          <text class="t-s" x="223" y="98">bytes open a picker naming</text>
+          <text class="t-s" x="223" y="111">each bit's subsystem</text>
+
+          <rect class="n n-cyan" x="412" y="26" width="176" height="104" rx="4"/>
+          <circle class="disc" cx="432" cy="46" r="9"/><text class="disc-t" x="432" y="49.5" text-anchor="middle">3</text>
+          <text class="t" x="448" y="50">Build native frame</text>
+          <text class="t-s" x="424" y="72">The exact bytes the subsystem</text>
+          <text class="t-s" x="424" y="85">expects — ADCS 1F 7F…1F FF,</text>
+          <text class="t-s" x="424" y="98">EPS base64 telegram, GPS LOG,</text>
+          <text class="t-s" x="424" y="111">XLINK key + event</text>
+
+          <rect class="n n-cyan" x="613" y="26" width="176" height="104" rx="4"/>
+          <circle class="disc" cx="633" cy="46" r="9"/><text class="disc-t" x="633" y="49.5" text-anchor="middle">4</text>
+          <text class="t" x="649" y="50">Wrap in CCSDS</text>
+          <text class="t-s" x="625" y="72">SOF 1ACF, spacecraft 625,</text>
+          <text class="t-s" x="625" y="85">APID, GS-ID, time code, then</text>
+          <text class="t-s" x="625" y="98">TC-ID / TC-Len / TC-Data</text>
+          <text class="t-s" x="625" y="111">and a CRC-16</text>
+
+          <rect class="n n-cyan" x="814" y="26" width="176" height="104" rx="4"/>
+          <circle class="disc" cx="834" cy="46" r="9"/><text class="disc-t" x="834" y="49.5" text-anchor="middle">5</text>
+          <text class="t" x="850" y="50">Send on the link</text>
+          <text class="t-s" x="826" y="72">Length-prefixed TCP write to</text>
+          <text class="t-s" x="826" y="85">the OBC routing port P. One</text>
+          <text class="t-s" x="826" y="98">shared session slot keeps</text>
+          <text class="t-s" x="826" y="111">replies correlated</text>
+
+          <path class="ln ln-cyan" d="M190 78 h13" marker-end="url(#f2c)"/>
+          <path class="ln ln-cyan" d="M391 78 h13" marker-end="url(#f2c)"/>
+          <path class="ln ln-cyan" d="M592 78 h13" marker-end="url(#f2c)"/>
+          <path class="ln ln-cyan" d="M793 78 h13" marker-end="url(#f2c)"/>
+        </g>
+
+        <rect class="band" x="10" y="142" width="980" height="20" rx="10"/>
+        <path d="M26 147 l6 0 l-3 8 z" class="mk-cyan"/>
+        <path d="M968 147 l6 0 l-3 8 z" class="mk-cyan"/>
+        <text class="band-t c-cyan" x="500" y="156" text-anchor="middle">THE FRAME CROSSES THE FLIGHT LINK</text>
+
+        <text class="t-lane c-moss" x="10" y="182">EXECUTION &amp; DOWNLINK · OBC → SUBSYSTEM → GROUND</text>
+        <g>
+          <rect class="n n-moss" x="10" y="192" width="176" height="104" rx="4"/>
+          <circle class="disc-m" cx="30" cy="212" r="9"/><text class="disc-t" x="30" y="215.5" text-anchor="middle">6</text>
+          <text class="t" x="46" y="216">Verify, unwrap</text>
+          <text class="t-s" x="22" y="238">The bridge checks SOF and</text>
+          <text class="t-s" x="22" y="251">CRC-16 before anything else.</text>
+          <text class="t-s" x="22" y="264">Running with --validate prints</text>
+          <text class="t-s" x="22" y="277">a structured per-field report</text>
+
+          <rect class="n n-moss" x="211" y="192" width="176" height="104" rx="4"/>
+          <circle class="disc-m" cx="231" cy="212" r="9"/><text class="disc-t" x="231" y="215.5" text-anchor="middle">7</text>
+          <text class="t" x="247" y="216">Route to subsystem</text>
+          <text class="t-s" x="223" y="238">The inner APID selects the</text>
+          <text class="t-s" x="223" y="251">bus; the native frame is</text>
+          <text class="t-s" x="223" y="264">forwarded verbatim to the</text>
+          <text class="t-s" x="223" y="277">matching port 10010–10060</text>
+
+          <rect class="n n-moss" x="412" y="192" width="176" height="104" rx="4"/>
+          <circle class="disc-m" cx="432" cy="212" r="9"/><text class="disc-t" x="432" y="215.5" text-anchor="middle">8</text>
+          <text class="t" x="448" y="216">Simulator executes</text>
+          <text class="t-s" x="424" y="238">The engine responder answers</text>
+          <text class="t-s" x="424" y="251">from a live model — orbit,</text>
+          <text class="t-s" x="424" y="264">state of charge, attitude —</text>
+          <text class="t-s" x="424" y="277">not from a canned table</text>
+
+          <rect class="n n-moss" x="613" y="192" width="176" height="104" rx="4"/>
+          <circle class="disc-m" cx="633" cy="212" r="9"/><text class="disc-t" x="633" y="215.5" text-anchor="middle">9</text>
+          <text class="t" x="649" y="216">Wrap reply as TM</text>
+          <text class="t-s" x="625" y="238">A fixed 1432 B FCA1 frame:</text>
+          <text class="t-s" x="625" y="251">TM DATA carries the native</text>
+          <text class="t-s" x="625" y="264">reply, the GS TC cmd field</text>
+          <text class="t-s" x="625" y="277">echoes the sent command</text>
+
+          <rect class="n n-moss" x="814" y="192" width="176" height="104" rx="4"/>
+          <circle class="disc-m" cx="834" cy="212" r="9"/><text class="disc-t" x="834" y="215.5" text-anchor="middle">10</text>
+          <text class="t" x="852" y="216">Decode, display</text>
+          <text class="t-s" x="826" y="238">xdos_gs resolves each field by</text>
+          <text class="t-s" x="826" y="251">MIB offset and size, applies</text>
+          <text class="t-s" x="826" y="264">enums and units, colours the</text>
+          <text class="t-s" x="826" y="277">render by command kind</text>
+
+          <path class="ln ln-moss" d="M190 244 h13" marker-end="url(#f2m)"/>
+          <path class="ln ln-moss" d="M391 244 h13" marker-end="url(#f2m)"/>
+          <path class="ln ln-moss" d="M592 244 h13" marker-end="url(#f2m)"/>
+          <path class="ln ln-moss" d="M793 244 h13" marker-end="url(#f2m)"/>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Figure 2 — Telecommand flow, end to end.</b> Steps 3 and 9 are the only places where subsystem-specific knowledge is applied; steps 4 to 7 are subsystem-agnostic.</figcaption>
+  </figure>
+
+  <h3>Resolving what the operator typed</h3>
+  <p>Identifier resolution is deliberately forgiving but never ambiguous. It tries, in order, an exact specification-ID match with alphanumeric normalisation (so <code>ep19</code> resolves <code>EP-019</code>), then a numeric-tail match, and finally a plain numeric message identifier. Where a numeric tail could match more than one specification ID, the resolver lists the collisions instead of guessing.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Operator main menu</caption>
+      <thead><tr><th class="m">Key</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td class="m">1 / 2 / 3</td><td>Send a telecommand to ADCS / EPS / GPS</td></tr>
+        <tr><td class="m">4 / 5 / 6</td><td>Send a telecommand to Payload / XLINK-S / UHF</td></tr>
+        <tr><td class="m">p</td><td>Power control — kill switch, per-subsystem ON/OFF, orbit state</td></tr>
+        <tr><td class="m">g</td><td>Binary rate-group LUT: CSV import, pick editor, build and uplink</td></tr>
+        <tr><td class="m">c</td><td>Toggle CCSDS framing on the flight link</td></tr>
+        <tr><td class="m">! / h / r / q</td><td>Repeat a recent command / help / reconnect the buses / quit</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Within a listing, Enter pages forward, <code>b</code> steps back one level and <code>q</code> quits. ADCS offers a kind filter first — set, get, act or all — because its listing runs to over 150 entries.</p>
+</section>
+
+<!-- ══ 5 ══════════════════════════════════════════════════ -->
+<section id="s5">
+  <h2><span class="num">05</span> CCSDS framing</h2>
+  <p class="section-title">The Level-2 wire contract, drawn to scale</p>
+
+  <p>Both frame layouts are loaded from JSON profiles rather than compiled in, and the telemetry profile references the telecommand profile, so spacecraft identity and the APID map are shared between the two directions.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 1000 244" role="img" aria-label="Two byte-layout strips. The telecommand frame: SOF 2 bytes, transfer-frame header 5, packet header 6, GS-ID 1, time code 8, ancillary length 2, TC-ID 2, TC-Len 2, TC-Data variable, CRC 2, with CRC coverage running from the transfer-frame header to the end of TC-Data. The telemetry frame, fixed at 1432 bytes: SOF 2, TM primary header 6, data field status 2, SPP primary 6, SPP secondary 11, TM DATA 1280, GS TC command echo 123, FECF 2, with CRC coverage from the TM primary header to the end of the command echo.">
+        <text class="t-lane c-cyan" x="6" y="14">TELECOMMAND FRAME · UPLINK · VARIABLE LENGTH · SOF 0x1ACF</text>
+        <g>
+          <rect class="s-cyan" x="6" y="26" width="78" height="56"/>
+          <text class="t" x="45" y="50" text-anchor="middle">SOF</text><text class="t-m" x="45" y="66" text-anchor="middle">2 B</text>
+          <rect class="s-cyan" x="84" y="26" width="106" height="56"/>
+          <text class="t" x="137" y="50" text-anchor="middle">TF header</text><text class="t-m" x="137" y="66" text-anchor="middle">5 B</text>
+          <rect class="s-cyan" x="190" y="26" width="114" height="56"/>
+          <text class="t" x="247" y="50" text-anchor="middle">Packet header</text><text class="t-m" x="247" y="66" text-anchor="middle">6 B</text>
+          <rect class="s-cyan" x="304" y="26" width="66" height="56"/>
+          <text class="t" x="337" y="50" text-anchor="middle">GS-ID</text><text class="t-m" x="337" y="66" text-anchor="middle">1 B</text>
+          <rect class="s-cyan" x="370" y="26" width="122" height="56"/>
+          <text class="t" x="431" y="50" text-anchor="middle">Time code</text><text class="t-m" x="431" y="66" text-anchor="middle">8 B</text>
+          <rect class="s-cyan" x="492" y="26" width="78" height="56"/>
+          <text class="t" x="531" y="50" text-anchor="middle">Anc. len</text><text class="t-m" x="531" y="66" text-anchor="middle">2 B</text>
+          <rect class="s-cyan" x="570" y="26" width="78" height="56"/>
+          <text class="t" x="609" y="50" text-anchor="middle">TC-ID</text><text class="t-m" x="609" y="66" text-anchor="middle">2 B</text>
+          <rect class="s-cyan" x="648" y="26" width="78" height="56"/>
+          <text class="t" x="687" y="50" text-anchor="middle">TC-Len</text><text class="t-m" x="687" y="66" text-anchor="middle">2 B</text>
+          <rect class="s-cyan-hi" x="726" y="26" width="190" height="56"/>
+          <text class="t" x="821" y="50" text-anchor="middle">TC-Data</text><text class="t-m" x="821" y="66" text-anchor="middle">N B</text>
+          <rect class="s-cyan" x="916" y="26" width="78" height="56"/>
+          <text class="t" x="955" y="50" text-anchor="middle">CRC-16</text><text class="t-m" x="955" y="66" text-anchor="middle">2 B</text>
+        </g>
+        <path class="ln ln-amber" d="M84 90 v10 H916 v-10"/>
+        <text class="t-s t-amber" x="500" y="114" text-anchor="middle">CRC-16-CCITT coverage — transfer-frame header through end of TC-Data</text>
+
+        <text class="t-lane c-moss" x="6" y="146">TELEMETRY FRAME · DOWNLINK · FIXED 1432 B · SOF 0xFCA1</text>
+        <g>
+          <rect class="s-moss" x="6" y="158" width="74" height="56"/>
+          <text class="t" x="43" y="182" text-anchor="middle">SOF</text><text class="t-m" x="43" y="198" text-anchor="middle">2 B</text>
+          <rect class="s-moss" x="80" y="158" width="124" height="56"/>
+          <text class="t" x="142" y="182" text-anchor="middle">TM primary hdr</text><text class="t-m" x="142" y="198" text-anchor="middle">6 B</text>
+          <rect class="s-moss" x="204" y="158" width="106" height="56"/>
+          <text class="t" x="257" y="182" text-anchor="middle">Field status</text><text class="t-m" x="257" y="198" text-anchor="middle">2 B</text>
+          <rect class="s-moss" x="310" y="158" width="114" height="56"/>
+          <text class="t" x="367" y="182" text-anchor="middle">SPP primary</text><text class="t-m" x="367" y="198" text-anchor="middle">6 B</text>
+          <rect class="s-moss" x="424" y="158" width="120" height="56"/>
+          <text class="t" x="484" y="182" text-anchor="middle">SPP secondary</text><text class="t-m" x="484" y="198" text-anchor="middle">11 B</text>
+          <rect class="s-moss-hi" x="544" y="158" width="280" height="56"/>
+          <text class="t" x="684" y="182" text-anchor="middle">TM DATA — one rate-group subframe</text><text class="t-m" x="684" y="198" text-anchor="middle">1280 B</text>
+          <rect class="s-moss" x="824" y="158" width="106" height="56"/>
+          <text class="t" x="877" y="182" text-anchor="middle">TC echo</text><text class="t-m" x="877" y="198" text-anchor="middle">123 B</text>
+          <rect class="s-moss" x="930" y="158" width="64" height="56"/>
+          <text class="t" x="962" y="182" text-anchor="middle">FECF</text><text class="t-m" x="962" y="198" text-anchor="middle">2 B</text>
+        </g>
+        <path class="ln ln-amber" d="M80 222 v10 H930 v-10"/>
+        <text class="t-s t-amber" x="500" y="243" text-anchor="middle">CRC-16-CCITT coverage — TM primary header through end of the command echo</text>
+      </svg>
+    </div>
+    <figcaption><b>Figure 3 — CCSDS frame layouts.</b> Field widths in the telemetry strip are drawn in proportion to their byte counts; TM DATA is exactly one 1280-byte rate-group subframe.</figcaption>
+  </figure>
+
+  <div class="two-up">
+    <div class="panel">
+      <h4>Telecommand frame</h4>
+      <ul>
+        <li>Version, bypass and control-command flags, spacecraft ID 625 and virtual-channel ID live in the transfer-frame header; the inner space-packet header carries the subsystem APID.</li>
+        <li>Time code on the uplink is the 8-bit-centisecond CCS variant.</li>
+        <li>TC-ID mirrors the subsystem command identifier, so a reply can be matched to its command without keeping state.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h4>Telemetry frame</h4>
+      <ul>
+        <li>The master-frame and sub-frame counters in the primary header give the ground its slot: <code>SFC mod 16</code> is the subframe index, <code>SFC div 16</code> the master-frame identifier.</li>
+        <li>Time code on the downlink is the 16-bit-millisecond variant — the one deliberate difference between the two secondary headers.</li>
+        <li>A lost frame therefore leaves a visible gap rather than shifting every later subframe out of alignment.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 6 ══════════════════════════════════════════════════ -->
+<section id="s6">
+  <h2><span class="num">06</span> Rate-group telemetry and the binary LUT</h2>
+  <p class="section-title">The flight computer polls and downlinks housekeeping without knowing what any of it means</p>
+
+  <h3>Why it exists</h3>
+  <p>Housekeeping telemetry has to be polled continuously and downlinked on a fixed cadence. The obvious way to do that — teach the flight computer the subsystem databases — was rejected for three reasons. It would mean carrying a parser for six different protocols on board. It would mean re-flashing the on-board computer every time a subsystem database was revised. And it would not, by itself, solve the real constraint: the downlink budget is fixed and small, so what is sent has to be selected byte by byte.</p>
+  <p>The design adopted instead puts one binary file on board that tells the on-board computer three things: which telecommands to replay, which bytes of each response to keep, and where those bytes go in the downlink block. There are no names and no identifiers anywhere in the file; all meaning stays on the ground, in the database and in a JSON twin that is never transmitted.</p>
+
+  <div class="two-up">
+    <div class="panel good">
+      <h4>What the design buys</h4>
+      <ul>
+        <li><b>No on-board database.</b> The OBC boots with no table and transmits nothing until one is uplinked or a stored one passes CRC — a deliberate fail-silent default.</li>
+        <li><b>Change without re-flashing.</b> Edit the CSV, rebuild, uplink; the engine hot-swaps the running table and keeps its slot phase.</li>
+        <li><b>Deterministic and quotable.</b> An identical table always produces a byte-identical file, so its CRC-16 signature can be cited in a review.</li>
+      </ul>
+    </div>
+    <div class="panel next">
+      <h4>Where failures land</h4>
+      <ul>
+        <li>Unknown command or parameter names are rejected at build time.</li>
+        <li>Picks that fall outside the declared response length are rejected at build time.</li>
+        <li>A tier whose selected bytes exceed its budget is rejected at build time, with the tier and the offending entry named.</li>
+        <li>None of these conditions can arise at runtime.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 1000 410" role="img" aria-label="Three-lane data flow. Ground authoring and build: master command list CSV, build and validate with xdos_lut_csv or the composer, two artefacts — the binary and a ground-only JSON twin. Uplink over TCP P plus 3. On-board: verify independently, hot-swap and persist, poll and pick. Assemble one subframe per second. Downlink and decode: push to the ground, rebuild the blocks, name the bytes again.">
+        <defs>
+          <marker id="f4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="mk-amber"/></marker>
+          <marker id="f4c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="mk-cyan"/></marker>
+          <marker id="f4m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9 z" class="mk-moss"/></marker>
+        </defs>
+
+        <text class="t-lane" x="6" y="14" fill="var(--amber)">GROUND · AUTHORING AND BUILD</text>
+        <rect class="n n-amber" x="6" y="24" width="308" height="86" rx="4"/>
+        <text class="t" x="22" y="46">Master command list</text>
+        <text class="t-m" x="22" y="66">config/rate_group_commands.csv</text>
+        <text class="t-s" x="22" y="82">tier · tc_id · subsystem · tc_name · picks</text>
+        <text class="t-s" x="22" y="95">row order inside a tier is the entry order</text>
+
+        <rect class="n n-amber" x="346" y="24" width="308" height="86" rx="4"/>
+        <text class="t" x="362" y="46">Build and validate</text>
+        <text class="t-m" x="362" y="66">xdos_lut_csv · xdos_gs [g] composer</text>
+        <text class="t-s" x="362" y="82">resolves names against the MIB, merges</text>
+        <text class="t-s" x="362" y="95">adjacent picks, checks every tier's budget</text>
+
+        <rect class="n n-amber" x="686" y="24" width="308" height="86" rx="4"/>
+        <text class="t" x="702" y="46">Two artefacts</text>
+        <text class="t-m" x="702" y="66">rate_group_lut.bin + …_bin_gs.json</text>
+        <text class="t-s" x="702" y="82">only the .bin is ever transmitted; the twin</text>
+        <text class="t-s" x="702" y="95">keeps names and IDs on the ground</text>
+
+        <path class="ln ln-amber" d="M318 67 h20" marker-end="url(#f4a)"/>
+        <path class="ln ln-amber" d="M658 67 h20" marker-end="url(#f4a)"/>
+
+        <rect class="band-a" x="6" y="122" width="988" height="20" rx="10"/>
+        <path d="M22 127 l6 0 l-3 8 z" class="mk-amber"/>
+        <path d="M972 127 l6 0 l-3 8 z" class="mk-amber"/>
+        <text class="band-t" x="500" y="136" text-anchor="middle" fill="var(--amber)">UPLINK · TCP P+3 · &#8220;XLUT&#8221; + u32 BIG-ENDIAN LENGTH + FILE BYTES</text>
+
+        <text class="t-lane c-cyan" x="6" y="160">ON-BOARD · ACCEPT AND EXECUTE</text>
+        <rect class="n n-cyan" x="6" y="170" width="308" height="86" rx="4"/>
+        <text class="t" x="22" y="192">Verify independently</text>
+        <text class="t-s" x="22" y="212">magic · length field · CRC-16 · the</text>
+        <text class="t-s" x="22" y="225">structure of every entry. A malformed file</text>
+        <text class="t-s" x="22" y="238">is rejected with ERR; the running table stands</text>
+
+        <rect class="n n-cyan" x="346" y="170" width="308" height="86" rx="4"/>
+        <text class="t" x="362" y="192">Hot-swap and persist</text>
+        <text class="t-m" x="362" y="212">obc_lut_store.bin</text>
+        <text class="t-s" x="362" y="228">the engine swaps table mid-flight and</text>
+        <text class="t-s" x="362" y="241">re-derives its 16-slot schedule</text>
+
+        <rect class="n n-cyan" x="686" y="170" width="308" height="86" rx="4"/>
+        <text class="t" x="702" y="192">Poll and pick</text>
+        <text class="t-s" x="702" y="212">VH every subframe · H per 2 · M per 4 · L per 8</text>
+        <text class="t-s" x="702" y="228">each pick is one memcpy into the tier's block;</text>
+        <text class="t-s" x="702" y="241">a failed poll writes 0xFF over its ranges</text>
+
+        <path class="ln ln-cyan" d="M318 213 h20" marker-end="url(#f4c)"/>
+        <path class="ln ln-cyan" d="M658 213 h20" marker-end="url(#f4c)"/>
+
+        <rect class="band" x="6" y="268" width="988" height="20" rx="10"/>
+        <path d="M22 273 l6 0 l-3 8 z" class="mk-cyan"/>
+        <path d="M972 273 l6 0 l-3 8 z" class="mk-cyan"/>
+        <text class="band-t c-cyan" x="500" y="282" text-anchor="middle">ASSEMBLE · ONE 1280-BYTE SUBFRAME PER SECOND, WRAPPED IN THE 1432-BYTE TM FRAME (APID 600)</text>
+
+        <text class="t-lane c-moss" x="6" y="306">DOWNLINK · DECODE ON THE GROUND</text>
+        <rect class="n n-moss" x="6" y="316" width="308" height="86" rx="4"/>
+        <text class="t" x="22" y="338">Push to the ground</text>
+        <text class="t-m" x="22" y="358">TCP P+2 · 1 Hz · 16 subframes = 16 s</text>
+        <text class="t-s" x="22" y="374">SFC mod 16 positions the subframe, so a lost</text>
+        <text class="t-s" x="22" y="387">frame leaves a gap instead of shifting the rest</text>
+
+        <rect class="n n-moss" x="346" y="316" width="308" height="86" rx="4"/>
+        <text class="t" x="362" y="338">Rebuild the blocks</text>
+        <text class="t-m" x="362" y="358">xdos_tm_view</text>
+        <text class="t-s" x="362" y="374">slices VH / H / M / L out of each subframe and</text>
+        <text class="t-s" x="362" y="387">reassembles each tier's block across its span</text>
+
+        <rect class="n n-moss" x="686" y="316" width="308" height="86" rx="4"/>
+        <text class="t" x="702" y="338">Name the bytes again</text>
+        <text class="t-s" x="702" y="358">the JSON twin maps block offsets back to</text>
+        <text class="t-s" x="702" y="371">commands, parameters and units; the CRC-16</text>
+        <text class="t-s" x="702" y="384">signature proves both sides hold one table</text>
+
+        <path class="ln ln-moss" d="M318 359 h20" marker-end="url(#f4m)"/>
+        <path class="ln ln-moss" d="M658 359 h20" marker-end="url(#f4m)"/>
+      </svg>
+    </div>
+    <figcaption><b>Figure 4 — Binary rate-group LUT, end to end.</b> The two sides never exchange names or identifiers. Position within a segment is the only correspondence, and the shared CRC-16 is what guarantees it.</figcaption>
+  </figure>
+
+  <h3>Authoring</h3>
+  <p>The intended route is a single master list, <code>config/rate_group_commands.csv</code>, with one row per rate-group command and five columns.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption>CSV master-list columns</caption>
+      <thead><tr><th class="m">Column</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td class="m">tier</td><td>VH, H, M or L. Row order within a tier <b>is</b> the entry order, and the entry order is the link between the two sides — reordering rows changes the downlink layout.</td></tr>
+        <tr><td class="m">tc_id</td><td>A label for the row. For GPS the trailing number is the log identifier (GPS-42 is BESTPOS).</td></tr>
+        <tr><td class="m">subsystem</td><td>ADCS, EPS, GPS, Payload, XLINK or UHF.</td></tr>
+        <tr><td class="m">tc_name</td><td>For EPS and XLINK-S, the telecommand name, with the response derived as <code>&lt;name&gt;_RSP</code>. For ADCS, the telemetry name or numeric identifier, because an ADCS poll <em>is</em> a telemetry request. For GPS, <code>LOG</code>.</td></tr>
+        <tr><td class="m">picks</td><td>Semicolon-separated parameter names, one-based parameter numbers, or explicit ranges written <code>bytes OFFSET:SIZE</code>. An empty cell selects the full payload.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note amber">
+    <span class="lbl">Watch the range syntax</span>
+    <p><code>bytes 4:2</code> means offset 4, size 2 — bytes 4 and 5. It is <em>not</em> a start-to-end range. Selections are sorted, and adjacent or overlapping ranges merge automatically, so eight flags packed into one byte cost exactly one byte.</p>
+  </div>
+
+  <h3>File format</h3>
+  <p>All multi-byte values are little-endian. The file is a 50-byte header followed by four segments — Very High, High, Medium and Low — of variable-length entries packed back to back.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption>Binary LUT header — 50 bytes</caption>
+      <thead><tr><th class="m">Off</th><th class="m">Size</th><th class="m">Field</th><th>Value and meaning</th></tr></thead>
+      <tbody>
+        <tr><td class="n">0</td><td class="n">4</td><td class="m">magic</td><td><code>XLUT</code> — file identifier</td></tr>
+        <tr><td class="n">4</td><td class="n">1</td><td class="m">version</td><td>1 — format revision</td></tr>
+        <tr><td class="n">5</td><td class="n">1</td><td class="m">flags</td><td>0 — reserved</td></tr>
+        <tr><td class="n">6</td><td class="n">2</td><td class="m">subframe_size</td><td>1280 — fixed; the 1362-byte variant is ruled out</td></tr>
+        <tr><td class="n">8</td><td class="n">2</td><td class="m">seg VH</td><td>400 B</td></tr>
+        <tr><td class="n">10</td><td class="n">2</td><td class="m">seg H</td><td>400 B</td></tr>
+        <tr><td class="n">12</td><td class="n">2</td><td class="m">seg M</td><td>300 B</td></tr>
+        <tr><td class="n">14</td><td class="n">2</td><td class="m">seg L</td><td>175 B</td></tr>
+        <tr><td class="n">16</td><td class="n">1</td><td class="m">reserved</td><td>5 — bytes 1275–1279, transmitted as zero</td></tr>
+        <tr><td class="n">17</td><td class="n">1</td><td class="m">pad</td><td>0 — alignment</td></tr>
+        <tr><td class="n">18</td><td class="n">2</td><td class="m">T_sf</td><td>1000 ms — subframe period; a legacy 0 is read as 1000</td></tr>
+        <tr><td class="n">20</td><td class="n">8</td><td class="m">entry counts</td><td>Four 16-bit counts: entries in VH, H, M, L</td></tr>
+        <tr><td class="n">28</td><td class="n">16</td><td class="m">segment offsets</td><td>Four 32-bit absolute file offsets — a direct seek, no walking</td></tr>
+        <tr><td class="n">44</td><td class="n">4</td><td class="m">file length</td><td>Total bytes; an integrity check paired with the CRC</td></tr>
+        <tr><td class="n">48</td><td class="n">2</td><td class="m">CRC-16-CCITT</td><td>Poly 0x1021, init 0xFFFF, over the whole file with this field zeroed</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The CRC is the shared signature. Because entries carry no identifiers, position within a segment is the only link between what the on-board computer transmits and what the ground decodes; the CRC is what guarantees both sides hold the identical table.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Entry — variable length, repeated per segment</caption>
+      <thead><tr><th class="m">Field</th><th class="m">Size</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td class="m">sync</td><td class="n">2</td><td>0xA55A — entry boundary marker</td></tr>
+        <tr><td class="m">apid</td><td class="n">1</td><td>Hardware APID: ADCS 1, EPS 3, GPS 4, Payload 5, XLINK-S 6</td></tr>
+        <tr><td class="m">flags</td><td class="n">1</td><td>Reserved, zero</td></tr>
+        <tr><td class="m">tc_len</td><td class="n">2</td><td>Length of the telecommand bytes that follow</td></tr>
+        <tr><td class="m">tc bytes</td><td class="n">var</td><td>The complete native frame, replayed verbatim on the bus</td></tr>
+        <tr><td class="m">tm_raw_len</td><td class="n">2</td><td>Raw response payload length according to the database</td></tr>
+        <tr><td class="m">pick_count</td><td class="n">1</td><td>Number of pick triplets that follow</td></tr>
+        <tr><td class="m">picks</td><td class="n">6×n</td><td>Triplets of <code>src</code> (offset in the raw payload), <code>size</code>, and <code>block</code> (destination offset inside the tier's block)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="lbl">The whole runtime job</span>
+    <p><code>memcpy(block + block_off, payload + src, size)</code> — zero interpretation. Picks address the raw payload, that is the database byte space with all native framing excluded.</p>
+  </div>
+
+  <h3>Subframe and master-frame layout</h3>
+  <p>Every subframe carries all four tiers at fixed offsets. The tiers differ only in how many subframes a block spans, and therefore in how much unique data each block holds.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 1000 292" role="img" aria-label="A 1280-byte subframe drawn to scale, partitioned into Very High 400 bytes, High 400, Medium 300, Low 175 and 5 reserved bytes. Below, a master frame of 16 subframes showing Very High refreshing every subframe, High every two, Medium every four and Low every eight.">
+        <text class="t-lane c-cyan" x="6" y="14">ONE SUBFRAME · 1280 BYTES · TRANSMITTED ONCE PER SECOND</text>
+        <rect class="r1" x="6" y="26" width="305" height="56"/>
+        <text class="t" x="158" y="47" text-anchor="middle">VERY HIGH</text>
+        <text class="t-m" x="158" y="62" text-anchor="middle">bytes 0 – 399</text>
+        <text class="t-m" x="158" y="75" text-anchor="middle" font-weight="600">400 B</text>
+
+        <rect class="r2" x="311" y="26" width="305" height="56"/>
+        <text class="t" x="463" y="47" text-anchor="middle">HIGH</text>
+        <text class="t-m" x="463" y="62" text-anchor="middle">bytes 400 – 799</text>
+        <text class="t-m" x="463" y="75" text-anchor="middle" font-weight="600">400 B</text>
+
+        <rect class="r3" x="616" y="26" width="229" height="56"/>
+        <text class="t" x="730" y="47" text-anchor="middle">MEDIUM</text>
+        <text class="t-m" x="730" y="62" text-anchor="middle">bytes 800 – 1099</text>
+        <text class="t-m" x="730" y="75" text-anchor="middle" font-weight="600">300 B</text>
+
+        <rect class="r4" x="845" y="26" width="133" height="56"/>
+        <text class="t" x="911" y="47" text-anchor="middle">LOW</text>
+        <text class="t-m" x="911" y="62" text-anchor="middle">1100 – 1274</text>
+        <text class="t-m" x="911" y="75" text-anchor="middle" font-weight="600">175 B</text>
+
+        <rect class="n n-flat" x="978" y="26" width="16" height="56"/>
+        <text class="t-s" x="986" y="58" text-anchor="middle">5B</text>
+
+        <text class="t-lane c-cyan" x="6" y="106">ONE MASTER FRAME · 16 SUBFRAMES · 16 SECONDS · BLOCK BOUNDARIES ARE SUBFRAME-ALIGNED</text>
+
+        <text class="t-s" x="104" y="126" text-anchor="middle">0</text><text class="t-s" x="161" y="126" text-anchor="middle">1</text>
+        <text class="t-s" x="219" y="126" text-anchor="middle">2</text><text class="t-s" x="276" y="126" text-anchor="middle">3</text>
+        <text class="t-s" x="334" y="126" text-anchor="middle">4</text><text class="t-s" x="391" y="126" text-anchor="middle">5</text>
+        <text class="t-s" x="449" y="126" text-anchor="middle">6</text><text class="t-s" x="506" y="126" text-anchor="middle">7</text>
+        <text class="t-s" x="563" y="126" text-anchor="middle">8</text><text class="t-s" x="621" y="126" text-anchor="middle">9</text>
+        <text class="t-s" x="678" y="126" text-anchor="middle">10</text><text class="t-s" x="736" y="126" text-anchor="middle">11</text>
+        <text class="t-s" x="793" y="126" text-anchor="middle">12</text><text class="t-s" x="851" y="126" text-anchor="middle">13</text>
+        <text class="t-s" x="908" y="126" text-anchor="middle">14</text><text class="t-s" x="966" y="126" text-anchor="middle">15</text>
+
+        <rect x="6" y="134" width="60" height="30" rx="4" fill="var(--cyan)"/>
+        <text class="t t-inv" x="36" y="153" text-anchor="middle">VH</text>
+        <g class="n n-cyan">
+          <rect x="77" y="134" width="55" height="30"/><rect x="134" y="134" width="55" height="30"/>
+          <rect x="192" y="134" width="55" height="30"/><rect x="249" y="134" width="55" height="30"/>
+          <rect x="306" y="134" width="55" height="30"/><rect x="364" y="134" width="55" height="30"/>
+          <rect x="421" y="134" width="55" height="30"/><rect x="479" y="134" width="55" height="30"/>
+          <rect x="536" y="134" width="55" height="30"/><rect x="593" y="134" width="55" height="30"/>
+          <rect x="651" y="134" width="55" height="30"/><rect x="708" y="134" width="55" height="30"/>
+          <rect x="766" y="134" width="55" height="30"/><rect x="823" y="134" width="55" height="30"/>
+          <rect x="881" y="134" width="55" height="30"/><rect x="938" y="134" width="55" height="30"/>
+        </g>
+        <text class="t-s" x="534" y="153" text-anchor="middle">16 blocks · 400 B each · refreshes every subframe</text>
+
+        <rect x="6" y="170" width="60" height="30" rx="4" fill="var(--cyan)"/>
+        <text class="t t-inv" x="36" y="189" text-anchor="middle">H</text>
+        <g class="n n-cyan">
+          <rect x="77" y="170" width="112" height="30"/><rect x="192" y="170" width="112" height="30"/>
+          <rect x="306" y="170" width="113" height="30"/><rect x="421" y="170" width="113" height="30"/>
+          <rect x="536" y="170" width="112" height="30"/><rect x="651" y="170" width="112" height="30"/>
+          <rect x="766" y="170" width="112" height="30"/><rect x="881" y="170" width="112" height="30"/>
+        </g>
+        <text class="t-s" x="133" y="189" text-anchor="middle">block 1</text><text class="t-s" x="248" y="189" text-anchor="middle">block 2</text>
+        <text class="t-s" x="362" y="189" text-anchor="middle">block 3</text><text class="t-s" x="477" y="189" text-anchor="middle">block 4</text>
+        <text class="t-s" x="592" y="189" text-anchor="middle">block 5</text><text class="t-s" x="707" y="189" text-anchor="middle">block 6</text>
+        <text class="t-s" x="822" y="189" text-anchor="middle">block 7</text><text class="t-s" x="937" y="189" text-anchor="middle">block 8</text>
+
+        <rect x="6" y="206" width="60" height="30" rx="4" fill="var(--cyan)"/>
+        <text class="t t-inv" x="36" y="225" text-anchor="middle">M</text>
+        <g class="n n-cyan">
+          <rect x="77" y="206" width="227" height="30"/><rect x="306" y="206" width="228" height="30"/>
+          <rect x="536" y="206" width="227" height="30"/><rect x="766" y="206" width="227" height="30"/>
+        </g>
+        <text class="t-s" x="190" y="225" text-anchor="middle">block 1 · 1200 B</text><text class="t-s" x="420" y="225" text-anchor="middle">block 2 · 1200 B</text>
+        <text class="t-s" x="649" y="225" text-anchor="middle">block 3 · 1200 B</text><text class="t-s" x="879" y="225" text-anchor="middle">block 4 · 1200 B</text>
+
+        <rect x="6" y="242" width="60" height="30" rx="4" fill="var(--rule-2)"/>
+        <text class="t t-inv" x="36" y="261" text-anchor="middle">L</text>
+        <g class="n n-flat">
+          <rect x="77" y="242" width="457" height="30"/><rect x="536" y="242" width="457" height="30"/>
+        </g>
+        <text class="t-s" x="305" y="261" text-anchor="middle">block 1 · 1400 B · spans 8 subframes</text>
+        <text class="t-s" x="764" y="261" text-anchor="middle">block 2 · 1400 B · spans 8 subframes</text>
+
+        <text class="t-s" x="6" y="288">A block holds unique data spread evenly across the subframes it spans — 20 400 bytes of unique telemetry per master frame, plus 16 × 5 reserved bytes.</text>
+      </svg>
+    </div>
+    <figcaption><b>Figure 5 — Subframe partition and master-frame block structure.</b> The subframe strip is drawn to scale against 1280 bytes. High blocks begin at subframes 1, 3, 5…; Medium at 1, 5, 9, 13; Low at 1 and 9.</figcaption>
+  </figure>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Tier budgets per master frame</caption>
+      <thead><tr><th>Tier</th><th>Block span</th><th class="m">Per block</th><th class="m">Blocks/MF</th><th class="m">Unique/MF</th><th>Classification</th><th class="m">Picked bytes/cmd</th></tr></thead>
+      <tbody>
+        <tr><td><b>Very high</b></td><td>1 subframe</td><td class="n">400 B</td><td class="n">16</td><td class="n">6 400 B</td><td>27 commands</td><td class="n">≈ 14.8 B</td></tr>
+        <tr><td><b>High</b></td><td>2 subframes</td><td class="n">800 B</td><td class="n">8</td><td class="n">6 400 B</td><td>18 commands</td><td class="n">≈ 44.4 B</td></tr>
+        <tr><td><b>Medium</b></td><td>4 subframes</td><td class="n">1 200 B</td><td class="n">4</td><td class="n">4 800 B</td><td>23 commands</td><td class="n">≈ 52.2 B</td></tr>
+        <tr><td><b>Low</b></td><td>8 subframes</td><td class="n">1 400 B</td><td class="n">2</td><td class="n">2 800 B</td><td>10 commands</td><td class="n">140 B</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>With the present 78-command classification, Very High is the tight tier at roughly 14.8 bytes of picked data per command, and it is where the generator's budget check will bite first.</p>
+
+  <h3>On-board execution and cadence</h3>
+  <p>The engine derives a sixteen-position schedule when a table is loaded: entry <em>i</em> of tier <em>t</em> is polled in the slots where the slot number modulo the tier's span equals <em>i</em> modulo that span. Polls are spread evenly across each one-second window with a 50 ms link-pacing floor between them. A window that overruns finishes late and is counted, but never skips a slot, so block phase is preserved.</p>
+  <p>Poll results land in per-tier block buffers of 400, 800, 1200 and 1400 bytes. A failed poll writes <code>0xFF</code> over that entry's pick ranges — the ground's subsystem-down marker — and block bytes that no pick claims stay zero.</p>
+</section>
+
+<!-- ══ 7 ══════════════════════════════════════════════════ -->
+<section id="s7">
+  <h2><span class="num">07</span> Simulation environment and flight power model</h2>
+  <p class="section-title">The simulators answer from live models, so the ground station meets values that change</p>
+
+  <div class="two-up">
+    <div class="panel">
+      <h4>Physics-backed engines</h4>
+      <ul>
+        <li><b>EPS.</b> State of charge and battery voltage propagate against the orbit — 3300 s sunlit, 2100 s eclipse — with the PDU channel mask setting the load.</li>
+        <li><b>ADCS.</b> An attitude quaternion propagates under a PD controller; set, get and act commands move the modelled body and the telemetry follows.</li>
+        <li><b>GPS.</b> A Keplerian propagator sits behind the native message set, so LOG commands return position, velocity and time as the receiver would.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h4>Protocol-level responders</h4>
+      <ul>
+        <li>Payload, XLINK-S and UHF return structurally correct replies — acknowledgement bytes, keyed S-band events and OpenLST transceiver responses — without modelling physics.</li>
+        <li>They are enough to exercise framing, routing and the operator flows end to end.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Power finite-state machine</h3>
+  <p>The on-board computer's power behaviour runs <code>UNPOWERED → BOOTING → SEQUENCING → ON</code>, returning to <code>UNPOWERED</code> whenever the kill switch is turned off. While the machine is not ON the bridge drops every frame from the ground, with one exception: EGSE umbilical frames are always answered, so the ground can see the power state at any point during boot.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption>Battery thresholds and load shedding</caption>
+      <thead><tr><th>Battery mode</th><th class="m">Threshold</th><th>Channels shed</th></tr></thead>
+      <tbody>
+        <tr><td><b>Full</b></td><td class="m">≥ 12.0 V</td><td>None</td></tr>
+        <tr><td><b>Normal</b></td><td class="m">≥ 11.1 V</td><td>None — the default switch-on sequence is restored, staggered and rate-limited</td></tr>
+        <tr><td><b>Safe</b></td><td class="m">≥ 9.9 V</td><td>Payload (O10)</td></tr>
+        <tr><td><b>Critical</b></td><td class="m">≥ 9.0 V</td><td>Payload, ADCS and the avionics bus (O10, O4, O3)</td></tr>
+        <tr><td><b>Below critical</b></td><td class="m">&lt; 9.0 V</td><td>Everything except the two on-board-computer channels (O1, O2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A hysteresis of 0.15 V keeps a battery sitting on a threshold from oscillating between modes. All timing honours a time-scale factor, so a boot-and-sequence run that takes real seconds on the bench compresses into milliseconds under test.</p>
+</section>
+
+<!-- ══ 8 ══════════════════════════════════════════════════ -->
+<section id="s8">
+  <h2><span class="num">08</span> Verification</h2>
+  <p class="section-title">110 test cases, 1 672 assertions, all passing on the current working tree</p>
+
+  <p>The suite is written against Catch2 v3 and lives in 21 translation units. It exercises the real socket stack rather than mocks wherever a socket is part of the behaviour under test.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Test coverage by area</caption>
+      <thead><tr><th>Area</th><th class="m">Translation units</th><th>What is proven</th></tr></thead>
+      <tbody>
+        <tr><td><b>Utilities</b></td><td class="m">test_crc · test_hex</td><td>CRC-16-CCITT against known vectors; hexadecimal round-trips</td></tr>
+        <tr><td><b>Subsystem framing</b></td><td class="m">test_adcs_framing · test_eps_framing · test_gps_framing · test_payload · test_uhf · test_xlink_codec · test_xlink_keys</td><td>Native encode and decode round-trips per subsystem, and rejection of malformed or truncated frames</td></tr>
+        <tr><td><b>CCSDS codecs</b></td><td class="m">test_ccsds_codec · test_ccsds_tm_codec · test_ccsds_validator</td><td>Frame layout, shared identity, both time-code variants, CRC coverage and the structured validator report</td></tr>
+        <tr><td><b>Data model</b></td><td class="m">test_mib_load</td><td>Every database file loads; messages, parameters, enumerations and channel maps resolve as declared</td></tr>
+        <tr><td><b>Binary LUT</b></td><td class="m">test_binary_lut · test_binary_rate_lut · test_rate_group_csv</td><td>Header and entry encoding, the deterministic CRC signature, pick merging, over-budget rejection, CSV grammar with row-numbered errors</td></tr>
+        <tr><td><b>Rate-group engine</b></td><td class="m">test_rate_group</td><td>The sixteen-slot tier schedule, block assembly, the 0xFF down marker on a failed poll, hot-swap while running</td></tr>
+        <tr><td><b>Flight behaviour</b></td><td class="m">test_power_sequence · test_flight_realism</td><td>Boot and staggered switch-on, load-shed thresholds with hysteresis, staggered restore on recovery</td></tr>
+        <tr><td><b>End to end</b></td><td class="m">test_e2e</td><td>Ground station → OBC → simulator → ground station, across the real socket stack</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note amber">
+    <span class="lbl">Not covered by this suite</span>
+    <p>Real flight hardware, the radio-frequency layer, and behaviour under sustained link congestion — where the engine's overrun handling and the 50 ms pacing floor would be exercised in earnest. These need bench time, not more unit tests.</p>
+  </div>
+</section>
+
+<!-- ══ 9 ══════════════════════════════════════════════════ -->
+<section id="s9">
+  <h2><span class="num">09</span> Build, run and operations</h2>
+  <p class="section-title">Two commands to build, one script to bring the stack up</p>
+
+  <p>From the repository root: <code>cmake -B build -DCMAKE_BUILD_TYPE=Release</code> then <code>cmake --build build -j</code>. The test target is built when Catch2 v3 is available; a Windows build is described in <code>BUILD_WINDOWS.md</code>.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Helper scripts</caption>
+      <thead><tr><th class="m">Script</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="m">scripts/run_all.sh</td><td>Launch the simulators and the on-board computer in the background and the operator CLI in the foreground; Ctrl-C cleans everything up. Pass <code>--no-obc</code> to talk directly to the simulators.</td></tr>
+        <tr><td class="m">scripts/run_sim.sh</td><td>Launch the subsystem simulators only</td></tr>
+        <tr><td class="m">scripts/run_cli.sh</td><td>Launch the operator CLI only</td></tr>
+        <tr><td class="m">scripts/run_tm_view.sh</td><td>Launch the master-frame telemetry viewer</td></tr>
+        <tr><td class="m">scripts/run_tests.sh</td><td>Build and run the test suite</td></tr>
+        <tr><td class="m">scripts/kill_all.sh</td><td>Stop every XDOS process</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Operating notes</h3>
+  <ul>
+    <li>Launch the operator CLI from the repository root so <code>config/</code> and <code>mib/</code> are visible; the LUT composer reads and writes files there.</li>
+    <li>The on-board computer transmits no telemetry at all until a binary LUT has been uplinked, or a stored one has passed its CRC check at boot. <b>Silence on the telemetry port is the expected state before the first uplink, not a fault.</b></li>
+    <li>Rate-group telemetry is displayed by the standalone viewer, not by the operator CLI. The CLI keeps the LUT uplink flow, because that is telecommanding.</li>
+    <li>Passing the no-colour flag strips the ANSI escapes, which makes output suitable for piping to a file.</li>
+  </ul>
+</section>
+
+<!-- ══ 10 ═════════════════════════════════════════════════ -->
+<section id="s10">
+  <h2><span class="num">10</span> Status and proposed next steps</h2>
+  <p class="section-title">The frame layout is final and the LUT path is implemented end to end</p>
+
+  <div class="two-up">
+    <div class="panel good">
+      <h4>Delivered and verified</h4>
+      <ul>
+        <li>Telecommanding of all six subsystems, MIB-driven, over CCSDS telecommand frames.</li>
+        <li>CCSDS telemetry downlink in the fixed 1432-byte frame, decoded and rendered on the ground.</li>
+        <li>The full binary LUT path: CSV compilation, uplink, independent on-board verification, hot-swap and persistence across restarts.</li>
+        <li>Tier-scheduled polling with a sixteen-position schedule and slot-aligned master frames.</li>
+        <li>A flight-realistic power sequence with load shedding, hysteresis and staggered restore.</li>
+      </ul>
+    </div>
+    <div class="panel next">
+      <h4>Proposed next steps — for review</h4>
+      <ul>
+        <li>Exercise the bench port map — the 7000 series — against the real on-board computer, including the LUT listener on port 7003.</li>
+        <li>Bring Payload, XLINK-S and UHF commands into the rate-group classification; the present 78-command list is dominated by ADCS, EPS and GPS.</li>
+        <li>Watch the Very High tier as the classification grows.</li>
+        <li>Extend structured validation reporting to the operator CLI's downlink path.</li>
+        <li>Housekeeping: refresh <code>README.md</code>, which still describes CCSDS wrapping as deferred although it is implemented, and retire <code>src/cli/main.cpp.old</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Decisions closed</h3>
+  <p>These were open questions in the frame design and are now settled and implemented. They constrain anything built on top of this layer.</p>
+  <div class="tbl-wrap">
+    <table>
+      <caption>Closed design decisions</caption>
+      <thead><tr><th>Decision</th><th>Resolution</th></tr></thead>
+      <tbody>
+        <tr><td><b>Subframe size and partition</b></td><td>1280 bytes, partitioned 400 / 400 / 300 / 175 with 5 reserved. The 1362-byte variant is ruled out.</td></tr>
+        <tr><td><b>Subframe period</b></td><td><code>T_sf</code> = 1000 ms — one subframe per second, one master frame every 16 seconds. Written into the LUT header; a legacy zero is read as 1000.</td></tr>
+        <tr><td><b>Cadence</b></td><td>Tier-scheduled on a sixteen-position schedule computed by the on-board computer when the table is loaded.</td></tr>
+        <tr><td><b>Execution source</b></td><td>The binary LUT only. The OBC boots with no table and transmits nothing until one is uplinked; the JSON LUT uplink path is retired.</td></tr>
+        <tr><td><b>Authoring</b></td><td>One CSV master list, compiled by <code>xdos_lut_csv</code> or imported into the composer.</td></tr>
+        <tr><td><b>Slot alignment on the wire</b></td><td>The per-APID sub-frame count increments once per push; <code>SFC mod 16</code> is the slot and <code>SFC div 16</code> the master-frame identifier.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══ 11 ═════════════════════════════════════════════════ -->
+<section id="s11">
+  <h2><span class="num">11</span> Glossary</h2>
+  <p class="section-title">Terms and acronyms used in this document</p>
+  <dl class="gloss">
+    <div><dt>ADCS</dt><dd>Attitude Determination and Control Subsystem</dd></div>
+    <div><dt>APID</dt><dd>Application Process Identifier — the CCSDS field identifying the source or destination subsystem</dd></div>
+    <div><dt>CCSDS</dt><dd>Consultative Committee for Space Data Systems</dd></div>
+    <div><dt>CRC</dt><dd>Cyclic Redundancy Check; CRC-16-CCITT throughout, poly 0x1021, init 0xFFFF</dd></div>
+    <div><dt>EGSE</dt><dd>Electrical Ground Support Equipment — here, the umbilical reporting OBC power state</dd></div>
+    <div><dt>EPS</dt><dd>Electrical Power Subsystem</dd></div>
+    <div><dt>FECF</dt><dd>Frame Error Control Field — the CRC terminating a telemetry frame</dd></div>
+    <div><dt>LUT</dt><dd>Look-Up Table; specifically the binary rate-group table of section 6</dd></div>
+    <div><dt>Master frame</dt><dd>Sixteen consecutive subframes — the period over which every tier refreshes at least once</dd></div>
+    <div><dt>MIB</dt><dd>Management Information Base — the JSON files defining every command, message, parameter and enumeration</dd></div>
+    <div><dt>OBC</dt><dd>On-Board Computer</dd></div>
+    <div><dt>PDU</dt><dd>Power Distribution Unit — the EPS board that switches subsystem channels</dd></div>
+    <div><dt>Pick</dt><dd>A byte range selected from a telemetry response for inclusion in the downlink</dd></div>
+    <div><dt>SFC</dt><dd>Sub-Frame Count — the per-APID counter in the telemetry primary header</dd></div>
+    <div><dt>SOF</dt><dd>Start Of Frame marker</dd></div>
+    <div><dt>SPP</dt><dd>Space Packet Protocol</dd></div>
+    <div><dt>Subframe</dt><dd>One 1280-byte block of rate-group telemetry, transmitted once per second</dd></div>
+    <div><dt>Tier</dt><dd>One of four rate classes: Very High, High, Medium, Low</dd></div>
+    <div><dt>UHF</dt><dd>Ultra High Frequency — here, the 437 MHz OpenLST transceiver</dd></div>
+    <div><dt>XLINK-S</dt><dd>The S-band transceiver subsystem</dd></div>
+  </dl>
+</section>
+
+<footer>
+  <span>XDOS Ground Station — Software Architecture and Design · Version 1.0 / Rev 00 · 3 September 2026</span>
+  <span>© 2026 XDLINX Space Labs Pvt. Ltd. · Proprietary &amp; Confidential</span>
+</footer>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main section'));
+  if (!('IntersectionObserver' in window)) { links[0].classList.add('on'); return; }
+  var visible = {};
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting; });
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      if (visible[sections[i].id]) { current = sections[i].id; break; }
+    }
+    if (!current) return;
+    links.forEach(function (a) { a.classList.remove('on'); });
+    if (map[current]) map[current].classList.add('on');
+  }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+  sections.forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

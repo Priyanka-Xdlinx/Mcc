@@ -1,0 +1,417 @@
+SN 2223010151
+MAC 00-05-43-01-52-AD
+XLK-SATX18C FM
+
+
+#############################################################
+
+XmtSymbFreq: 2048
+RcvSymbFreq: 512
+Use XmtUpSampling
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+ad563c56-ea8bf594-953e59c4-071d177f
+#############################################################
+
+XmtSymbFreq: 2048
+RcvSymbFreq: 64
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+a9573c54-6a8bb594-953e59c4-07151377
+#############################################################
+
+XmtSymbFreq: 128
+RcvSymbFreq: 64
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+af573c56-4a8bf59c-953e59c5-04151373
+
+(2024-06-11 13:55:13 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 256
+RcvSymbFreq: 64
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+eb573c56-4a8bf594-953e59c6-041d1b77
+
+(2024-06-11 13:55:21 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 512
+RcvSymbFreq: 64
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+ab573c56-6a8bf594-943e59c6-048d13f3
+
+(2024-06-11 13:55:27 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 128
+RcvSymbFreq: 128
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+ab572c54-ea8bf59c-943e59c4-0e951373
+
+(2024-06-11 13:55:36 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 256
+RcvSymbFreq: 128
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+ef572c54-ea8bf594-943e59c7-0e9d1b77
+
+(2024-06-11 13:55:42 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 512
+RcvSymbFreq: 128
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+af572c54-ca8bf594-953e59c7-0e0d13f3
+
+(2024-06-11 13:55:46 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 256
+RcvSymbFreq: 256
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+6b573c56-ce8bf594-943e59c6-04151b73
+
+(2024-06-11 13:55:56 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 512
+RcvSymbFreq: 512
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+eb573c54-ce8bf594-943e59c7-0e8d137b
+
+(2024-06-11 13:56:03 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 1024
+RcvSymbFreq: 64
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+8f573c54-6e8bb594-953e59c4-049d13f3
+
+(2024-06-11 13:56:16 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 1024
+RcvSymbFreq: 128
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+8b572c56-ce8bb594-943e59c5-0e1d13f3
+
+(2024-06-11 13:56:20 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 1024
+RcvSymbFreq: 256
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+0f573c54-ea8bb594-943e59c4-049513f7
+
+(2024-06-11 13:56:26 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 1024
+RcvSymbFreq: 512
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+cf573c56-ca8bb594-953e59c5-0e9d137b
+
+(2024-06-11 13:56:31 XlinkKeyGen v1.10)
+#############################################################
+
+XmtSymbFreq: 32
+RcvSymbFreq: 32
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+eb77bc56-ee8bf594-943e59c7-0c9d1377
+
+(2025-11-24 12:16:41 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 1024
+RcvSymbFreq: 2048
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+8b573c56-ca8bf594-95be59c4-0d9d13f7
+
+(2025-11-24 12:16:56 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 64
+RcvSymbFreq: 64
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+af573c56-6e8b7594-953e59c7-0e1d1373
+
+(2025-11-24 12:17:14 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 16
+RcvSymbFreq: 16
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+eb573c55-ce8bf594-943e59c5-04950373
+
+(2025-11-24 12:17:20 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 8
+RcvSymbFreq: 8
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+Use SPI
+
+Key:
+af573c56-ceabf594-943e59c4-05151333
+
+(2025-11-24 12:17:24 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 4
+RcvSymbFreq: 16
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+RcvCh0_GainMax
+RcvCh1_GainMax
+
+Key:
+af57345e-ce8bb594-913ed9c4-061d03f7
+
+(2026-02-20 11:02:55 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 4
+RcvSymbFreq: 8
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+RcvCh0_GainMax
+RcvCh1_GainMax
+
+Key:
+ef57345e-ce8bf594-913ed9c7-04951337
+
+(2026-02-20 11:03:08 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 16
+RcvSymbFreq: 4
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+RcvCh0_GainMax
+RcvCh1_GainMax
+
+Key:
+eb57345d-ee8bfd94-953ed9c5-0d1513f7
+
+(2026-02-23 17:42:12 XlinkKeyGen v1.14)
+#############################################################
+
+XmtSymbFreq: 8
+RcvSymbFreq: 4
+Use XmtUpSampling
+MoreXmtMod
+XmtOffsetMod
+RsMode: 0
+XmtCh0_En
+XmtCh1_En
+RcvCh0_En
+RcvCh1_En
+RcvCh0_GainMax
+RcvCh1_GainMax
+
+Key:
+ef57345e-eeabbd94-953ed9c7-0e1d1377
+
+(2026-02-23 17:42:16 XlinkKeyGen v1.14)

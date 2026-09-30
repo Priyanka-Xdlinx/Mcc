@@ -1,0 +1,4927 @@
+{
+  "subsystem": "XLINK-S",
+  "protocol": "XLink Service Server V1.8.1",
+  "description": "IQ spacecom XLink-S satellite RF transceiver \u2014 full service-server catalog",
+  "endianness": "little",
+  "auth": {
+    "type": "product_key",
+    "key_bytes": 16,
+    "description": "Device-specific 128-bit key; multiple keys per device (one per (XmtSymbFreq, RcvSymbFreq))"
+  },
+  "enums": [
+    {
+      "name": "BaudRateMode",
+      "description": "UART baud rate",
+      "values": [
+        {
+          "name": "BD_38400",
+          "value": 1
+        },
+        {
+          "name": "BD_57600",
+          "value": 2
+        },
+        {
+          "name": "BD_115200",
+          "value": 3
+        },
+        {
+          "name": "BD_230400",
+          "value": 4
+        },
+        {
+          "name": "BD_460800",
+          "value": 5
+        },
+        {
+          "name": "BD_921600",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "name": "XmtModulation",
+      "description": "Transmit modulation",
+      "values": [
+        {
+          "name": "NoMod",
+          "value": 0
+        },
+        {
+          "name": "BPSK",
+          "value": 1
+        },
+        {
+          "name": "QPSK",
+          "value": 2
+        },
+        {
+          "name": "8PSK",
+          "value": 3
+        },
+        {
+          "name": "16PSK",
+          "value": 4
+        },
+        {
+          "name": "32PSK",
+          "value": 5
+        },
+        {
+          "name": "64PSK",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "name": "XmtMode",
+      "description": "Transmitter operating mode",
+      "values": [
+        {
+          "name": "SingleToneCW",
+          "value": 1
+        },
+        {
+          "name": "DualTone",
+          "value": 2
+        },
+        {
+          "name": "NormalOperation",
+          "value": 8
+        },
+        {
+          "name": "XmtDVBS2",
+          "value": 10
+        },
+        {
+          "name": "XmtGMSK",
+          "value": 11
+        }
+      ]
+    },
+    {
+      "name": "FecRate",
+      "description": "Forward-error-correction rate",
+      "values": [
+        {
+          "name": "R_1_1",
+          "value": 0
+        },
+        {
+          "name": "R_1_2",
+          "value": 1
+        },
+        {
+          "name": "R_2_3",
+          "value": 2
+        },
+        {
+          "name": "R_3_4",
+          "value": 3
+        },
+        {
+          "name": "R_5_6",
+          "value": 4
+        },
+        {
+          "name": "R_7_8",
+          "value": 5
+        },
+        {
+          "name": "BCH",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "name": "OnOff",
+      "values": [
+        {
+          "name": "Off",
+          "value": 0
+        },
+        {
+          "name": "On",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "RcvChannel",
+      "description": "Which RCV channels are enabled",
+      "values": [
+        {
+          "name": "OFF",
+          "value": 0
+        },
+        {
+          "name": "CH0",
+          "value": 1
+        },
+        {
+          "name": "CH1",
+          "value": 2
+        },
+        {
+          "name": "BOTH",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "name": "DVBS2_MODCOD",
+      "description": "DVB-S2 modulation/coding table",
+      "values": [
+        {
+          "name": "Unmodulated",
+          "value": 0
+        },
+        {
+          "name": "QPSK_1_4",
+          "value": 1
+        },
+        {
+          "name": "QPSK_1_3",
+          "value": 2
+        },
+        {
+          "name": "QPSK_2_5",
+          "value": 3
+        },
+        {
+          "name": "QPSK_1_2",
+          "value": 4
+        },
+        {
+          "name": "QPSK_3_5",
+          "value": 5
+        },
+        {
+          "name": "QPSK_2_3",
+          "value": 6
+        },
+        {
+          "name": "QPSK_3_4",
+          "value": 7
+        },
+        {
+          "name": "QPSK_4_5",
+          "value": 8
+        },
+        {
+          "name": "QPSK_5_6",
+          "value": 9
+        },
+        {
+          "name": "QPSK_8_9",
+          "value": 10
+        },
+        {
+          "name": "QPSK_9_10",
+          "value": 11
+        },
+        {
+          "name": "PSK8_3_5",
+          "value": 12
+        },
+        {
+          "name": "PSK8_2_3",
+          "value": 13
+        },
+        {
+          "name": "PSK8_3_4",
+          "value": 14
+        },
+        {
+          "name": "PSK8_5_6",
+          "value": 15
+        },
+        {
+          "name": "PSK8_8_9",
+          "value": 16
+        },
+        {
+          "name": "PSK8_9_10",
+          "value": 17
+        },
+        {
+          "name": "APSK16_2_3",
+          "value": 18
+        },
+        {
+          "name": "APSK16_3_4",
+          "value": 19
+        },
+        {
+          "name": "APSK16_4_5",
+          "value": 20
+        },
+        {
+          "name": "APSK16_5_6",
+          "value": 21
+        },
+        {
+          "name": "APSK16_8_9",
+          "value": 22
+        },
+        {
+          "name": "APSK16_9_10",
+          "value": 23
+        }
+      ]
+    },
+    {
+      "name": "DVBS2_FrmType",
+      "description": "DVB-S2 frame type",
+      "values": [
+        {
+          "name": "NORMAL",
+          "value": 0
+        },
+        {
+          "name": "SHORT",
+          "value": 1
+        },
+        {
+          "name": "ALTERNATIVE",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "DVBS2_AcmCcm",
+      "description": "Adaptive vs constant coding/modulation",
+      "values": [
+        {
+          "name": "ACM",
+          "value": 0
+        },
+        {
+          "name": "CCM",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "name": "DVBS2_RollOff",
+      "description": "Baseband pulse-shaping roll-off",
+      "values": [
+        {
+          "name": "Factor_0p35",
+          "value": 0
+        },
+        {
+          "name": "Factor_0p25",
+          "value": 1
+        },
+        {
+          "name": "Factor_0p20",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "RcvSendFormat",
+      "description": "Format for RF_RCV data output",
+      "values": [
+        {
+          "name": "SEND_NORMAL",
+          "value": 0
+        },
+        {
+          "name": "SEND_ERR_INF",
+          "value": 1
+        },
+        {
+          "name": "SEND_RAW",
+          "value": 2
+        },
+        {
+          "name": "SEND_CLTU",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "name": "RcvOutputIf",
+      "description": "RF_RCV data output interface",
+      "values": [
+        {
+          "name": "UDP_ETH",
+          "value": 0
+        },
+        {
+          "name": "CSP_UART",
+          "value": 1
+        },
+        {
+          "name": "SPI",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "XmtErrorInfo",
+      "description": "RF_XMT_DATA error info",
+      "values": [
+        {
+          "name": "OK",
+          "value": 0
+        },
+        {
+          "name": "FIFO_FULL",
+          "value": 1
+        },
+        {
+          "name": "FAIL_LEN",
+          "value": 2
+        },
+        {
+          "name": "NO_SIG",
+          "value": 4
+        },
+        {
+          "name": "PKT_DROP",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "name": "XmtPktType",
+      "description": "RF_XMT_DATA packet type",
+      "values": [
+        {
+          "name": "TRANSFER_FRM",
+          "value": 2
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "name": "XLINK",
+      "description": "XLink transceiver device"
+    }
+  ],
+  "channels": [
+    {
+      "id": 1,
+      "subsystem": "RCV_Ch0",
+      "wired": true,
+      "description": "Receive channel 0"
+    },
+    {
+      "id": 2,
+      "subsystem": "RCV_Ch1",
+      "wired": true,
+      "description": "Receive channel 1"
+    },
+    {
+      "id": 3,
+      "subsystem": "XMT_Ch0",
+      "wired": true,
+      "description": "Transmit channel 0"
+    },
+    {
+      "id": 4,
+      "subsystem": "XMT_Ch1",
+      "wired": true,
+      "description": "Transmit channel 1"
+    }
+  ],
+  "messages": [
+    {
+      "param_id": "XL-001",
+      "msg_id": 0,
+      "wire_id": 0,
+      "direction": "TC",
+      "name": "IDLE",
+      "description": "Check open Service Server connection; reset 6-second idle timeout",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 IDLE",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-001",
+      "msg_id": 0,
+      "wire_id": 0,
+      "direction": "TM",
+      "name": "IDLE_RSP",
+      "description": "Response to IDLE",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 IDLE",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-002",
+      "msg_id": 10150939,
+      "wire_id": 10150939,
+      "direction": "TC",
+      "name": "RESET",
+      "description": "Command a full XLink transceiver reset (watchdog reboot after 1 s)",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 RESET",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-002",
+      "msg_id": 10150939,
+      "wire_id": 10150939,
+      "direction": "TM",
+      "name": "RESET_RSP",
+      "description": "Response to RESET",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 RESET",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-003",
+      "msg_id": 7,
+      "wire_id": 7,
+      "direction": "TC",
+      "name": "UART_BD",
+      "description": "Get/set UART baud rate (temporary \u2014 call UART_BD_SAVE to persist)",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 UART_BD",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 3,
+          "name": "BdMode",
+          "data_type": "ENUM",
+          "description": "UART baud rate mode",
+          "enum": "BaudRateMode"
+        },
+        {
+          "seq": 4,
+          "offset": 163,
+          "length": 29,
+          "name": "Reserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-003",
+      "msg_id": 7,
+      "wire_id": 7,
+      "direction": "TM",
+      "name": "UART_BD_RSP",
+      "description": "Response to UART_BD",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 UART_BD",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 3,
+          "name": "BdMode",
+          "data_type": "ENUM",
+          "description": "UART baud rate mode",
+          "enum": "BaudRateMode"
+        },
+        {
+          "seq": 4,
+          "offset": 163,
+          "length": 29,
+          "name": "Reserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-004",
+      "msg_id": 8,
+      "wire_id": 8,
+      "direction": "TC",
+      "name": "UART_BD_SAVE",
+      "description": "Persist the previously-set UART baud rate to non-volatile memory",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 UART_BD_SAVE",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 3,
+          "name": "BdMode",
+          "data_type": "ENUM",
+          "description": "UART baud rate mode",
+          "enum": "BaudRateMode"
+        },
+        {
+          "seq": 4,
+          "offset": 163,
+          "length": 29,
+          "name": "Reserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-004",
+      "msg_id": 8,
+      "wire_id": 8,
+      "direction": "TM",
+      "name": "UART_BD_SAVE_RSP",
+      "description": "Response to UART_BD_SAVE",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 UART_BD_SAVE",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-005",
+      "msg_id": 9,
+      "wire_id": 9,
+      "direction": "TC",
+      "name": "IP_ADR",
+      "description": "Get/set temporary user IP (service IP 192.168.1.1 always available)",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 IP_ADR",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 32,
+          "name": "ip_address",
+          "data_type": "UINT",
+          "description": "IPv4 as U32 little-endian (100.3.2.1 \u2192 0x64030201)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-005",
+      "msg_id": 9,
+      "wire_id": 9,
+      "direction": "TM",
+      "name": "IP_ADR_RSP",
+      "description": "Response to IP_ADR",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 IP_ADR",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 32,
+          "name": "ip_address",
+          "data_type": "UINT",
+          "description": "IPv4 as U32 little-endian (100.3.2.1 \u2192 0x64030201)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-006",
+      "msg_id": 10,
+      "wire_id": 10,
+      "direction": "TC",
+      "name": "IP_ADR_SAVE",
+      "description": "Persist previously-set user IP address to non-volatile memory",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 IP_ADR_SAVE",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 32,
+          "name": "ip_address",
+          "data_type": "UINT",
+          "description": "IPv4 as U32 little-endian (100.3.2.1 \u2192 0x64030201)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-006",
+      "msg_id": 10,
+      "wire_id": 10,
+      "direction": "TM",
+      "name": "IP_ADR_SAVE_RSP",
+      "description": "Response to IP_ADR_SAVE",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 IP_ADR_SAVE",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-007",
+      "msg_id": 3,
+      "wire_id": 3,
+      "direction": "TC",
+      "name": "VERSION",
+      "description": "Get firmware-file catalog; SET selects active file by DateTime-code",
+      "length_bytes": 36,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 VERSION",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 6,
+          "name": "Sel_Seconds",
+          "data_type": "UINT",
+          "description": "Sel_seconds of DateTime code"
+        },
+        {
+          "seq": 4,
+          "offset": 166,
+          "length": 6,
+          "name": "Sel_Minutes",
+          "data_type": "UINT",
+          "description": "Sel_minutes"
+        },
+        {
+          "seq": 5,
+          "offset": 172,
+          "length": 5,
+          "name": "Sel_Hours",
+          "data_type": "UINT",
+          "description": "Sel_hours"
+        },
+        {
+          "seq": 6,
+          "offset": 177,
+          "length": 6,
+          "name": "Sel_Year",
+          "data_type": "UINT",
+          "description": "Sel_year (0-63 = 2000-2063)"
+        },
+        {
+          "seq": 7,
+          "offset": 183,
+          "length": 4,
+          "name": "Sel_Months",
+          "data_type": "UINT",
+          "description": "Sel_months"
+        },
+        {
+          "seq": 8,
+          "offset": 187,
+          "length": 5,
+          "name": "Sel_Day",
+          "data_type": "UINT",
+          "description": "Sel_day"
+        },
+        {
+          "seq": 9,
+          "offset": 192,
+          "length": 32,
+          "name": "Sel_FileName",
+          "data_type": "CHAR",
+          "description": "4-byte file name (FPGA/SWAP/CPU1)"
+        },
+        {
+          "seq": 10,
+          "offset": 224,
+          "length": 32,
+          "name": "Sel_start_adr",
+          "data_type": "UINT",
+          "description": "Sel_start address (info only)"
+        },
+        {
+          "seq": 11,
+          "offset": 256,
+          "length": 28,
+          "name": "Sel_len",
+          "data_type": "UINT",
+          "description": "Sel_length in bytes"
+        },
+        {
+          "seq": 12,
+          "offset": 284,
+          "length": 4,
+          "name": "Sel_Flags",
+          "data_type": "UINT",
+          "description": "Sel_SOLL_PROG=0x1 RUNNING=0x2 DELETE=0x4"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-007",
+      "msg_id": 3,
+      "wire_id": 3,
+      "direction": "TM",
+      "name": "VERSION_RSP",
+      "description": "Response to VERSION",
+      "length_bytes": 68,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 VERSION",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 6,
+          "name": "F1_Seconds",
+          "data_type": "UINT",
+          "description": "F1_seconds of DateTime code"
+        },
+        {
+          "seq": 4,
+          "offset": 166,
+          "length": 6,
+          "name": "F1_Minutes",
+          "data_type": "UINT",
+          "description": "F1_minutes"
+        },
+        {
+          "seq": 5,
+          "offset": 172,
+          "length": 5,
+          "name": "F1_Hours",
+          "data_type": "UINT",
+          "description": "F1_hours"
+        },
+        {
+          "seq": 6,
+          "offset": 177,
+          "length": 6,
+          "name": "F1_Year",
+          "data_type": "UINT",
+          "description": "F1_year (0-63 = 2000-2063)"
+        },
+        {
+          "seq": 7,
+          "offset": 183,
+          "length": 4,
+          "name": "F1_Months",
+          "data_type": "UINT",
+          "description": "F1_months"
+        },
+        {
+          "seq": 8,
+          "offset": 187,
+          "length": 5,
+          "name": "F1_Day",
+          "data_type": "UINT",
+          "description": "F1_day"
+        },
+        {
+          "seq": 9,
+          "offset": 192,
+          "length": 32,
+          "name": "F1_FileName",
+          "data_type": "CHAR",
+          "description": "4-byte file name (FPGA/SWAP/CPU1)"
+        },
+        {
+          "seq": 10,
+          "offset": 224,
+          "length": 32,
+          "name": "F1_start_adr",
+          "data_type": "UINT",
+          "description": "F1_start address (info only)"
+        },
+        {
+          "seq": 11,
+          "offset": 256,
+          "length": 28,
+          "name": "F1_len",
+          "data_type": "UINT",
+          "description": "F1_length in bytes"
+        },
+        {
+          "seq": 12,
+          "offset": 284,
+          "length": 4,
+          "name": "F1_Flags",
+          "data_type": "UINT",
+          "description": "F1_SOLL_PROG=0x1 RUNNING=0x2 DELETE=0x4"
+        },
+        {
+          "seq": 13,
+          "offset": 288,
+          "length": 6,
+          "name": "F2_Seconds",
+          "data_type": "UINT",
+          "description": "F2_seconds of DateTime code"
+        },
+        {
+          "seq": 14,
+          "offset": 294,
+          "length": 6,
+          "name": "F2_Minutes",
+          "data_type": "UINT",
+          "description": "F2_minutes"
+        },
+        {
+          "seq": 15,
+          "offset": 300,
+          "length": 5,
+          "name": "F2_Hours",
+          "data_type": "UINT",
+          "description": "F2_hours"
+        },
+        {
+          "seq": 16,
+          "offset": 305,
+          "length": 6,
+          "name": "F2_Year",
+          "data_type": "UINT",
+          "description": "F2_year (0-63 = 2000-2063)"
+        },
+        {
+          "seq": 17,
+          "offset": 311,
+          "length": 4,
+          "name": "F2_Months",
+          "data_type": "UINT",
+          "description": "F2_months"
+        },
+        {
+          "seq": 18,
+          "offset": 315,
+          "length": 5,
+          "name": "F2_Day",
+          "data_type": "UINT",
+          "description": "F2_day"
+        },
+        {
+          "seq": 19,
+          "offset": 320,
+          "length": 32,
+          "name": "F2_FileName",
+          "data_type": "CHAR",
+          "description": "4-byte file name (FPGA/SWAP/CPU1)"
+        },
+        {
+          "seq": 20,
+          "offset": 352,
+          "length": 32,
+          "name": "F2_start_adr",
+          "data_type": "UINT",
+          "description": "F2_start address (info only)"
+        },
+        {
+          "seq": 21,
+          "offset": 384,
+          "length": 28,
+          "name": "F2_len",
+          "data_type": "UINT",
+          "description": "F2_length in bytes"
+        },
+        {
+          "seq": 22,
+          "offset": 412,
+          "length": 4,
+          "name": "F2_Flags",
+          "data_type": "UINT",
+          "description": "F2_SOLL_PROG=0x1 RUNNING=0x2 DELETE=0x4"
+        },
+        {
+          "seq": 23,
+          "offset": 416,
+          "length": 6,
+          "name": "F3_Seconds",
+          "data_type": "UINT",
+          "description": "F3_seconds of DateTime code"
+        },
+        {
+          "seq": 24,
+          "offset": 422,
+          "length": 6,
+          "name": "F3_Minutes",
+          "data_type": "UINT",
+          "description": "F3_minutes"
+        },
+        {
+          "seq": 25,
+          "offset": 428,
+          "length": 5,
+          "name": "F3_Hours",
+          "data_type": "UINT",
+          "description": "F3_hours"
+        },
+        {
+          "seq": 26,
+          "offset": 433,
+          "length": 6,
+          "name": "F3_Year",
+          "data_type": "UINT",
+          "description": "F3_year (0-63 = 2000-2063)"
+        },
+        {
+          "seq": 27,
+          "offset": 439,
+          "length": 4,
+          "name": "F3_Months",
+          "data_type": "UINT",
+          "description": "F3_months"
+        },
+        {
+          "seq": 28,
+          "offset": 443,
+          "length": 5,
+          "name": "F3_Day",
+          "data_type": "UINT",
+          "description": "F3_day"
+        },
+        {
+          "seq": 29,
+          "offset": 448,
+          "length": 32,
+          "name": "F3_FileName",
+          "data_type": "CHAR",
+          "description": "4-byte file name (FPGA/SWAP/CPU1)"
+        },
+        {
+          "seq": 30,
+          "offset": 480,
+          "length": 32,
+          "name": "F3_start_adr",
+          "data_type": "UINT",
+          "description": "F3_start address (info only)"
+        },
+        {
+          "seq": 31,
+          "offset": 512,
+          "length": 28,
+          "name": "F3_len",
+          "data_type": "UINT",
+          "description": "F3_length in bytes"
+        },
+        {
+          "seq": 32,
+          "offset": 540,
+          "length": 4,
+          "name": "F3_Flags",
+          "data_type": "UINT",
+          "description": "F3_SOLL_PROG=0x1 RUNNING=0x2 DELETE=0x4"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-008",
+      "msg_id": 4,
+      "wire_id": 4,
+      "direction": "TC",
+      "name": "HOUSE_KEEPING",
+      "description": "Read XLink housekeeping (voltages, temperatures, RCV/XMT channel state)",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 HOUSE_KEEPING",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-008",
+      "msg_id": 4,
+      "wire_id": 4,
+      "direction": "TM",
+      "name": "HOUSE_KEEPING_RSP",
+      "description": "Response to HOUSE_KEEPING",
+      "length_bytes": 120,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 HOUSE_KEEPING",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 32,
+          "name": "MoreHkInfo",
+          "data_type": "UINT",
+          "description": "Special-purpose diagnostic word"
+        },
+        {
+          "seq": 4,
+          "offset": 192,
+          "length": 64,
+          "name": "V_VCCINT",
+          "data_type": "DOUBLE",
+          "description": "VCCINT",
+          "unit": "V"
+        },
+        {
+          "seq": 5,
+          "offset": 256,
+          "length": 64,
+          "name": "V_VCCAUX",
+          "data_type": "DOUBLE",
+          "description": "VCCAUX",
+          "unit": "V"
+        },
+        {
+          "seq": 6,
+          "offset": 320,
+          "length": 64,
+          "name": "V_VCCBRAM",
+          "data_type": "DOUBLE",
+          "description": "VCCBRAM",
+          "unit": "V"
+        },
+        {
+          "seq": 7,
+          "offset": 384,
+          "length": 64,
+          "name": "V_VCCPINT",
+          "data_type": "DOUBLE",
+          "description": "VCCPINT",
+          "unit": "V"
+        },
+        {
+          "seq": 8,
+          "offset": 448,
+          "length": 64,
+          "name": "V_VCCPAUX",
+          "data_type": "DOUBLE",
+          "description": "VCCPAUX",
+          "unit": "V"
+        },
+        {
+          "seq": 9,
+          "offset": 512,
+          "length": 64,
+          "name": "V_VCCPDRO",
+          "data_type": "DOUBLE",
+          "description": "VCCPDRO",
+          "unit": "V"
+        },
+        {
+          "seq": 10,
+          "offset": 576,
+          "length": 8,
+          "name": "T_AD9361",
+          "data_type": "INT",
+          "description": "AD9361 chip temperature",
+          "unit": "\u00b0C"
+        },
+        {
+          "seq": 11,
+          "offset": 584,
+          "length": 8,
+          "name": "T_EthPhy",
+          "data_type": "INT",
+          "description": "Ethernet PHY temperature",
+          "unit": "\u00b0C"
+        },
+        {
+          "seq": 12,
+          "offset": 592,
+          "length": 8,
+          "name": "T_Zynq",
+          "data_type": "INT",
+          "description": "Zynq FPGA temperature",
+          "unit": "\u00b0C"
+        },
+        {
+          "seq": 13,
+          "offset": 600,
+          "length": 8,
+          "name": "T_Reserved",
+          "data_type": "INT",
+          "description": "reserved"
+        },
+        {
+          "seq": 14,
+          "offset": 608,
+          "length": 1,
+          "name": "Rcv0_On",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 HW active",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 15,
+          "offset": 609,
+          "length": 1,
+          "name": "Rcv0_Sync",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 in SYNC",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 16,
+          "offset": 610,
+          "length": 7,
+          "name": "Rcv0_idxGain",
+          "data_type": "UINT",
+          "description": "RCV Ch0 RxGain (0-76 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 17,
+          "offset": 617,
+          "length": 6,
+          "name": "Rcv0_SirMin",
+          "data_type": "UINT",
+          "description": "RCV Ch0 min SIR (0-63 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 18,
+          "offset": 623,
+          "length": 6,
+          "name": "Rcv0_SirMax",
+          "data_type": "UINT",
+          "description": "RCV Ch0 max SIR (0-63 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 19,
+          "offset": 629,
+          "length": 9,
+          "name": "Rcv0_DopplerFreq",
+          "data_type": "INT",
+          "description": "RCV Ch0 Doppler (\u00b1200 kHz range)",
+          "unit": "kHz"
+        },
+        {
+          "seq": 20,
+          "offset": 638,
+          "length": 2,
+          "name": "Rcv0_Rest0",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 21,
+          "offset": 640,
+          "length": 6,
+          "name": "Rcv0_PwrMin",
+          "data_type": "UINT",
+          "description": "RCV Ch0 min Rx power",
+          "unit": "dB"
+        },
+        {
+          "seq": 22,
+          "offset": 646,
+          "length": 6,
+          "name": "Rcv0_PwrMax",
+          "data_type": "UINT",
+          "description": "RCV Ch0 max Rx power",
+          "unit": "dB"
+        },
+        {
+          "seq": 23,
+          "offset": 652,
+          "length": 8,
+          "name": "Rcv0_RxState",
+          "data_type": "UINT",
+          "description": "RCV Ch0 state machine"
+        },
+        {
+          "seq": 24,
+          "offset": 660,
+          "length": 4,
+          "name": "Rcv0_DoppExt",
+          "data_type": "UINT",
+          "description": "RCV Ch0 extended Doppler bits (\u00b14096 kHz)"
+        },
+        {
+          "seq": 25,
+          "offset": 664,
+          "length": 3,
+          "name": "Rcv0_Modulat",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 26,
+          "offset": 667,
+          "length": 3,
+          "name": "Rcv0_Fec",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 27,
+          "offset": 670,
+          "length": 2,
+          "name": "Rcv0_Rest1",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 28,
+          "offset": 672,
+          "length": 32,
+          "name": "Rcv0_BchBlockCount",
+          "data_type": "UINT",
+          "description": "RCV Ch0 total BCH blocks in SYNC"
+        },
+        {
+          "seq": 29,
+          "offset": 704,
+          "length": 32,
+          "name": "Rcv0_BchErrCount",
+          "data_type": "UINT",
+          "description": "RCV Ch0 BCH block errors in SYNC"
+        },
+        {
+          "seq": 30,
+          "offset": 736,
+          "length": 1,
+          "name": "Rcv1_On",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 HW active",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 31,
+          "offset": 737,
+          "length": 1,
+          "name": "Rcv1_Sync",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 in SYNC",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 32,
+          "offset": 738,
+          "length": 7,
+          "name": "Rcv1_idxGain",
+          "data_type": "UINT",
+          "description": "RCV Ch1 RxGain (0-76 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 33,
+          "offset": 745,
+          "length": 6,
+          "name": "Rcv1_SirMin",
+          "data_type": "UINT",
+          "description": "RCV Ch1 min SIR (0-63 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 34,
+          "offset": 751,
+          "length": 6,
+          "name": "Rcv1_SirMax",
+          "data_type": "UINT",
+          "description": "RCV Ch1 max SIR (0-63 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 35,
+          "offset": 757,
+          "length": 9,
+          "name": "Rcv1_DopplerFreq",
+          "data_type": "INT",
+          "description": "RCV Ch1 Doppler (\u00b1200 kHz range)",
+          "unit": "kHz"
+        },
+        {
+          "seq": 36,
+          "offset": 766,
+          "length": 2,
+          "name": "Rcv1_Rest0",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 37,
+          "offset": 768,
+          "length": 6,
+          "name": "Rcv1_PwrMin",
+          "data_type": "UINT",
+          "description": "RCV Ch1 min Rx power",
+          "unit": "dB"
+        },
+        {
+          "seq": 38,
+          "offset": 774,
+          "length": 6,
+          "name": "Rcv1_PwrMax",
+          "data_type": "UINT",
+          "description": "RCV Ch1 max Rx power",
+          "unit": "dB"
+        },
+        {
+          "seq": 39,
+          "offset": 780,
+          "length": 8,
+          "name": "Rcv1_RxState",
+          "data_type": "UINT",
+          "description": "RCV Ch1 state machine"
+        },
+        {
+          "seq": 40,
+          "offset": 788,
+          "length": 4,
+          "name": "Rcv1_DoppExt",
+          "data_type": "UINT",
+          "description": "RCV Ch1 extended Doppler bits (\u00b14096 kHz)"
+        },
+        {
+          "seq": 41,
+          "offset": 792,
+          "length": 3,
+          "name": "Rcv1_Modulat",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 42,
+          "offset": 795,
+          "length": 3,
+          "name": "Rcv1_Fec",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 43,
+          "offset": 798,
+          "length": 2,
+          "name": "Rcv1_Rest1",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 44,
+          "offset": 800,
+          "length": 32,
+          "name": "Rcv1_BchBlockCount",
+          "data_type": "UINT",
+          "description": "RCV Ch1 total BCH blocks in SYNC"
+        },
+        {
+          "seq": 45,
+          "offset": 832,
+          "length": 32,
+          "name": "Rcv1_BchErrCount",
+          "data_type": "UINT",
+          "description": "RCV Ch1 BCH block errors in SYNC"
+        },
+        {
+          "seq": 46,
+          "offset": 864,
+          "length": 1,
+          "name": "Xmt0_On",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 HW active",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 47,
+          "offset": 865,
+          "length": 4,
+          "name": "Xmt0_Modulation",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 48,
+          "offset": 869,
+          "length": 4,
+          "name": "Xmt0_Fec",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 49,
+          "offset": 873,
+          "length": 10,
+          "name": "Xmt0_Att",
+          "data_type": "UINT",
+          "description": "XMT Ch0 attenuation (0.0-89.7 dB, step 0.1 dB)",
+          "unit": "dB",
+          "scale": 0.1
+        },
+        {
+          "seq": 50,
+          "offset": 883,
+          "length": 13,
+          "name": "Xmt0_Rest",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 51,
+          "offset": 896,
+          "length": 1,
+          "name": "Xmt1_On",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 HW active",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 52,
+          "offset": 897,
+          "length": 4,
+          "name": "Xmt1_Modulation",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 53,
+          "offset": 901,
+          "length": 4,
+          "name": "Xmt1_Fec",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 54,
+          "offset": 905,
+          "length": 10,
+          "name": "Xmt1_Att",
+          "data_type": "UINT",
+          "description": "XMT Ch1 attenuation (0.0-89.7 dB, step 0.1 dB)",
+          "unit": "dB",
+          "scale": 0.1
+        },
+        {
+          "seq": 55,
+          "offset": 915,
+          "length": 13,
+          "name": "Xmt1_Rest",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 56,
+          "offset": 928,
+          "length": 32,
+          "name": "card_run_counter",
+          "data_type": "UINT",
+          "description": "OS system tick counter (10-ms units; divide by 100 for seconds)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-009",
+      "msg_id": 5,
+      "wire_id": 5,
+      "direction": "TC",
+      "name": "XPA_INF",
+      "description": "Read external X-band power-amplifier housekeeping (only if XPA installed)",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 XPA_INF",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-009",
+      "msg_id": 5,
+      "wire_id": 5,
+      "direction": "TM",
+      "name": "XPA_INF_RSP",
+      "description": "Response to XPA_INF",
+      "length_bytes": 36,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 XPA_INF",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 1,
+          "name": "XPA0_PGOOD",
+          "data_type": "ENUM",
+          "description": "XPA0 internal PSU good flag",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 4,
+          "offset": 161,
+          "length": 31,
+          "name": "XPA0_Reserved0",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 5,
+          "offset": 192,
+          "length": 16,
+          "name": "XPA0_Current",
+          "data_type": "INT",
+          "description": "XPA0 internal amplifier current",
+          "unit": "mA"
+        },
+        {
+          "seq": 6,
+          "offset": 208,
+          "length": 16,
+          "name": "XPA0_Temp",
+          "data_type": "INT",
+          "description": "XPA0 internal temperature",
+          "unit": "\u00b0C"
+        },
+        {
+          "seq": 7,
+          "offset": 224,
+          "length": 1,
+          "name": "XPA1_PGOOD",
+          "data_type": "ENUM",
+          "description": "XPA1 internal PSU good flag",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 8,
+          "offset": 225,
+          "length": 31,
+          "name": "XPA1_Reserved0",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 9,
+          "offset": 256,
+          "length": 16,
+          "name": "XPA1_Current",
+          "data_type": "INT",
+          "description": "XPA1 internal amplifier current",
+          "unit": "mA"
+        },
+        {
+          "seq": 10,
+          "offset": 272,
+          "length": 16,
+          "name": "XPA1_Temp",
+          "data_type": "INT",
+          "description": "XPA1 internal temperature",
+          "unit": "\u00b0C"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-010",
+      "msg_id": 1,
+      "wire_id": 1,
+      "direction": "TC",
+      "name": "DEVICE_CONF",
+      "description": "Read/write full 120-byte XLink transceiver configuration",
+      "length_bytes": 120,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 DEVICE_CONF",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 1,
+          "name": "RfeRx0On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRx0On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 4,
+          "offset": 161,
+          "length": 1,
+          "name": "RfeTx0On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeTx0On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 5,
+          "offset": 162,
+          "length": 1,
+          "name": "RfePa0On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfePa0On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 6,
+          "offset": 163,
+          "length": 1,
+          "name": "RfeRxTx0",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRxTx0",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 7,
+          "offset": 164,
+          "length": 1,
+          "name": "RfeRx1On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRx1On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 8,
+          "offset": 165,
+          "length": 1,
+          "name": "RfeTx1On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeTx1On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 9,
+          "offset": 166,
+          "length": 1,
+          "name": "RfePa1On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfePa1On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 10,
+          "offset": 167,
+          "length": 1,
+          "name": "RfeRxTx1",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRxTx1",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 11,
+          "offset": 168,
+          "length": 1,
+          "name": "RfeOutEn",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeOutEn",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 12,
+          "offset": 169,
+          "length": 1,
+          "name": "RfeGpio0",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeGpio0",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 13,
+          "offset": 170,
+          "length": 1,
+          "name": "RfeLoopDet",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeLoopDet",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 14,
+          "offset": 171,
+          "length": 1,
+          "name": "RfeLoMux",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeLoMux",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 15,
+          "offset": 172,
+          "length": 1,
+          "name": "RfePowOn",
+          "data_type": "ENUM",
+          "description": "RFE pin RfePowOn",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 16,
+          "offset": 173,
+          "length": 1,
+          "name": "RfeDA",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeDA",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 17,
+          "offset": 174,
+          "length": 1,
+          "name": "RfeCL",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeCL",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 18,
+          "offset": 175,
+          "length": 1,
+          "name": "RfeEnAD5304",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEnAD5304",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 19,
+          "offset": 176,
+          "length": 1,
+          "name": "RfeEnSynth",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEnSynth",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 20,
+          "offset": 177,
+          "length": 1,
+          "name": "RfeEn3",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEn3",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 21,
+          "offset": 178,
+          "length": 1,
+          "name": "RfeEn4",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEn4",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 22,
+          "offset": 179,
+          "length": 1,
+          "name": "RfeEn5",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEn5",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 23,
+          "offset": 180,
+          "length": 1,
+          "name": "Rfe7V0En",
+          "data_type": "ENUM",
+          "description": "RFE pin Rfe7V0En",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 24,
+          "offset": 181,
+          "length": 11,
+          "name": "RfeRsvU32",
+          "data_type": "UINT",
+          "description": "reserved bits"
+        },
+        {
+          "seq": 25,
+          "offset": 192,
+          "length": 32,
+          "name": "RxMix_Ch0",
+          "data_type": "INT",
+          "description": "RxMix Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 26,
+          "offset": 224,
+          "length": 32,
+          "name": "RxMix_Ch1",
+          "data_type": "INT",
+          "description": "RxMix Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 27,
+          "offset": 256,
+          "length": 32,
+          "name": "TxMix_Ch0",
+          "data_type": "INT",
+          "description": "TxMix Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 28,
+          "offset": 288,
+          "length": 32,
+          "name": "TxMix_Ch1",
+          "data_type": "INT",
+          "description": "TxMix Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 29,
+          "offset": 320,
+          "length": 32,
+          "name": "RxFreq_Ch0",
+          "data_type": "INT",
+          "description": "RxFreq Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 30,
+          "offset": 352,
+          "length": 32,
+          "name": "RxFreq_Ch1",
+          "data_type": "INT",
+          "description": "RxFreq Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 31,
+          "offset": 384,
+          "length": 32,
+          "name": "TxFreq_Ch0",
+          "data_type": "INT",
+          "description": "TxFreq Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 32,
+          "offset": 416,
+          "length": 32,
+          "name": "TxFreq_Ch1",
+          "data_type": "INT",
+          "description": "TxFreq Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 33,
+          "offset": 448,
+          "length": 32,
+          "name": "RxLow_Ch0",
+          "data_type": "INT",
+          "description": "RxLow Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 34,
+          "offset": 480,
+          "length": 32,
+          "name": "RxLow_Ch1",
+          "data_type": "INT",
+          "description": "RxLow Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 35,
+          "offset": 512,
+          "length": 32,
+          "name": "RxHigh_Ch0",
+          "data_type": "INT",
+          "description": "RxHigh Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 36,
+          "offset": 544,
+          "length": 32,
+          "name": "RxHigh_Ch1",
+          "data_type": "INT",
+          "description": "RxHigh Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 37,
+          "offset": 576,
+          "length": 32,
+          "name": "TxLow_Ch0",
+          "data_type": "INT",
+          "description": "TxLow Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 38,
+          "offset": 608,
+          "length": 32,
+          "name": "TxLow_Ch1",
+          "data_type": "INT",
+          "description": "TxLow Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 39,
+          "offset": 640,
+          "length": 32,
+          "name": "TxHigh_Ch0",
+          "data_type": "INT",
+          "description": "TxHigh Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 40,
+          "offset": 672,
+          "length": 32,
+          "name": "TxHigh_Ch1",
+          "data_type": "INT",
+          "description": "TxHigh Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 41,
+          "offset": 704,
+          "length": 1,
+          "name": "Use_2Rx2Tx",
+          "data_type": "ENUM",
+          "description": "Use two channels in parallel",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 42,
+          "offset": 705,
+          "length": 11,
+          "name": "TxLevel_Ch0",
+          "data_type": "UINT",
+          "description": "Tx power level Ch0 (0-2047)"
+        },
+        {
+          "seq": 43,
+          "offset": 716,
+          "length": 11,
+          "name": "TxLevel_Ch1",
+          "data_type": "UINT",
+          "description": "Tx power level Ch1 (0-2047)"
+        },
+        {
+          "seq": 44,
+          "offset": 727,
+          "length": 8,
+          "name": "RefClk",
+          "data_type": "UINT",
+          "description": "AD9361 reference clock (10-80 MHz)",
+          "unit": "MHz"
+        },
+        {
+          "seq": 45,
+          "offset": 735,
+          "length": 1,
+          "name": "AdReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 46,
+          "offset": 736,
+          "length": 3,
+          "name": "Modulat_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 47,
+          "offset": 739,
+          "length": 4,
+          "name": "Mode_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 operating mode",
+          "enum": "XmtMode"
+        },
+        {
+          "seq": 48,
+          "offset": 743,
+          "length": 3,
+          "name": "Fec_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 49,
+          "offset": 746,
+          "length": 1,
+          "name": "ChEn_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 50,
+          "offset": 747,
+          "length": 1,
+          "name": "PRnd_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 51,
+          "offset": 748,
+          "length": 1,
+          "name": "ASMStart_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 ASM at frame start",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 52,
+          "offset": 749,
+          "length": 1,
+          "name": "OffsetMod_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 offset modulation",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 53,
+          "offset": 752,
+          "length": 3,
+          "name": "Modulat_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 54,
+          "offset": 755,
+          "length": 4,
+          "name": "Mode_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 operating mode",
+          "enum": "XmtMode"
+        },
+        {
+          "seq": 55,
+          "offset": 759,
+          "length": 3,
+          "name": "Fec_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 56,
+          "offset": 762,
+          "length": 1,
+          "name": "ChEn_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 57,
+          "offset": 763,
+          "length": 1,
+          "name": "PRnd_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 58,
+          "offset": 764,
+          "length": 1,
+          "name": "ASMStart_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 ASM at frame start",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 59,
+          "offset": 765,
+          "length": 1,
+          "name": "OffsetMod_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 offset modulation",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 60,
+          "offset": 750,
+          "length": 1,
+          "name": "Ch1_diff_Ch2",
+          "data_type": "ENUM",
+          "description": "FPGA outputs different signals for Ch0/Ch1",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 61,
+          "offset": 751,
+          "length": 1,
+          "name": "ChSwitchOn_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 62,
+          "offset": 766,
+          "length": 1,
+          "name": "ChSwitchOn_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 63,
+          "offset": 767,
+          "length": 1,
+          "name": "OffsetModNormal",
+          "data_type": "ENUM",
+          "description": "XMT offset-modulation normal",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 64,
+          "offset": 768,
+          "length": 10,
+          "name": "AttTxGain_Ch0",
+          "data_type": "UINT",
+          "description": "XMT Ch0 attenuation (0.0-89.7 dB)",
+          "unit": "dB",
+          "scale": 0.1
+        },
+        {
+          "seq": 65,
+          "offset": 778,
+          "length": 10,
+          "name": "AttTxGain_Ch1",
+          "data_type": "UINT",
+          "description": "XMT Ch1 attenuation",
+          "unit": "dB",
+          "scale": 0.1
+        },
+        {
+          "seq": 66,
+          "offset": 788,
+          "length": 12,
+          "name": "TrFrmSz",
+          "data_type": "UINT",
+          "description": "Transfer frame size (1..2048 bytes; 0=auto)",
+          "unit": "bytes"
+        },
+        {
+          "seq": 67,
+          "offset": 800,
+          "length": 5,
+          "name": "PhiOffset16",
+          "data_type": "INT",
+          "description": "internal calibration value"
+        },
+        {
+          "seq": 68,
+          "offset": 805,
+          "length": 13,
+          "name": "Y16",
+          "data_type": "UINT",
+          "description": "internal calibration value"
+        },
+        {
+          "seq": 69,
+          "offset": 818,
+          "length": 10,
+          "name": "TxSampFact",
+          "data_type": "UINT",
+          "description": "not used"
+        },
+        {
+          "seq": 70,
+          "offset": 828,
+          "length": 4,
+          "name": "RsMode",
+          "data_type": "UINT",
+          "description": "Reed-Solomon mode (0=Off, 1=(223,255)I1)"
+        },
+        {
+          "seq": 71,
+          "offset": 832,
+          "length": 8,
+          "name": "Rx_GainMax_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 max gain (0-76 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 72,
+          "offset": 840,
+          "length": 1,
+          "name": "Rx_ChEn_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 73,
+          "offset": 841,
+          "length": 3,
+          "name": "Rx_Modulat_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 74,
+          "offset": 844,
+          "length": 1,
+          "name": "Rx_MsbFirst_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 bit direction (0=LSB, 1=MSB)"
+        },
+        {
+          "seq": 75,
+          "offset": 845,
+          "length": 3,
+          "name": "Rx_Fec_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 76,
+          "offset": 848,
+          "length": 1,
+          "name": "Rx_PRnd_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 77,
+          "offset": 849,
+          "length": 1,
+          "name": "Rx_BchDec_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 BCH decoder",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 78,
+          "offset": 850,
+          "length": 1,
+          "name": "Rx_AccBchErr_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 accept BCH errors",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 79,
+          "offset": 851,
+          "length": 1,
+          "name": "Rx_BchCountMode_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 BCH count mode"
+        },
+        {
+          "seq": 80,
+          "offset": 852,
+          "length": 6,
+          "name": "Rx_PwrOff_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 internal calibration min Rx power"
+        },
+        {
+          "seq": 81,
+          "offset": 858,
+          "length": 6,
+          "name": "Rx_Calib_Ch0",
+          "data_type": "INT",
+          "description": "RCV Ch0 calibration offset (-31..+31 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 82,
+          "offset": 864,
+          "length": 8,
+          "name": "Rx_GainMax_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 max gain (0-76 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 83,
+          "offset": 872,
+          "length": 1,
+          "name": "Rx_ChEn_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 84,
+          "offset": 873,
+          "length": 3,
+          "name": "Rx_Modulat_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 85,
+          "offset": 876,
+          "length": 1,
+          "name": "Rx_MsbFirst_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 bit direction (0=LSB, 1=MSB)"
+        },
+        {
+          "seq": 86,
+          "offset": 877,
+          "length": 3,
+          "name": "Rx_Fec_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 87,
+          "offset": 880,
+          "length": 1,
+          "name": "Rx_PRnd_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 88,
+          "offset": 881,
+          "length": 1,
+          "name": "Rx_BchDec_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 BCH decoder",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 89,
+          "offset": 882,
+          "length": 1,
+          "name": "Rx_AccBchErr_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 accept BCH errors",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 90,
+          "offset": 883,
+          "length": 1,
+          "name": "Rx_BchCountMode_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 BCH count mode"
+        },
+        {
+          "seq": 91,
+          "offset": 884,
+          "length": 6,
+          "name": "Rx_PwrOff_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 internal calibration min Rx power"
+        },
+        {
+          "seq": 92,
+          "offset": 890,
+          "length": 6,
+          "name": "Rx_Calib_Ch1",
+          "data_type": "INT",
+          "description": "RCV Ch1 calibration offset (-31..+31 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 93,
+          "offset": 896,
+          "length": 16,
+          "name": "XmtSymbFreq",
+          "data_type": "UINT",
+          "description": "Transmit symbol frequency (locked by product key)",
+          "unit": "kHz"
+        },
+        {
+          "seq": 94,
+          "offset": 912,
+          "length": 16,
+          "name": "RcvSymbFreq",
+          "data_type": "UINT",
+          "description": "Receive symbol frequency (locked by product key)",
+          "unit": "kHz"
+        },
+        {
+          "seq": 95,
+          "offset": 928,
+          "length": 4,
+          "name": "RcvMode",
+          "data_type": "UINT",
+          "description": "internal Rcv mode"
+        },
+        {
+          "seq": 96,
+          "offset": 932,
+          "length": 2,
+          "name": "RcvChannel",
+          "data_type": "ENUM",
+          "description": "Which RCV channels enabled",
+          "enum": "RcvChannel"
+        },
+        {
+          "seq": 97,
+          "offset": 934,
+          "length": 1,
+          "name": "Rcv_ChSwitchOn_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 98,
+          "offset": 935,
+          "length": 1,
+          "name": "Rcv_ChSwitchOn_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 99,
+          "offset": 936,
+          "length": 22,
+          "name": "RcvReserved",
+          "data_type": "UINT",
+          "description": "internal debugging"
+        },
+        {
+          "seq": 100,
+          "offset": 958,
+          "length": 1,
+          "name": "Rcv_PRnd_Global",
+          "data_type": "ENUM",
+          "description": "Rcv PseudoRandomizer (global)",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 101,
+          "offset": 959,
+          "length": 1,
+          "name": "Rcv_Reserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-010",
+      "msg_id": 1,
+      "wire_id": 1,
+      "direction": "TM",
+      "name": "DEVICE_CONF_RSP",
+      "description": "Response to DEVICE_CONF",
+      "length_bytes": 120,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 DEVICE_CONF",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 1,
+          "name": "RfeRx0On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRx0On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 4,
+          "offset": 161,
+          "length": 1,
+          "name": "RfeTx0On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeTx0On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 5,
+          "offset": 162,
+          "length": 1,
+          "name": "RfePa0On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfePa0On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 6,
+          "offset": 163,
+          "length": 1,
+          "name": "RfeRxTx0",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRxTx0",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 7,
+          "offset": 164,
+          "length": 1,
+          "name": "RfeRx1On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRx1On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 8,
+          "offset": 165,
+          "length": 1,
+          "name": "RfeTx1On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeTx1On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 9,
+          "offset": 166,
+          "length": 1,
+          "name": "RfePa1On",
+          "data_type": "ENUM",
+          "description": "RFE pin RfePa1On",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 10,
+          "offset": 167,
+          "length": 1,
+          "name": "RfeRxTx1",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeRxTx1",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 11,
+          "offset": 168,
+          "length": 1,
+          "name": "RfeOutEn",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeOutEn",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 12,
+          "offset": 169,
+          "length": 1,
+          "name": "RfeGpio0",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeGpio0",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 13,
+          "offset": 170,
+          "length": 1,
+          "name": "RfeLoopDet",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeLoopDet",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 14,
+          "offset": 171,
+          "length": 1,
+          "name": "RfeLoMux",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeLoMux",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 15,
+          "offset": 172,
+          "length": 1,
+          "name": "RfePowOn",
+          "data_type": "ENUM",
+          "description": "RFE pin RfePowOn",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 16,
+          "offset": 173,
+          "length": 1,
+          "name": "RfeDA",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeDA",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 17,
+          "offset": 174,
+          "length": 1,
+          "name": "RfeCL",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeCL",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 18,
+          "offset": 175,
+          "length": 1,
+          "name": "RfeEnAD5304",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEnAD5304",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 19,
+          "offset": 176,
+          "length": 1,
+          "name": "RfeEnSynth",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEnSynth",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 20,
+          "offset": 177,
+          "length": 1,
+          "name": "RfeEn3",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEn3",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 21,
+          "offset": 178,
+          "length": 1,
+          "name": "RfeEn4",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEn4",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 22,
+          "offset": 179,
+          "length": 1,
+          "name": "RfeEn5",
+          "data_type": "ENUM",
+          "description": "RFE pin RfeEn5",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 23,
+          "offset": 180,
+          "length": 1,
+          "name": "Rfe7V0En",
+          "data_type": "ENUM",
+          "description": "RFE pin Rfe7V0En",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 24,
+          "offset": 181,
+          "length": 11,
+          "name": "RfeRsvU32",
+          "data_type": "UINT",
+          "description": "reserved bits"
+        },
+        {
+          "seq": 25,
+          "offset": 192,
+          "length": 32,
+          "name": "RxMix_Ch0",
+          "data_type": "INT",
+          "description": "RxMix Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 26,
+          "offset": 224,
+          "length": 32,
+          "name": "RxMix_Ch1",
+          "data_type": "INT",
+          "description": "RxMix Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 27,
+          "offset": 256,
+          "length": 32,
+          "name": "TxMix_Ch0",
+          "data_type": "INT",
+          "description": "TxMix Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 28,
+          "offset": 288,
+          "length": 32,
+          "name": "TxMix_Ch1",
+          "data_type": "INT",
+          "description": "TxMix Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 29,
+          "offset": 320,
+          "length": 32,
+          "name": "RxFreq_Ch0",
+          "data_type": "INT",
+          "description": "RxFreq Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 30,
+          "offset": 352,
+          "length": 32,
+          "name": "RxFreq_Ch1",
+          "data_type": "INT",
+          "description": "RxFreq Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 31,
+          "offset": 384,
+          "length": 32,
+          "name": "TxFreq_Ch0",
+          "data_type": "INT",
+          "description": "TxFreq Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 32,
+          "offset": 416,
+          "length": 32,
+          "name": "TxFreq_Ch1",
+          "data_type": "INT",
+          "description": "TxFreq Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 33,
+          "offset": 448,
+          "length": 32,
+          "name": "RxLow_Ch0",
+          "data_type": "INT",
+          "description": "RxLow Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 34,
+          "offset": 480,
+          "length": 32,
+          "name": "RxLow_Ch1",
+          "data_type": "INT",
+          "description": "RxLow Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 35,
+          "offset": 512,
+          "length": 32,
+          "name": "RxHigh_Ch0",
+          "data_type": "INT",
+          "description": "RxHigh Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 36,
+          "offset": 544,
+          "length": 32,
+          "name": "RxHigh_Ch1",
+          "data_type": "INT",
+          "description": "RxHigh Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 37,
+          "offset": 576,
+          "length": 32,
+          "name": "TxLow_Ch0",
+          "data_type": "INT",
+          "description": "TxLow Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 38,
+          "offset": 608,
+          "length": 32,
+          "name": "TxLow_Ch1",
+          "data_type": "INT",
+          "description": "TxLow Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 39,
+          "offset": 640,
+          "length": 32,
+          "name": "TxHigh_Ch0",
+          "data_type": "INT",
+          "description": "TxHigh Ch0",
+          "unit": "kHz"
+        },
+        {
+          "seq": 40,
+          "offset": 672,
+          "length": 32,
+          "name": "TxHigh_Ch1",
+          "data_type": "INT",
+          "description": "TxHigh Ch1",
+          "unit": "kHz"
+        },
+        {
+          "seq": 41,
+          "offset": 704,
+          "length": 1,
+          "name": "Use_2Rx2Tx",
+          "data_type": "ENUM",
+          "description": "Use two channels in parallel",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 42,
+          "offset": 705,
+          "length": 11,
+          "name": "TxLevel_Ch0",
+          "data_type": "UINT",
+          "description": "Tx power level Ch0 (0-2047)"
+        },
+        {
+          "seq": 43,
+          "offset": 716,
+          "length": 11,
+          "name": "TxLevel_Ch1",
+          "data_type": "UINT",
+          "description": "Tx power level Ch1 (0-2047)"
+        },
+        {
+          "seq": 44,
+          "offset": 727,
+          "length": 8,
+          "name": "RefClk",
+          "data_type": "UINT",
+          "description": "AD9361 reference clock (10-80 MHz)",
+          "unit": "MHz"
+        },
+        {
+          "seq": 45,
+          "offset": 735,
+          "length": 1,
+          "name": "AdReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 46,
+          "offset": 736,
+          "length": 3,
+          "name": "Modulat_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 47,
+          "offset": 739,
+          "length": 4,
+          "name": "Mode_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 operating mode",
+          "enum": "XmtMode"
+        },
+        {
+          "seq": 48,
+          "offset": 743,
+          "length": 3,
+          "name": "Fec_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 49,
+          "offset": 746,
+          "length": 1,
+          "name": "ChEn_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 50,
+          "offset": 747,
+          "length": 1,
+          "name": "PRnd_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 51,
+          "offset": 748,
+          "length": 1,
+          "name": "ASMStart_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 ASM at frame start",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 52,
+          "offset": 749,
+          "length": 1,
+          "name": "OffsetMod_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 offset modulation",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 53,
+          "offset": 752,
+          "length": 3,
+          "name": "Modulat_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 54,
+          "offset": 755,
+          "length": 4,
+          "name": "Mode_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 operating mode",
+          "enum": "XmtMode"
+        },
+        {
+          "seq": 55,
+          "offset": 759,
+          "length": 3,
+          "name": "Fec_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 56,
+          "offset": 762,
+          "length": 1,
+          "name": "ChEn_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 57,
+          "offset": 763,
+          "length": 1,
+          "name": "PRnd_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 58,
+          "offset": 764,
+          "length": 1,
+          "name": "ASMStart_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 ASM at frame start",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 59,
+          "offset": 765,
+          "length": 1,
+          "name": "OffsetMod_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 offset modulation",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 60,
+          "offset": 750,
+          "length": 1,
+          "name": "Ch1_diff_Ch2",
+          "data_type": "ENUM",
+          "description": "FPGA outputs different signals for Ch0/Ch1",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 61,
+          "offset": 751,
+          "length": 1,
+          "name": "ChSwitchOn_Ch0",
+          "data_type": "ENUM",
+          "description": "XMT Ch0 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 62,
+          "offset": 766,
+          "length": 1,
+          "name": "ChSwitchOn_Ch1",
+          "data_type": "ENUM",
+          "description": "XMT Ch1 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 63,
+          "offset": 767,
+          "length": 1,
+          "name": "OffsetModNormal",
+          "data_type": "ENUM",
+          "description": "XMT offset-modulation normal",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 64,
+          "offset": 768,
+          "length": 10,
+          "name": "AttTxGain_Ch0",
+          "data_type": "UINT",
+          "description": "XMT Ch0 attenuation (0.0-89.7 dB)",
+          "unit": "dB",
+          "scale": 0.1
+        },
+        {
+          "seq": 65,
+          "offset": 778,
+          "length": 10,
+          "name": "AttTxGain_Ch1",
+          "data_type": "UINT",
+          "description": "XMT Ch1 attenuation",
+          "unit": "dB",
+          "scale": 0.1
+        },
+        {
+          "seq": 66,
+          "offset": 788,
+          "length": 12,
+          "name": "TrFrmSz",
+          "data_type": "UINT",
+          "description": "Transfer frame size (1..2048 bytes; 0=auto)",
+          "unit": "bytes"
+        },
+        {
+          "seq": 67,
+          "offset": 800,
+          "length": 5,
+          "name": "PhiOffset16",
+          "data_type": "INT",
+          "description": "internal calibration value"
+        },
+        {
+          "seq": 68,
+          "offset": 805,
+          "length": 13,
+          "name": "Y16",
+          "data_type": "UINT",
+          "description": "internal calibration value"
+        },
+        {
+          "seq": 69,
+          "offset": 818,
+          "length": 10,
+          "name": "TxSampFact",
+          "data_type": "UINT",
+          "description": "not used"
+        },
+        {
+          "seq": 70,
+          "offset": 828,
+          "length": 4,
+          "name": "RsMode",
+          "data_type": "UINT",
+          "description": "Reed-Solomon mode (0=Off, 1=(223,255)I1)"
+        },
+        {
+          "seq": 71,
+          "offset": 832,
+          "length": 8,
+          "name": "Rx_GainMax_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 max gain (0-76 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 72,
+          "offset": 840,
+          "length": 1,
+          "name": "Rx_ChEn_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 73,
+          "offset": 841,
+          "length": 3,
+          "name": "Rx_Modulat_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 74,
+          "offset": 844,
+          "length": 1,
+          "name": "Rx_MsbFirst_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 bit direction (0=LSB, 1=MSB)"
+        },
+        {
+          "seq": 75,
+          "offset": 845,
+          "length": 3,
+          "name": "Rx_Fec_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 76,
+          "offset": 848,
+          "length": 1,
+          "name": "Rx_PRnd_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 77,
+          "offset": 849,
+          "length": 1,
+          "name": "Rx_BchDec_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 BCH decoder",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 78,
+          "offset": 850,
+          "length": 1,
+          "name": "Rx_AccBchErr_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 accept BCH errors",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 79,
+          "offset": 851,
+          "length": 1,
+          "name": "Rx_BchCountMode_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 BCH count mode"
+        },
+        {
+          "seq": 80,
+          "offset": 852,
+          "length": 6,
+          "name": "Rx_PwrOff_Ch0",
+          "data_type": "UINT",
+          "description": "RCV Ch0 internal calibration min Rx power"
+        },
+        {
+          "seq": 81,
+          "offset": 858,
+          "length": 6,
+          "name": "Rx_Calib_Ch0",
+          "data_type": "INT",
+          "description": "RCV Ch0 calibration offset (-31..+31 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 82,
+          "offset": 864,
+          "length": 8,
+          "name": "Rx_GainMax_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 max gain (0-76 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 83,
+          "offset": 872,
+          "length": 1,
+          "name": "Rx_ChEn_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 enabled",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 84,
+          "offset": 873,
+          "length": 3,
+          "name": "Rx_Modulat_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 modulation",
+          "enum": "XmtModulation"
+        },
+        {
+          "seq": 85,
+          "offset": 876,
+          "length": 1,
+          "name": "Rx_MsbFirst_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 bit direction (0=LSB, 1=MSB)"
+        },
+        {
+          "seq": 86,
+          "offset": 877,
+          "length": 3,
+          "name": "Rx_Fec_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 FEC rate",
+          "enum": "FecRate"
+        },
+        {
+          "seq": 87,
+          "offset": 880,
+          "length": 1,
+          "name": "Rx_PRnd_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 pseudo-randomizer",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 88,
+          "offset": 881,
+          "length": 1,
+          "name": "Rx_BchDec_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 BCH decoder",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 89,
+          "offset": 882,
+          "length": 1,
+          "name": "Rx_AccBchErr_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 accept BCH errors",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 90,
+          "offset": 883,
+          "length": 1,
+          "name": "Rx_BchCountMode_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 BCH count mode"
+        },
+        {
+          "seq": 91,
+          "offset": 884,
+          "length": 6,
+          "name": "Rx_PwrOff_Ch1",
+          "data_type": "UINT",
+          "description": "RCV Ch1 internal calibration min Rx power"
+        },
+        {
+          "seq": 92,
+          "offset": 890,
+          "length": 6,
+          "name": "Rx_Calib_Ch1",
+          "data_type": "INT",
+          "description": "RCV Ch1 calibration offset (-31..+31 dB)",
+          "unit": "dB"
+        },
+        {
+          "seq": 93,
+          "offset": 896,
+          "length": 16,
+          "name": "XmtSymbFreq",
+          "data_type": "UINT",
+          "description": "Transmit symbol frequency (locked by product key)",
+          "unit": "kHz"
+        },
+        {
+          "seq": 94,
+          "offset": 912,
+          "length": 16,
+          "name": "RcvSymbFreq",
+          "data_type": "UINT",
+          "description": "Receive symbol frequency (locked by product key)",
+          "unit": "kHz"
+        },
+        {
+          "seq": 95,
+          "offset": 928,
+          "length": 4,
+          "name": "RcvMode",
+          "data_type": "UINT",
+          "description": "internal Rcv mode"
+        },
+        {
+          "seq": 96,
+          "offset": 932,
+          "length": 2,
+          "name": "RcvChannel",
+          "data_type": "ENUM",
+          "description": "Which RCV channels enabled",
+          "enum": "RcvChannel"
+        },
+        {
+          "seq": 97,
+          "offset": 934,
+          "length": 1,
+          "name": "Rcv_ChSwitchOn_Ch0",
+          "data_type": "ENUM",
+          "description": "RCV Ch0 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 98,
+          "offset": 935,
+          "length": 1,
+          "name": "Rcv_ChSwitchOn_Ch1",
+          "data_type": "ENUM",
+          "description": "RCV Ch1 On/Off switch",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 99,
+          "offset": 936,
+          "length": 22,
+          "name": "RcvReserved",
+          "data_type": "UINT",
+          "description": "internal debugging"
+        },
+        {
+          "seq": 100,
+          "offset": 958,
+          "length": 1,
+          "name": "Rcv_PRnd_Global",
+          "data_type": "ENUM",
+          "description": "Rcv PseudoRandomizer (global)",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 101,
+          "offset": 959,
+          "length": 1,
+          "name": "Rcv_Reserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-011",
+      "msg_id": 13,
+      "wire_id": 13,
+      "direction": "TC",
+      "name": "DVBS2_CONF",
+      "description": "Get/set DVB-S2 configuration (only when XMT Mode=10 XmtDVBS2)",
+      "length_bytes": 28,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 DVBS2_CONF",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 5,
+          "name": "ModCod",
+          "data_type": "ENUM",
+          "description": "DVB-S2 MODCOD (0=unmod, 1-11=QPSK, 12-17=8PSK, 18-23=16APSK)",
+          "enum": "DVBS2_MODCOD"
+        },
+        {
+          "seq": 4,
+          "offset": 165,
+          "length": 2,
+          "name": "FrmType",
+          "data_type": "ENUM",
+          "description": "Frame type (0=NORMAL only currently supported)",
+          "enum": "DVBS2_FrmType"
+        },
+        {
+          "seq": 5,
+          "offset": 167,
+          "length": 1,
+          "name": "InsertPilots",
+          "data_type": "ENUM",
+          "description": "Pilots insertion (must be 1)",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 6,
+          "offset": 168,
+          "length": 1,
+          "name": "Acm_Ccm",
+          "data_type": "ENUM",
+          "description": "ACM vs CCM (must be 1=CCM)",
+          "enum": "DVBS2_AcmCcm"
+        },
+        {
+          "seq": 7,
+          "offset": 169,
+          "length": 3,
+          "name": "RollOffVal",
+          "data_type": "ENUM",
+          "description": "Roll-off (must be 2 = 0.20)",
+          "enum": "DVBS2_RollOff"
+        },
+        {
+          "seq": 8,
+          "offset": 172,
+          "length": 18,
+          "name": "PlSpreadNumber",
+          "data_type": "UINT",
+          "description": "PL spreading sequence (0..262141)"
+        },
+        {
+          "seq": 9,
+          "offset": 190,
+          "length": 2,
+          "name": "DvbReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 10,
+          "offset": 192,
+          "length": 32,
+          "name": "DvbReserved2",
+          "data_type": "UINT",
+          "description": "reserved (future Ch1)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-011",
+      "msg_id": 13,
+      "wire_id": 13,
+      "direction": "TM",
+      "name": "DVBS2_CONF_RSP",
+      "description": "Response to DVBS2_CONF",
+      "length_bytes": 28,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 DVBS2_CONF",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 5,
+          "name": "ModCod",
+          "data_type": "ENUM",
+          "description": "DVB-S2 MODCOD (0=unmod, 1-11=QPSK, 12-17=8PSK, 18-23=16APSK)",
+          "enum": "DVBS2_MODCOD"
+        },
+        {
+          "seq": 4,
+          "offset": 165,
+          "length": 2,
+          "name": "FrmType",
+          "data_type": "ENUM",
+          "description": "Frame type (0=NORMAL only currently supported)",
+          "enum": "DVBS2_FrmType"
+        },
+        {
+          "seq": 5,
+          "offset": 167,
+          "length": 1,
+          "name": "InsertPilots",
+          "data_type": "ENUM",
+          "description": "Pilots insertion (must be 1)",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 6,
+          "offset": 168,
+          "length": 1,
+          "name": "Acm_Ccm",
+          "data_type": "ENUM",
+          "description": "ACM vs CCM (must be 1=CCM)",
+          "enum": "DVBS2_AcmCcm"
+        },
+        {
+          "seq": 7,
+          "offset": 169,
+          "length": 3,
+          "name": "RollOffVal",
+          "data_type": "ENUM",
+          "description": "Roll-off (must be 2 = 0.20)",
+          "enum": "DVBS2_RollOff"
+        },
+        {
+          "seq": 8,
+          "offset": 172,
+          "length": 18,
+          "name": "PlSpreadNumber",
+          "data_type": "UINT",
+          "description": "PL spreading sequence (0..262141)"
+        },
+        {
+          "seq": 9,
+          "offset": 190,
+          "length": 2,
+          "name": "DvbReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 10,
+          "offset": 192,
+          "length": 32,
+          "name": "DvbReserved2",
+          "data_type": "UINT",
+          "description": "reserved (future Ch1)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-012",
+      "msg_id": 14,
+      "wire_id": 14,
+      "direction": "TC",
+      "name": "START_RF_RCV",
+      "description": "Set destination + format for received RF uplink data (UDP stream)",
+      "length_bytes": 28,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 START_RF_RCV",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 32,
+          "name": "ip_address",
+          "data_type": "UINT",
+          "description": "Destination IP for RcvData UDP stream"
+        },
+        {
+          "seq": 4,
+          "offset": 192,
+          "length": 16,
+          "name": "port",
+          "data_type": "UINT",
+          "description": "Destination UDP port"
+        },
+        {
+          "seq": 5,
+          "offset": 208,
+          "length": 4,
+          "name": "send_format",
+          "data_type": "ENUM",
+          "description": "0=NORMAL, 1=ERR_INF, 2=RAW, 3=CLTU",
+          "enum": "RcvSendFormat"
+        },
+        {
+          "seq": 6,
+          "offset": 212,
+          "length": 3,
+          "name": "output_interface",
+          "data_type": "ENUM",
+          "description": "0=UDP_ETH, 1=CSP_UART, 2=SPI",
+          "enum": "RcvOutputIf"
+        },
+        {
+          "seq": 7,
+          "offset": 215,
+          "length": 9,
+          "name": "StartRcvReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-012",
+      "msg_id": 14,
+      "wire_id": 14,
+      "direction": "TM",
+      "name": "START_RF_RCV_RSP",
+      "description": "Response to START_RF_RCV",
+      "length_bytes": 28,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 START_RF_RCV",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 32,
+          "name": "ip_address",
+          "data_type": "UINT",
+          "description": "Destination IP for RcvData UDP stream"
+        },
+        {
+          "seq": 4,
+          "offset": 192,
+          "length": 16,
+          "name": "port",
+          "data_type": "UINT",
+          "description": "Destination UDP port"
+        },
+        {
+          "seq": 5,
+          "offset": 208,
+          "length": 4,
+          "name": "send_format",
+          "data_type": "ENUM",
+          "description": "0=NORMAL, 1=ERR_INF, 2=RAW, 3=CLTU",
+          "enum": "RcvSendFormat"
+        },
+        {
+          "seq": 6,
+          "offset": 212,
+          "length": 3,
+          "name": "output_interface",
+          "data_type": "ENUM",
+          "description": "0=UDP_ETH, 1=CSP_UART, 2=SPI",
+          "enum": "RcvOutputIf"
+        },
+        {
+          "seq": 7,
+          "offset": 215,
+          "length": 9,
+          "name": "StartRcvReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-013",
+      "msg_id": 15,
+      "wire_id": 15,
+      "direction": "TC",
+      "name": "RF_XMT_DATA",
+      "description": "Send downlink transmit data to XLink (RF transmission over CCSDS 131)",
+      "length_bytes": 28,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 RF_XMT_DATA",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 2,
+          "name": "PktType",
+          "data_type": "ENUM",
+          "description": "Packet type (2 = PKT_TRANSFER_FRM)",
+          "enum": "XmtPktType"
+        },
+        {
+          "seq": 4,
+          "offset": 162,
+          "length": 5,
+          "name": "ErrInf",
+          "data_type": "UINT",
+          "description": "error info (0 on request)"
+        },
+        {
+          "seq": 5,
+          "offset": 167,
+          "length": 12,
+          "name": "PktLen",
+          "data_type": "UINT",
+          "description": "Payload byte count (must equal TrFrmSz)",
+          "unit": "bytes"
+        },
+        {
+          "seq": 6,
+          "offset": 179,
+          "length": 1,
+          "name": "EthFirst",
+          "data_type": "UINT",
+          "description": "unused"
+        },
+        {
+          "seq": 7,
+          "offset": 180,
+          "length": 1,
+          "name": "EthLast",
+          "data_type": "UINT",
+          "description": "unused"
+        },
+        {
+          "seq": 8,
+          "offset": 181,
+          "length": 11,
+          "name": "EthNumByte",
+          "data_type": "UINT",
+          "description": "unused"
+        },
+        {
+          "seq": 9,
+          "offset": 192,
+          "length": 32,
+          "name": "MoreInfo",
+          "data_type": "UINT",
+          "description": "Magic 0xDEADAFFE (TCP) or UDP packet counter"
+        },
+        {
+          "seq": 10,
+          "offset": 224,
+          "length": 0,
+          "name": "Payload",
+          "data_type": "HEX",
+          "description": "Payload data (1..2048 bytes; length = PktLen)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-013",
+      "msg_id": 15,
+      "wire_id": 15,
+      "direction": "TM",
+      "name": "RF_XMT_DATA_RSP",
+      "description": "Response to RF_XMT_DATA",
+      "length_bytes": 28,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 RF_XMT_DATA",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 2,
+          "name": "PktType",
+          "data_type": "ENUM",
+          "description": "Packet type",
+          "enum": "XmtPktType"
+        },
+        {
+          "seq": 4,
+          "offset": 162,
+          "length": 5,
+          "name": "ErrInf",
+          "data_type": "ENUM",
+          "description": "error info",
+          "enum": "XmtErrorInfo"
+        },
+        {
+          "seq": 5,
+          "offset": 167,
+          "length": 12,
+          "name": "PktLen",
+          "data_type": "UINT",
+          "description": "processed input bytes",
+          "unit": "bytes"
+        },
+        {
+          "seq": 6,
+          "offset": 179,
+          "length": 1,
+          "name": "EthFirst",
+          "data_type": "UINT",
+          "description": "unused"
+        },
+        {
+          "seq": 7,
+          "offset": 180,
+          "length": 1,
+          "name": "EthLast",
+          "data_type": "UINT",
+          "description": "unused"
+        },
+        {
+          "seq": 8,
+          "offset": 181,
+          "length": 11,
+          "name": "EthNumByte",
+          "data_type": "UINT",
+          "description": "unused"
+        },
+        {
+          "seq": 9,
+          "offset": 192,
+          "length": 32,
+          "name": "MoreInfo",
+          "data_type": "UINT",
+          "description": "occupied TrFrm memory (or missing pkt counter on NAK)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-014",
+      "msg_id": 49,
+      "wire_id": 49,
+      "direction": "TC",
+      "name": "RCV_TRF_LEN",
+      "description": "Get/set receive Transfer Frame size for CCSDS 131.0 operation",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 RCV_TRF_LEN",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 12,
+          "name": "TrFrmLen",
+          "data_type": "UINT",
+          "description": "Receive Transfer Frame size (0..2048 bytes)",
+          "unit": "bytes"
+        },
+        {
+          "seq": 4,
+          "offset": 172,
+          "length": 20,
+          "name": "TrfReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-014",
+      "msg_id": 49,
+      "wire_id": 49,
+      "direction": "TM",
+      "name": "RCV_TRF_LEN_RSP",
+      "description": "Response to RCV_TRF_LEN",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 RCV_TRF_LEN",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 12,
+          "name": "TrFrmLen",
+          "data_type": "UINT",
+          "description": "Receive Transfer Frame size (0..2048 bytes)",
+          "unit": "bytes"
+        },
+        {
+          "seq": 4,
+          "offset": 172,
+          "length": 20,
+          "name": "TrfReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-015",
+      "msg_id": 50,
+      "wire_id": 50,
+      "direction": "TC",
+      "name": "XMT_IDLE_FRM",
+      "description": "Set a user-defined transmit IDLE transfer frame",
+      "length_bytes": 24,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 XMT_IDLE_FRM",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        },
+        {
+          "seq": 3,
+          "offset": 160,
+          "length": 1,
+          "name": "ExtIdleFrmEn",
+          "data_type": "ENUM",
+          "description": "0=internal default idle, 1=user-defined",
+          "enum": "OnOff"
+        },
+        {
+          "seq": 4,
+          "offset": 161,
+          "length": 12,
+          "name": "PktLen",
+          "data_type": "UINT",
+          "description": "length of Payload IDLE sequence (1..2048)",
+          "unit": "bytes"
+        },
+        {
+          "seq": 5,
+          "offset": 173,
+          "length": 19,
+          "name": "IdleReserved",
+          "data_type": "UINT",
+          "description": "reserved"
+        },
+        {
+          "seq": 6,
+          "offset": 192,
+          "length": 0,
+          "name": "Payload",
+          "data_type": "HEX",
+          "description": "IDLE byte sequence (repeated/cropped to frame length)"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-015",
+      "msg_id": 50,
+      "wire_id": 50,
+      "direction": "TM",
+      "name": "XMT_IDLE_FRM_RSP",
+      "description": "Response to XMT_IDLE_FRM",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 XMT_IDLE_FRM",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-016",
+      "msg_id": 256,
+      "wire_id": 256,
+      "direction": "TC",
+      "name": "GPIO_0_LOW",
+      "description": "Set XLink external GPIO pin 0 LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_0_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-016",
+      "msg_id": 256,
+      "wire_id": 256,
+      "direction": "TM",
+      "name": "GPIO_0_LOW_RSP",
+      "description": "Response to GPIO_0_LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_0_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-017",
+      "msg_id": 257,
+      "wire_id": 257,
+      "direction": "TC",
+      "name": "GPIO_1_LOW",
+      "description": "Set XLink external GPIO pin 1 LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_1_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-017",
+      "msg_id": 257,
+      "wire_id": 257,
+      "direction": "TM",
+      "name": "GPIO_1_LOW_RSP",
+      "description": "Response to GPIO_1_LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_1_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-018",
+      "msg_id": 258,
+      "wire_id": 258,
+      "direction": "TC",
+      "name": "GPIO_2_LOW",
+      "description": "Set XLink external GPIO pin 2 LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_2_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-018",
+      "msg_id": 258,
+      "wire_id": 258,
+      "direction": "TM",
+      "name": "GPIO_2_LOW_RSP",
+      "description": "Response to GPIO_2_LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_2_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-019",
+      "msg_id": 259,
+      "wire_id": 259,
+      "direction": "TC",
+      "name": "GPIO_3_LOW",
+      "description": "Set XLink external GPIO pin 3 LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_3_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-019",
+      "msg_id": 259,
+      "wire_id": 259,
+      "direction": "TM",
+      "name": "GPIO_3_LOW_RSP",
+      "description": "Response to GPIO_3_LOW",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_3_LOW",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-020",
+      "msg_id": 260,
+      "wire_id": 260,
+      "direction": "TC",
+      "name": "GPIO_0_HIGH",
+      "description": "Set XLink external GPIO pin 0 HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_0_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-020",
+      "msg_id": 260,
+      "wire_id": 260,
+      "direction": "TM",
+      "name": "GPIO_0_HIGH_RSP",
+      "description": "Response to GPIO_0_HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_0_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-021",
+      "msg_id": 261,
+      "wire_id": 261,
+      "direction": "TC",
+      "name": "GPIO_1_HIGH",
+      "description": "Set XLink external GPIO pin 1 HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_1_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-021",
+      "msg_id": 261,
+      "wire_id": 261,
+      "direction": "TM",
+      "name": "GPIO_1_HIGH_RSP",
+      "description": "Response to GPIO_1_HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_1_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-022",
+      "msg_id": 262,
+      "wire_id": 262,
+      "direction": "TC",
+      "name": "GPIO_2_HIGH",
+      "description": "Set XLink external GPIO pin 2 HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_2_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-022",
+      "msg_id": 262,
+      "wire_id": 262,
+      "direction": "TM",
+      "name": "GPIO_2_HIGH_RSP",
+      "description": "Response to GPIO_2_HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_2_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-023",
+      "msg_id": 263,
+      "wire_id": 263,
+      "direction": "TC",
+      "name": "GPIO_3_HIGH",
+      "description": "Set XLink external GPIO pin 3 HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_3_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    },
+    {
+      "param_id": "XL-023",
+      "msg_id": 263,
+      "wire_id": 263,
+      "direction": "TM",
+      "name": "GPIO_3_HIGH_RSP",
+      "description": "Response to GPIO_3_HIGH",
+      "length_bytes": 20,
+      "offset_unit": "bits",
+      "word_align": "U32",
+      "doc_reference": "XLink Service Server V1.8.1 \u00a73.2 GPIO_3_HIGH",
+      "parameters": [
+        {
+          "seq": 1,
+          "offset": 0,
+          "length": 128,
+          "name": "product_key",
+          "data_type": "HEX",
+          "description": "16-byte device product key (little-endian, 4\u00d7U32)"
+        },
+        {
+          "seq": 2,
+          "offset": 128,
+          "length": 32,
+          "name": "service_event",
+          "data_type": "UINT",
+          "description": "Service event ID + GET/SET/ACK/NAK flags in top nibble"
+        }
+      ]
+    }
+  ],
+  "service_flags": {
+    "GET": 268435456,
+    "SET": 536870912,
+    "ACK": 1073741824,
+    "NAK": 2147483648,
+    "BUSY": 3221225472,
+    "XMT_DATA_STOP": 67108864,
+    "XMT_DATA_RUN": 134217728
+  }
+}

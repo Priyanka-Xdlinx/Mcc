@@ -1,0 +1,808 @@
+{
+ "subsystem": "SENSOR",
+ "protocol": "Sensor Controller (Tracker) frame: A5 AA | DEST-ID | CMD-ID | PAYLOAD-LEN | PAYLOAD | BA",
+ "description": "Avionics sensor controller. Owns board power control and SSD (boot device) selection for the Payload Server (PS) and Edge Server (ES), and reports board temperatures and power state. No checksum in the frame: SOF, the length byte and EOF are the only integrity signals.",
+ "source_documents": [
+  "SENSOR_CONTROLLER_Tracker_TC_SET_COMMANDS",
+  "SENSOR_CONTROLLER_Tracker_TC_GET_COMMANDS",
+  "SENSOR_CONTROLLER_Tracker_FRAME_FORMAT_ENUMS"
+ ],
+ "nodes": [
+  {
+   "name": "SC",
+   "address": 50,
+   "description": "Sensor controller — DEST-ID 50 (0x32) on every command"
+  }
+ ],
+ "enums": [
+  {
+   "name": "BoardType",
+   "doc_reference": "TC SET sheet — Board type field of commands 128, 129 and 4",
+   "values": [
+    {
+     "value": 0,
+     "name": "PS",
+     "description": "Payload Server board"
+    },
+    {
+     "value": 1,
+     "name": "ES",
+     "description": "Edge Server board"
+    }
+   ]
+  },
+  {
+   "name": "PowerOperation",
+   "doc_reference": "TC SET sheet — Operation field of command 128",
+   "values": [
+    {
+     "value": 0,
+     "name": "PowerOn",
+     "description": "Power the board ON"
+    },
+    {
+     "value": 1,
+     "name": "PowerOff",
+     "description": "Power the board OFF"
+    },
+    {
+     "value": 2,
+     "name": "Restart",
+     "description": "Restart the board"
+    }
+   ]
+  },
+  {
+   "name": "SsdNumber",
+   "doc_reference": "TC SET sheet — SSD number field of commands 129 and 4",
+   "values": [
+    {
+     "value": 0,
+     "name": "SSD0",
+     "description": "Boot from SSD0"
+    },
+    {
+     "value": 1,
+     "name": "SSD1",
+     "description": "Boot from SSD1"
+    }
+   ]
+  },
+  {
+   "name": "HwInstance",
+   "doc_reference": "TC GET sheet — HW Instance field of command 1. NOTE: this enumeration differs from BoardType — PS is 1 here but 0 in BoardType.",
+   "values": [
+    {
+     "value": 0,
+     "name": "OBC",
+     "description": "On-board computer temperature sensor"
+    },
+    {
+     "value": 1,
+     "name": "PS",
+     "description": "Payload Server temperature sensor"
+    },
+    {
+     "value": 2,
+     "name": "NIC",
+     "description": "Network interface card temperature sensor"
+    }
+   ]
+  },
+  {
+   "name": "PowerState",
+   "doc_reference": "TC GET sheet — PSA/PSB/ES1/ES2 fields of command 7",
+   "values": [
+    {
+     "value": 0,
+     "name": "ON",
+     "description": "Board is powered on"
+    },
+    {
+     "value": 1,
+     "name": "OFF",
+     "description": "Board is powered off"
+    }
+   ]
+  },
+  {
+   "name": "CmdStatus",
+   "doc_reference": "TC SET / TC GET sheets — 'CMD STATUS' table, the Error field of a command response. Codes 5..18 do NOT agree with the FrameErrorEvent table on the frame-format sheet; this table is the one attached to the command definitions.",
+   "values": [
+    {
+     "value": 0,
+     "name": "AVN_CMD_SUCCESS",
+     "description": "Command accepted and executed"
+    },
+    {
+     "value": 1,
+     "name": "ERR_FRAME_SYNC",
+     "description": "SOF or EOF not found where expected"
+    },
+    {
+     "value": 2,
+     "name": "ERR_INVALID_DEST",
+     "description": "DEST-ID does not match this controller"
+    },
+    {
+     "value": 3,
+     "name": "ERR_INVALID_CMD",
+     "description": "CMD-ID not in the dispatch table"
+    },
+    {
+     "value": 4,
+     "name": "ERR_LEN_MISMATCH",
+     "description": "PAYLOAD-LEN disagrees with the bytes received"
+    },
+    {
+     "value": 5,
+     "name": "ERR_INVALID_VALUE",
+     "description": "Payload parameter value not recognised"
+    },
+    {
+     "value": 6,
+     "name": "ERR_SEQUENCE",
+     "description": "Command received out of expected sequence"
+    },
+    {
+     "value": 7,
+     "name": "ERR_TIMEOUT",
+     "description": "Execution exceeded its time budget"
+    },
+    {
+     "value": 8,
+     "name": "ERR_BUSY",
+     "description": "Resource locked by another command"
+    },
+    {
+     "value": 9,
+     "name": "ERR_PARAM_RANGE",
+     "description": "Parameter outside its valid range"
+    },
+    {
+     "value": 10,
+     "name": "ERR_HW_FAULT",
+     "description": "Peripheral reported a hardware fault"
+    },
+    {
+     "value": 11,
+     "name": "ERR_SENSOR_NO_RESPONSE",
+     "description": "Addressed sensor did not ACK on its bus"
+    },
+    {
+     "value": 12,
+     "name": "ERR_SENSOR_DATA_INVALID",
+     "description": "Reading outside physical bounds"
+    },
+    {
+     "value": 13,
+     "name": "ERR_SENSOR_STALE",
+     "description": "Last good sample older than the freshness limit"
+    },
+    {
+     "value": 14,
+     "name": "ERR_SENSOR_CALIB",
+     "description": "Calibration table missing or checksum bad"
+    },
+    {
+     "value": 15,
+     "name": "ERR_REDUNDANCY_MISMATCH",
+     "description": "Redundant channels disagree beyond tolerance"
+    },
+    {
+     "value": 16,
+     "name": "ERR_MEMORY_FAULT",
+     "description": "RAM/EEPROM/Flash integrity check failed"
+    },
+    {
+     "value": 17,
+     "name": "ERR_WATCHDOG",
+     "description": "Recovering from an independent watchdog reset"
+    },
+    {
+     "value": 18,
+     "name": "ERR_BUFFER_OVERFLOW",
+     "description": "RX/TX buffer overrun before the frame was consumed"
+    },
+    {
+     "value": 100,
+     "name": "ERR_NULL_PTR",
+     "description": "Null pointer encountered"
+    },
+    {
+     "value": 101,
+     "name": "AVN_CMD_FAIL",
+     "description": "Generic command failure"
+    }
+   ]
+  },
+  {
+   "name": "FrameErrorEvent",
+   "doc_reference": "FRAME_FORMAT_ENUMS sheet — 'Events' table, the ERROR EVENT byte of a NACK frame. Codes 0x05..0x11 are offset by one from CmdStatus because this table has no ERR_INVALID_VALUE; unconfirmed whether that is deliberate or a sheet error.",
+   "values": [
+    {
+     "value": 0,
+     "name": "NO_ERROR",
+     "description": "Command accepted and executed — the ACK value"
+    },
+    {
+     "value": 1,
+     "name": "ERR_FRAME_SYNC",
+     "description": "SOF (A5AA) or EOF (BA) not found where expected"
+    },
+    {
+     "value": 2,
+     "name": "ERR_INVALID_DEST",
+     "description": "DEST-ID does not match this controller and is not broadcast"
+    },
+    {
+     "value": 3,
+     "name": "ERR_INVALID_CMD",
+     "description": "CMD-ID not present in this controller's dispatch table"
+    },
+    {
+     "value": 4,
+     "name": "ERR_LEN_MISMATCH",
+     "description": "PAYLOAD-LEN does not match bytes actually received before EOF"
+    },
+    {
+     "value": 5,
+     "name": "ERR_SEQUENCE",
+     "description": "Command received out of expected sequence/state"
+    },
+    {
+     "value": 6,
+     "name": "ERR_TIMEOUT",
+     "description": "Command execution exceeded its allotted time budget"
+    },
+    {
+     "value": 7,
+     "name": "ERR_BUSY",
+     "description": "Controller resource locked by another in-progress command"
+    },
+    {
+     "value": 8,
+     "name": "ERR_PARAM_RANGE",
+     "description": "A payload parameter is outside its valid engineering range"
+    },
+    {
+     "value": 9,
+     "name": "ERR_HW_FAULT",
+     "description": "Underlying peripheral (ADC/SPI/I2C/GPIO) reported a hardware fault"
+    },
+    {
+     "value": 10,
+     "name": "ERR_SENSOR_NO_RESPONSE",
+     "description": "Addressed sensor did not ACK on its bus (I2C/SPI)"
+    },
+    {
+     "value": 11,
+     "name": "ERR_SENSOR_DATA_INVALID",
+     "description": "Reading outside physical bounds or fails plausibility check"
+    },
+    {
+     "value": 12,
+     "name": "ERR_SENSOR_STALE",
+     "description": "Last good sample older than the freshness limit"
+    },
+    {
+     "value": 13,
+     "name": "ERR_SENSOR_CALIB",
+     "description": "Calibration/offset table missing or checksum bad"
+    },
+    {
+     "value": 14,
+     "name": "ERR_REDUNDANCY_MISMATCH",
+     "description": "Redundant channels disagree beyond voting tolerance"
+    },
+    {
+     "value": 15,
+     "name": "ERR_MEMORY_FAULT",
+     "description": "RAM/EEPROM/Flash integrity check failed"
+    },
+    {
+     "value": 16,
+     "name": "ERR_WATCHDOG",
+     "description": "Recovering from an independent watchdog reset"
+    },
+    {
+     "value": 17,
+     "name": "ERR_BUFFER_OVERFLOW",
+     "description": "RX/TX buffer overrun before frame could be consumed"
+    }
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "param_id": "SC-128",
+   "name": "TC_SET_POWER_CTRL_PS_ES_BRD",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TC",
+   "msg_id": 128,
+   "wire_id": 128,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "TC SET sheet row 1 — Command ID 128, Dest ID 50",
+   "description": "Power the Payload Server or Edge Server board ON, OFF, or restart it. avn_set_board_power_control_req_t.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "board_type",
+     "data_type": "ENUM",
+     "enum_type": "BoardType",
+     "description": "Target board: 0=PS (Payload Server), 1=ES (Edge Server)"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "operation",
+     "data_type": "ENUM",
+     "enum_type": "PowerOperation",
+     "description": "0=Power ON, 1=Power OFF, 2=Restart"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-129",
+   "name": "TC_SET_PS_ES_SSD_SELECTION",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TC",
+   "msg_id": 129,
+   "wire_id": 129,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "TC SET sheet row 2 — Command ID 129, Dest ID 50",
+   "description": "Select which SSD the Payload Server or Edge Server board boots from. avn_set_board_ssd_selection_req_t.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "board_type",
+     "data_type": "ENUM",
+     "enum_type": "BoardType",
+     "description": "Target board: 0=PS (Payload Server), 1=ES (Edge Server)"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "ssd_number",
+     "data_type": "ENUM",
+     "enum_type": "SsdNumber",
+     "description": "Boot device: 0=SSD0, 1=SSD1"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-001",
+   "name": "TC_GET_TEMPERATURE_SENSOR_DATA",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TC",
+   "msg_id": 1,
+   "wire_id": 1,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "TC GET sheet row 1 — Command ID 1, Dest ID 50",
+   "description": "Request the temperature of one hardware instance. avn_get_board_temperature_req_t.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "hw_instance",
+     "data_type": "ENUM",
+     "enum_type": "HwInstance",
+     "description": "Sensor to read: 0=OBC, 1=PS, 2=NIC"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-004",
+   "name": "TC_GET_SSD_SELC",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TC",
+   "msg_id": 4,
+   "wire_id": 4,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "TC GET sheet row 2 — Command ID 4, Dest ID 50",
+   "description": "Read back which SSD a board is currently selected to boot from. avn_get_board_ssd_selection_req_t.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "board_type",
+     "data_type": "ENUM",
+     "enum_type": "BoardType",
+     "description": "Target board: 0=PS (Payload Server), 1=ES (Edge Server)"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-007",
+   "name": "TC_GET_BOARD_PWR_CTRL_STS",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TC",
+   "msg_id": 7,
+   "wire_id": 7,
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "TC GET sheet row 3 — Command ID 7, Dest ID 50, 'NO Structure (CMD-ID Follows)'",
+   "description": "Request the power state of all four boards. Carries no payload — the command id alone is the request.",
+   "parameters": []
+  },
+  {
+   "param_id": "SC-128",
+   "name": "TC_SET_POWER_CTRL_PS_ES_BRD_RSP",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TM",
+   "msg_id": 128,
+   "wire_id": 128,
+   "length_bytes": 3,
+   "offset_unit": "bytes",
+   "doc_reference": "TC SET sheet row 1 — avn_set_board_power_control_resp_t",
+   "description": "Response to board power control. A NACK instead carries (error_event, error_byte) — see FrameErrorEvent.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "board_type",
+     "data_type": "ENUM",
+     "enum_type": "BoardType",
+     "description": "Board the response refers to: 0=PS, 1=ES"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "ssd_number",
+     "data_type": "ENUM",
+     "enum_type": "SsdNumber",
+     "description": "SSD currently selected: 0=SSD0, 1=SSD1"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "error_field",
+     "data_type": "ENUM",
+     "enum_type": "CmdStatus",
+     "description": "Command status — 0 = AVN_CMD_SUCCESS"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-129",
+   "name": "TC_SET_PS_ES_SSD_SELECTION_RSP",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TM",
+   "msg_id": 129,
+   "wire_id": 129,
+   "length_bytes": 3,
+   "offset_unit": "bytes",
+   "doc_reference": "TC SET sheet row 2 — avn_set_board_ssd_selection_resp_t",
+   "description": "Response to SSD selection. A NACK instead carries (error_event, error_byte) — see FrameErrorEvent.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "board_type",
+     "data_type": "ENUM",
+     "enum_type": "BoardType",
+     "description": "Board the response refers to: 0=PS, 1=ES"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "ssd_number",
+     "data_type": "ENUM",
+     "enum_type": "SsdNumber",
+     "description": "SSD now selected: 0=SSD0, 1=SSD1"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "error_field",
+     "data_type": "ENUM",
+     "enum_type": "CmdStatus",
+     "description": "Command status — 0 = AVN_CMD_SUCCESS"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-001",
+   "name": "TC_GET_TEMPERATURE_SENSOR_DATA_RSP",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TM",
+   "msg_id": 1,
+   "wire_id": 1,
+   "length_bytes": 3,
+   "offset_unit": "bytes",
+   "doc_reference": "TC GET sheet row 1 — avn_get_board_temperature_resp_t",
+   "description": "Board temperature. temp_value is BIG-endian, unlike every other subsystem in this MIB: temperature = ((MSB << 8) | LSB) / 100.0, interpreted as int16_t. Deliberately carries no 'scale': the codec divides by scale on decode while the CLI multiplies by it, so any scaled field is off by scale-squared (see the EPS temperature readings). The field therefore decodes as the honest raw count in units of 0.01 degC.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "hw_instance",
+     "data_type": "ENUM",
+     "enum_type": "HwInstance",
+     "description": "Sensor read: 0=OBC, 1=PS, 2=NIC"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 2,
+     "name": "temp_value",
+     "data_type": "INT",
+     "endian": "big",
+     "unit": "0.01 degC",
+     "description": "Signed 16-bit, big-endian. Divide by 100 for degrees Celsius: 2534 = +25.34 degC, -1025 = -10.25 degC"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-004",
+   "name": "TC_GET_SSD_SELC_RSP",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TM",
+   "msg_id": 4,
+   "wire_id": 4,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "TC GET sheet row 2 — avn_get_board_ssd_selection_resp_t",
+   "description": "Which SSD the addressed board is selected to boot from.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "board_type",
+     "data_type": "ENUM",
+     "enum_type": "BoardType",
+     "description": "Board the response refers to: 0=PS, 1=ES"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "ssd_number",
+     "data_type": "ENUM",
+     "enum_type": "SsdNumber",
+     "description": "Selected boot device: 0=SSD0, 1=SSD1"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-007",
+   "name": "TC_GET_BOARD_PWR_CTRL_STS_RSP",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "TM",
+   "msg_id": 7,
+   "wire_id": 7,
+   "length_bytes": 4,
+   "offset_unit": "bytes",
+   "doc_reference": "TC GET sheet row 3 — avn_get_board_pwr_ctrl_sts_resp_t",
+   "description": "Power state of all four boards. Note these four instances are not addressable individually by the board_type field of command 128, which offers only PS and ES.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "PSA",
+     "data_type": "ENUM",
+     "enum_type": "PowerState",
+     "description": "Payload Server A — 0=ON, 1=OFF"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "PSB",
+     "data_type": "ENUM",
+     "enum_type": "PowerState",
+     "description": "Payload Server B — 0=ON, 1=OFF"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "ES1",
+     "data_type": "ENUM",
+     "enum_type": "PowerState",
+     "description": "Edge Server 1 — 0=ON, 1=OFF"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "ES2",
+     "data_type": "ENUM",
+     "enum_type": "PowerState",
+     "description": "Edge Server 2 — 0=ON, 1=OFF"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-128",
+   "name": "TC_SET_POWER_CTRL_PS_ES_BRD_NACK",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "EVENT",
+   "msg_id": 128,
+   "wire_id": 128,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "FRAME_FORMAT_ENUMS sheet — NACK frame carries ERROR EVENT then ERROR BYTE",
+   "description": "Negative acknowledgement of TC_SET_POWER_CTRL_PS_ES_BRD. Same cmd_id as the ACK; told apart by payload length.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "error_event",
+     "data_type": "ENUM",
+     "enum_type": "FrameErrorEvent",
+     "description": "Why the command was rejected"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "error_byte",
+     "data_type": "UINT",
+     "description": "Context byte — the simulator returns the rejected cmd_id"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-129",
+   "name": "TC_SET_PS_ES_SSD_SELECTION_NACK",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "EVENT",
+   "msg_id": 129,
+   "wire_id": 129,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "FRAME_FORMAT_ENUMS sheet — NACK frame carries ERROR EVENT then ERROR BYTE",
+   "description": "Negative acknowledgement of TC_SET_PS_ES_SSD_SELECTION. Same cmd_id as the ACK; told apart by payload length.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "error_event",
+     "data_type": "ENUM",
+     "enum_type": "FrameErrorEvent",
+     "description": "Why the command was rejected"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "error_byte",
+     "data_type": "UINT",
+     "description": "Context byte — the simulator returns the rejected cmd_id"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-001",
+   "name": "TC_GET_TEMPERATURE_SENSOR_DATA_NACK",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "EVENT",
+   "msg_id": 1,
+   "wire_id": 1,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "FRAME_FORMAT_ENUMS sheet — NACK frame carries ERROR EVENT then ERROR BYTE",
+   "description": "Negative acknowledgement of TC_GET_TEMPERATURE_SENSOR_DATA. Same cmd_id as the ACK; told apart by payload length.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "error_event",
+     "data_type": "ENUM",
+     "enum_type": "FrameErrorEvent",
+     "description": "Why the command was rejected"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "error_byte",
+     "data_type": "UINT",
+     "description": "Context byte — the simulator returns the rejected cmd_id"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-004",
+   "name": "TC_GET_SSD_SELC_NACK",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "EVENT",
+   "msg_id": 4,
+   "wire_id": 4,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "FRAME_FORMAT_ENUMS sheet — NACK frame carries ERROR EVENT then ERROR BYTE",
+   "description": "Negative acknowledgement of TC_GET_SSD_SELC. Same cmd_id as the ACK; told apart by payload length. AMBIGUOUS: this command's ACK payload is also 2 bytes, so a NACK cannot be told apart from a success by length alone — it decodes as the ACK. Needs a flag bit or a distinct reply id from the firmware.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "error_event",
+     "data_type": "ENUM",
+     "enum_type": "FrameErrorEvent",
+     "description": "Why the command was rejected"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "error_byte",
+     "data_type": "UINT",
+     "description": "Context byte — the simulator returns the rejected cmd_id"
+    }
+   ]
+  },
+  {
+   "param_id": "SC-007",
+   "name": "TC_GET_BOARD_PWR_CTRL_STS_NACK",
+   "subsystem": "SENSOR",
+   "node": "SC",
+   "direction": "EVENT",
+   "msg_id": 7,
+   "wire_id": 7,
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "FRAME_FORMAT_ENUMS sheet — NACK frame carries ERROR EVENT then ERROR BYTE",
+   "description": "Negative acknowledgement of TC_GET_BOARD_PWR_CTRL_STS. Same cmd_id as the ACK; told apart by payload length.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "error_event",
+     "data_type": "ENUM",
+     "enum_type": "FrameErrorEvent",
+     "description": "Why the command was rejected"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "error_byte",
+     "data_type": "UINT",
+     "description": "Context byte — the simulator returns the rejected cmd_id"
+    }
+   ]
+  }
+ ]
+}

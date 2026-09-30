@@ -25,7 +25,7 @@ public final class Replay {
                       String name, String formatted) {}
 
     public static SchemaRepo schema() {
-        Path db = repoRoot().resolve("mcc-app/mcc.db");
+        Path db = repoRoot().resolve("mcc.db");
         if (!Files.exists(db)) {
             throw new IllegalStateException("build the schema first: python3 schema/build_schema.py");
         }
@@ -34,10 +34,11 @@ public final class Replay {
         return new SchemaRepo(ds);
     }
 
+    /** The mcc-app repository root: the directory holding schema/ and xdos/. */
     public static Path repoRoot() {
         Path p = Path.of("").toAbsolutePath();       // .../mcc-app/backend
-        while (p != null && !Files.exists(p.resolve("updated xdos"))) p = p.getParent();
-        if (p == null) throw new IllegalStateException("cannot locate the workspace root");
+        while (p != null && !(Files.isDirectory(p.resolve("schema")) && Files.isDirectory(p.resolve("xdos")))) p = p.getParent();
+        if (p == null) throw new IllegalStateException("cannot locate the mcc-app root (schema/ and xdos/)");
         return p;
     }
 

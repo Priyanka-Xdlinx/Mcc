@@ -1,0 +1,3611 @@
+{
+ "subsystem": "GPS",
+ "protocol": "oem7_binary",
+ "description": "NovAtel OEM7 / OEM719 (operational log + command subset)",
+ "nodes": [
+  {
+   "name": "GPS",
+   "address": null,
+   "description": "OEM719 receiver"
+  }
+ ],
+ "enums": [
+  {
+   "name": "Port",
+   "doc_reference": "OEM7 detailed port identifiers (subset), p.41-43",
+   "values": [
+    {
+     "value": 0,
+     "name": "NO_PORTS",
+     "description": "No ports"
+    },
+    {
+     "value": 1,
+     "name": "COM1",
+     "description": "COM port 1"
+    },
+    {
+     "value": 2,
+     "name": "COM2",
+     "description": "COM port 2"
+    },
+    {
+     "value": 3,
+     "name": "COM3",
+     "description": "COM port 3"
+    },
+    {
+     "value": 6,
+     "name": "THISPORT",
+     "description": "Port this command was received on"
+    },
+    {
+     "value": 8,
+     "name": "ALL",
+     "description": "All ports"
+    },
+    {
+     "value": 13,
+     "name": "USB1",
+     "description": "USB port 1"
+    },
+    {
+     "value": 14,
+     "name": "USB2",
+     "description": "USB port 2"
+    },
+    {
+     "value": 15,
+     "name": "USB3",
+     "description": "USB port 3"
+    }
+   ]
+  },
+  {
+   "name": "LogTrigger",
+   "doc_reference": "OEM7 LOG command trigger, p.242-246",
+   "values": [
+    {
+     "value": 0,
+     "name": "ONNEW",
+     "description": "New or changed data"
+    },
+    {
+     "value": 1,
+     "name": "ONCHANGED",
+     "description": "Changed data"
+    },
+    {
+     "value": 2,
+     "name": "ONTIME",
+     "description": "Periodic, every 'period' seconds"
+    },
+    {
+     "value": 3,
+     "name": "ONNEXT",
+     "description": "Next occurrence"
+    },
+    {
+     "value": 4,
+     "name": "ONCE",
+     "description": "Immediately, once"
+    },
+    {
+     "value": 5,
+     "name": "ONMARK",
+     "description": "On mark input trigger"
+    }
+   ]
+  },
+  {
+   "name": "HoldFlag",
+   "doc_reference": "OEM7 LOG command hold field",
+   "values": [
+    {
+     "value": 0,
+     "name": "NOHOLD",
+     "description": "Cleared by UNLOGALL"
+    },
+    {
+     "value": 1,
+     "name": "HOLD",
+     "description": "Survives UNLOGALL (needs held=1 to clear)"
+    }
+   ]
+  },
+  {
+   "name": "SolStatus",
+   "doc_reference": "OEM7 solution status, BESTPOS p.512",
+   "values": [
+    {
+     "value": 0,
+     "name": "SOL_COMPUTED",
+     "description": "Solution computed"
+    },
+    {
+     "value": 1,
+     "name": "INSUFFICIENT_OBS",
+     "description": "Insufficient observations"
+    },
+    {
+     "value": 2,
+     "name": "NO_CONVERGENCE",
+     "description": "No convergence"
+    },
+    {
+     "value": 3,
+     "name": "SINGULARITY",
+     "description": "Singularity at parameters matrix"
+    },
+    {
+     "value": 4,
+     "name": "COV_TRACE",
+     "description": "Covariance trace exceeds maximum"
+    },
+    {
+     "value": 5,
+     "name": "TEST_DIST",
+     "description": "Test distance exceeded"
+    },
+    {
+     "value": 6,
+     "name": "COLD_START",
+     "description": "Not converged from cold start"
+    },
+    {
+     "value": 7,
+     "name": "V_H_LIMIT",
+     "description": "Height or velocity limit exceeded"
+    },
+    {
+     "value": 8,
+     "name": "VARIANCE",
+     "description": "Variance exceeds limits"
+    },
+    {
+     "value": 9,
+     "name": "RESIDUALS",
+     "description": "Residuals too large"
+    },
+    {
+     "value": 13,
+     "name": "INTEGRITY_WARNING",
+     "description": "Large residuals \u2014 solution unreliable"
+    },
+    {
+     "value": 18,
+     "name": "PENDING",
+     "description": "FIX POSITION entered, not yet valid"
+    },
+    {
+     "value": 19,
+     "name": "INVALID_FIX",
+     "description": "Invalid fixed position"
+    },
+    {
+     "value": 20,
+     "name": "UNAUTHORIZED",
+     "description": "Position type unauthorized"
+    },
+    {
+     "value": 22,
+     "name": "INVALID_RATE",
+     "description": "Selected logging rate not supported"
+    }
+   ]
+  },
+  {
+   "name": "PosVelType",
+   "doc_reference": "OEM7 position/velocity type, BESTPOS p.512",
+   "values": [
+    {
+     "value": 0,
+     "name": "NONE",
+     "description": "No solution"
+    },
+    {
+     "value": 1,
+     "name": "FIXEDPOS",
+     "description": "Fixed position"
+    },
+    {
+     "value": 2,
+     "name": "FIXEDHEIGHT",
+     "description": "Fixed height"
+    },
+    {
+     "value": 8,
+     "name": "DOPPLER_VELOCITY",
+     "description": "Velocity from instantaneous Doppler"
+    },
+    {
+     "value": 16,
+     "name": "SINGLE",
+     "description": "Single point"
+    },
+    {
+     "value": 17,
+     "name": "PSRDIFF",
+     "description": "Pseudorange differential"
+    },
+    {
+     "value": 18,
+     "name": "WAAS",
+     "description": "SBAS solution"
+    },
+    {
+     "value": 19,
+     "name": "PROPAGATED",
+     "description": "Propagated by Kalman filter"
+    },
+    {
+     "value": 32,
+     "name": "L1_FLOAT",
+     "description": "Float L1 ambiguity"
+    },
+    {
+     "value": 34,
+     "name": "NARROW_FLOAT",
+     "description": "Float narrow-lane"
+    },
+    {
+     "value": 48,
+     "name": "L1_INT",
+     "description": "Integer L1 ambiguity"
+    },
+    {
+     "value": 50,
+     "name": "NARROW_INT",
+     "description": "Integer narrow-lane"
+    },
+    {
+     "value": 51,
+     "name": "RTK_DIRECT_INS",
+     "description": "RTK seeded by INS"
+    },
+    {
+     "value": 52,
+     "name": "INS_SBAS",
+     "description": "INS + SBAS"
+    },
+    {
+     "value": 53,
+     "name": "INS_PSRSP",
+     "description": "INS + single point"
+    },
+    {
+     "value": 54,
+     "name": "INS_PSRDIFF",
+     "description": "INS + pseudorange differential"
+    },
+    {
+     "value": 55,
+     "name": "INS_RTKFLOAT",
+     "description": "INS + RTK float"
+    },
+    {
+     "value": 56,
+     "name": "INS_RTKFIXED",
+     "description": "INS + RTK fixed"
+    },
+    {
+     "value": 68,
+     "name": "PPP_CONVERGING",
+     "description": "PPP converging"
+    },
+    {
+     "value": 69,
+     "name": "PPP",
+     "description": "PPP converged"
+    },
+    {
+     "value": 70,
+     "name": "OPERATIONAL",
+     "description": "Solution operational"
+    },
+    {
+     "value": 71,
+     "name": "WARNING",
+     "description": "Solution warning"
+    },
+    {
+     "value": 72,
+     "name": "OUT_OF_BOUNDS",
+     "description": "Solution out of bounds"
+    },
+    {
+     "value": 74,
+     "name": "PPP_BASIC_CONVERGING",
+     "description": "PPP basic converging"
+    },
+    {
+     "value": 75,
+     "name": "PPP_BASIC",
+     "description": "PPP basic converged"
+    }
+   ]
+  },
+  {
+   "name": "ClockStatus",
+   "doc_reference": "OEM7 clock model status, TIME p.955",
+   "values": [
+    {
+     "value": 0,
+     "name": "VALID",
+     "description": "Clock model is valid"
+    },
+    {
+     "value": 1,
+     "name": "CONVERGING",
+     "description": "Clock model is nearly valid"
+    },
+    {
+     "value": 2,
+     "name": "ITERATING",
+     "description": "Clock model is iterating to valid"
+    },
+    {
+     "value": 3,
+     "name": "INVALID",
+     "description": "Clock model is not valid"
+    }
+   ]
+  },
+  {
+   "name": "UtcStatus",
+   "doc_reference": "OEM7 UTC status, TIME p.955",
+   "values": [
+    {
+     "value": 0,
+     "name": "INVALID",
+     "description": "UTC time invalid"
+    },
+    {
+     "value": 1,
+     "name": "VALID",
+     "description": "UTC time valid"
+    },
+    {
+     "value": 2,
+     "name": "WARNING",
+     "description": "UTC valid but offset may be wrong (no UTC model)"
+    }
+   ]
+  },
+  {
+   "name": "ComponentType",
+   "doc_reference": "OEM7 VERSION component type (subset), p.977",
+   "values": [
+    {
+     "value": 1,
+     "name": "GPSCARD",
+     "description": "OEM7 receiver card"
+    },
+    {
+     "value": 2,
+     "name": "CONTROLLER",
+     "description": "Controller board"
+    },
+    {
+     "value": 3,
+     "name": "ENCLOSURE",
+     "description": "Enclosure"
+    },
+    {
+     "value": 8,
+     "name": "IMUCARD",
+     "description": "IMU card"
+    },
+    {
+     "value": 15,
+     "name": "USERINFO",
+     "description": "User-set application info"
+    },
+    {
+     "value": 981,
+     "name": "OEM7FPGA",
+     "description": "OEM7 FPGA version"
+    }
+   ]
+  },
+  {
+   "name": "SatelliteSystem",
+   "doc_reference": "OEM7 satellite system, SATVIS2 p.897",
+   "values": [
+    {
+     "value": 0,
+     "name": "GPS",
+     "description": "GPS"
+    },
+    {
+     "value": 1,
+     "name": "GLONASS",
+     "description": "GLONASS"
+    },
+    {
+     "value": 2,
+     "name": "SBAS",
+     "description": "SBAS"
+    },
+    {
+     "value": 5,
+     "name": "GALILEO",
+     "description": "Galileo"
+    },
+    {
+     "value": 6,
+     "name": "BEIDOU",
+     "description": "BeiDou"
+    },
+    {
+     "value": 7,
+     "name": "QZSS",
+     "description": "QZSS"
+    }
+   ]
+  },
+  {
+   "name": "ValidFlag",
+   "doc_reference": "Generic OEM7 validity flag",
+   "values": [
+    {
+     "value": 0,
+     "name": "INVALID",
+     "description": "Not valid / false"
+    },
+    {
+     "value": 1,
+     "name": "VALID",
+     "description": "Valid / true"
+    }
+   ]
+  },
+  {
+   "name": "DatumId",
+   "doc_reference": "OEM7 datum (subset), BESTPOS p.512",
+   "values": [
+    {
+     "value": 61,
+     "name": "WGS84",
+     "description": "World Geodetic System 1984"
+    }
+   ]
+  },
+  {
+   "name": "TimeStatus",
+   "doc_reference": "OEM7 GPS reference time status, p.51",
+   "values": [
+    {
+     "value": 20,
+     "name": "UNKNOWN",
+     "description": "Time validity unknown"
+    },
+    {
+     "value": 60,
+     "name": "APPROXIMATE",
+     "description": "Time is set approximately"
+    },
+    {
+     "value": 80,
+     "name": "COARSEADJUSTING",
+     "description": "Time is approaching coarse precision"
+    },
+    {
+     "value": 100,
+     "name": "COARSE",
+     "description": "Time valid to coarse precision"
+    },
+    {
+     "value": 120,
+     "name": "COARSESTEERING",
+     "description": "Time is coarse-set, being steered"
+    },
+    {
+     "value": 130,
+     "name": "FREEWHEELING",
+     "description": "Position is lost, range bias cannot be calculated"
+    },
+    {
+     "value": 140,
+     "name": "FINEADJUSTING",
+     "description": "Time is adjusting to fine precision"
+    },
+    {
+     "value": 160,
+     "name": "FINE",
+     "description": "Time is fine-set"
+    },
+    {
+     "value": 170,
+     "name": "FINEBACKUPSTEERING",
+     "description": "Time is fine-set, steered by backup system"
+    },
+    {
+     "value": 180,
+     "name": "FINESTEERING",
+     "description": "Time is fine-set, being steered"
+    },
+    {
+     "value": 200,
+     "name": "SATTIME",
+     "description": "Time from satellite (only almanac/ephemeris)"
+    }
+   ]
+  },
+  {
+   "name": "StatusWordSrc",
+   "doc_reference": "OEM7 RXSTATUSEVENT status word source, p.887",
+   "values": [
+    {
+     "value": 0,
+     "name": "ERROR",
+     "description": "Receiver error word"
+    },
+    {
+     "value": 1,
+     "name": "STATUS",
+     "description": "Receiver status word"
+    },
+    {
+     "value": 2,
+     "name": "AUX1",
+     "description": "Auxiliary 1 status word"
+    },
+    {
+     "value": 3,
+     "name": "AUX2",
+     "description": "Auxiliary 2 status word"
+    },
+    {
+     "value": 4,
+     "name": "AUX3",
+     "description": "Auxiliary 3 status word"
+    },
+    {
+     "value": 5,
+     "name": "AUX4",
+     "description": "Auxiliary 4 status word"
+    }
+   ]
+  },
+  {
+   "name": "EventType",
+   "doc_reference": "OEM7 RXSTATUSEVENT event type, p.887",
+   "values": [
+    {
+     "value": 0,
+     "name": "CLEAR",
+     "description": "Status bit was cleared"
+    },
+    {
+     "value": 1,
+     "name": "SET",
+     "description": "Status bit was set"
+    }
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "direction": "TC",
+   "msg_id": 1,
+   "wire_id": 1,
+   "name": "LOG",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": null,
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 2.82",
+   "description": "Request a log; specifies which log, port and trigger/rate",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "port",
+     "data_type": "ENUM",
+     "enum": "Port",
+     "unit": null,
+     "scale": null,
+     "description": "Output port for the log",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 2,
+     "name": "message_id",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Message ID of the log to output",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 6,
+     "length": 1,
+     "name": "message_type",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Message type (binary/ascii, response bit)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 7,
+     "length": 1,
+     "name": "reserved",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 8,
+     "length": 4,
+     "name": "trigger",
+     "data_type": "ENUM",
+     "enum": "LogTrigger",
+     "unit": null,
+     "scale": null,
+     "description": "Trigger type (ONTIME, ONNEW, ONCE, ...)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 12,
+     "length": 8,
+     "name": "period",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Logging period in seconds (for ONTIME)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 20,
+     "length": 8,
+     "name": "offset",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Offset within the period (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "hold",
+     "data_type": "ENUM",
+     "enum": "HoldFlag",
+     "unit": null,
+     "scale": null,
+     "description": "HOLD flag (prevents UNLOGALL clearing it)",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TC",
+   "msg_id": 36,
+   "wire_id": 36,
+   "name": "UNLOG",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": null,
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 2.206",
+   "description": "Stop a specific log from being output",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "port",
+     "data_type": "ENUM",
+     "enum": "Port",
+     "unit": null,
+     "scale": null,
+     "description": "Port the log is on",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 2,
+     "name": "message_id",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Message ID of the log to stop",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 6,
+     "length": 1,
+     "name": "message_type",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Message type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 7,
+     "length": 1,
+     "name": "reserved",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TC",
+   "msg_id": 38,
+   "wire_id": 38,
+   "name": "UNLOGALL",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": null,
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 2.207",
+   "description": "Stop all logs that are currently being output",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "port",
+     "data_type": "ENUM",
+     "enum": "Port",
+     "unit": null,
+     "scale": null,
+     "description": "Port to clear (or ALL_PORTS)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "held",
+     "data_type": "ENUM",
+     "enum": "HoldFlag",
+     "unit": null,
+     "scale": null,
+     "description": "Also clear logs with the HOLD flag set",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 37,
+   "wire_id": 37,
+   "name": "VERSION",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.223",
+   "description": "Receiver hardware and firmware version information",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "num_components",
+     "data_type": "INT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of components that follow",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "comp_type",
+     "data_type": "ENUM",
+     "enum": "ComponentType",
+     "unit": null,
+     "scale": null,
+     "description": "Component type",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 16,
+     "name": "model",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Firmware model number",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 24,
+     "length": 16,
+     "name": "psn",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Product serial number",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 40,
+     "length": 16,
+     "name": "hw_version",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Hardware version string",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 56,
+     "length": 16,
+     "name": "sw_version",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Firmware/software version",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 72,
+     "length": 16,
+     "name": "boot_version",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Boot code version",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 88,
+     "length": 12,
+     "name": "comp_date",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Compile date (YYYY/Mmm/DD)",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 100,
+     "length": 12,
+     "name": "comp_time",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Compile time (HH:MM:SS)",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 42,
+   "wire_id": 42,
+   "name": "BESTPOS",
+   "node": "GPS",
+   "length_bytes": 72,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.21",
+   "description": "Best position computed by the receiver",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "sol_status",
+     "data_type": "ENUM",
+     "enum": "SolStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "pos_type",
+     "data_type": "ENUM",
+     "enum": "PosVelType",
+     "unit": null,
+     "scale": null,
+     "description": "Position type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 8,
+     "name": "lat",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Latitude (degrees)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 16,
+     "length": 8,
+     "name": "lon",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Longitude (degrees)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 24,
+     "length": 8,
+     "name": "hgt",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Height above MSL (m)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 32,
+     "length": 4,
+     "name": "undulation",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Geoid undulation (m)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 36,
+     "length": 4,
+     "name": "datum_id",
+     "data_type": "ENUM",
+     "enum": "DatumId",
+     "unit": null,
+     "scale": null,
+     "description": "Datum ID (61 = WGS84)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 40,
+     "length": 4,
+     "name": "lat_std",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Latitude std deviation (m)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 44,
+     "length": 4,
+     "name": "lon_std",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Longitude std deviation (m)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 48,
+     "length": 4,
+     "name": "hgt_std",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Height std deviation (m)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 52,
+     "length": 4,
+     "name": "stn_id",
+     "data_type": "CHAR",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Base station ID",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 12,
+     "offset": 56,
+     "length": 4,
+     "name": "diff_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Differential age (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 13,
+     "offset": 60,
+     "length": 4,
+     "name": "sol_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Solution age (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 14,
+     "offset": 64,
+     "length": 1,
+     "name": "num_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellites tracked",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 15,
+     "offset": 65,
+     "length": 1,
+     "name": "num_soln_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellites used in solution",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 16,
+     "offset": 66,
+     "length": 1,
+     "name": "num_soln_l1",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Sats with L1/E1/B1 in solution",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 17,
+     "offset": 67,
+     "length": 1,
+     "name": "num_soln_multi",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Sats with multi-freq in solution",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 18,
+     "offset": 68,
+     "length": 1,
+     "name": "reserved",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 19,
+     "offset": 69,
+     "length": 1,
+     "name": "ext_sol_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Extended solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 20,
+     "offset": 70,
+     "length": 1,
+     "name": "galileo_beidou_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Galileo/BeiDou signal-used mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 21,
+     "offset": 71,
+     "length": 1,
+     "name": "gps_glonass_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GPS/GLONASS signal-used mask",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 43,
+   "wire_id": 43,
+   "name": "RANGE",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 RANGE p.799",
+   "description": "Actual RANGE binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "num_observations",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of observation records",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 2,
+     "name": "satellite_prn_or_slot",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellite PRN or GLONASS slot",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 6,
+     "length": 2,
+     "name": "glonass_frequency_slot",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GLONASS frequency slot",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 8,
+     "length": 8,
+     "name": "pseudorange",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Pseudorange in metres",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "pseudorange_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Pseudorange standard deviation",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 8,
+     "name": "carrier_phase",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Carrier phase in cycles",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 28,
+     "length": 4,
+     "name": "carrier_phase_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Carrier phase standard deviation",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 32,
+     "length": 4,
+     "name": "doppler",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Doppler in Hz",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 36,
+     "length": 4,
+     "name": "carrier_to_noise_ratio",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "C/N0 in dB-Hz",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 40,
+     "length": 4,
+     "name": "lock_time",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Lock time in seconds",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 44,
+     "length": 4,
+     "name": "channel_tracking_status",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Channel tracking status",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 47,
+   "wire_id": 47,
+   "name": "PSRPOS",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 PSRPOS p.767",
+   "description": "Actual PSRPOS binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "sol_status",
+     "data_type": "ENUM",
+     "enum": "SolStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "pos_type",
+     "data_type": "ENUM",
+     "enum": "PosVelType",
+     "unit": null,
+     "scale": null,
+     "description": "Position type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 8,
+     "name": "latitude",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Latitude in degrees",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 16,
+     "length": 8,
+     "name": "longitude",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Longitude in degrees",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 24,
+     "length": 8,
+     "name": "height",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Ellipsoidal height in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 32,
+     "length": 4,
+     "name": "undulation",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Undulation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 36,
+     "length": 4,
+     "name": "datum_id",
+     "data_type": "ENUM",
+     "enum": "DatumId",
+     "unit": null,
+     "scale": null,
+     "description": "Datum ID",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 40,
+     "length": 4,
+     "name": "latitude_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Latitude standard deviation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 44,
+     "length": 4,
+     "name": "longitude_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Longitude standard deviation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 48,
+     "length": 4,
+     "name": "height_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Height standard deviation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 52,
+     "length": 4,
+     "name": "station_id",
+     "data_type": "STRING",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Base station ID",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 12,
+     "offset": 56,
+     "length": 4,
+     "name": "differential_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Differential age in seconds",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 13,
+     "offset": 60,
+     "length": 4,
+     "name": "solution_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Solution age in seconds",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 14,
+     "offset": 64,
+     "length": 1,
+     "name": "num_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites tracked",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 15,
+     "offset": 65,
+     "length": 1,
+     "name": "num_soln_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites used in solution",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 16,
+     "offset": 66,
+     "length": 1,
+     "name": "num_soln_l1",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of L1/E1/B1 satellites used",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 17,
+     "offset": 67,
+     "length": 1,
+     "name": "num_soln_multi",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of multi-frequency satellites used",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 18,
+     "offset": 68,
+     "length": 1,
+     "name": "reserved",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 19,
+     "offset": 69,
+     "length": 1,
+     "name": "ext_sol_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Extended solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 20,
+     "offset": 70,
+     "length": 1,
+     "name": "galileo_beiDou_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Galileo/BeiDou signal mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 21,
+     "offset": 71,
+     "length": 1,
+     "name": "gps_glonass_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GPS/GLONASS signal mask",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 93,
+   "wire_id": 93,
+   "name": "RXSTATUS",
+   "node": "GPS",
+   "length_bytes": 88,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.178",
+   "description": "Receiver status word and error word",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "error",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Receiver error word (0 = healthy)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "num_stats",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of status blocks",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "rx_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Receiver status word",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "rx_stat_pri",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Receiver status priority mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "rx_stat_set",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Receiver status event-set mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "rx_stat_clr",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Receiver status event-clear mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "aux1_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux1 status word",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "aux1_pri",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux1 priority mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "aux1_set",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux1 event-set mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "aux1_clr",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux1 event-clear mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "aux2_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux2 status word",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "aux2_pri",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux2 priority mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 13,
+     "offset": 48,
+     "length": 4,
+     "name": "aux2_set",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux2 event-set mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 14,
+     "offset": 52,
+     "length": 4,
+     "name": "aux2_clr",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux2 event-clear mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 15,
+     "offset": 56,
+     "length": 4,
+     "name": "aux3_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux3 status word",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 16,
+     "offset": 60,
+     "length": 4,
+     "name": "aux3_pri",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux3 priority mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 17,
+     "offset": 64,
+     "length": 4,
+     "name": "aux3_set",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux3 event-set mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 18,
+     "offset": 68,
+     "length": 4,
+     "name": "aux3_clr",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux3 event-clear mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 19,
+     "offset": 72,
+     "length": 4,
+     "name": "aux4_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux4 status word",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 20,
+     "offset": 76,
+     "length": 4,
+     "name": "aux4_pri",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux4 priority mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 21,
+     "offset": 80,
+     "length": 4,
+     "name": "aux4_set",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux4 event-set mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 22,
+     "offset": 84,
+     "length": 4,
+     "name": "aux4_clr",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Aux4 event-clear mask",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 94,
+   "wire_id": 94,
+   "name": "RXSTATUSEVENT",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 RXSTATUSEVENT p.887",
+   "description": "Actual RXSTATUSEVENT binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "status_word",
+     "data_type": "ENUM",
+     "enum": "StatusWordSrc",
+     "unit": null,
+     "scale": null,
+     "description": "Status word selector",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "bit_position",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Bit position",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "event_type",
+     "data_type": "ENUM",
+     "enum": "EventType",
+     "unit": null,
+     "scale": null,
+     "description": "Event type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 32,
+     "name": "event_description",
+     "data_type": "STRING",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Event description string",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 99,
+   "wire_id": 99,
+   "name": "BESTVEL",
+   "node": "GPS",
+   "length_bytes": 44,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.24",
+   "description": "Best available velocity data",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "sol_status",
+     "data_type": "ENUM",
+     "enum": "SolStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "vel_type",
+     "data_type": "ENUM",
+     "enum": "PosVelType",
+     "unit": null,
+     "scale": null,
+     "description": "Velocity type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "latency",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Velocity latency (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Differential age (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 8,
+     "name": "hor_spd",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Horizontal speed (m/s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 24,
+     "length": 8,
+     "name": "trk_gnd",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Track over ground (deg, True North)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 32,
+     "length": 8,
+     "name": "vert_spd",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Vertical speed (m/s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 40,
+     "length": 4,
+     "name": "reserved",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 101,
+   "wire_id": 101,
+   "name": "TIME",
+   "node": "GPS",
+   "length_bytes": 44,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.211",
+   "description": "Receiver time information",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "clock_status",
+     "data_type": "ENUM",
+     "enum": "ClockStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Clock model status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 8,
+     "name": "offset",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Receiver clock offset (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 12,
+     "length": 8,
+     "name": "offset_std",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Clock offset std deviation (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 20,
+     "length": 8,
+     "name": "utc_offset",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GPS-to-UTC offset (s)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 28,
+     "length": 4,
+     "name": "utc_year",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "UTC year",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 32,
+     "length": 1,
+     "name": "utc_month",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "UTC month",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 33,
+     "length": 1,
+     "name": "utc_day",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "UTC day",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 34,
+     "length": 1,
+     "name": "utc_hour",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "UTC hour",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 35,
+     "length": 1,
+     "name": "utc_min",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "UTC minute",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "utc_ms",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "UTC millisecond",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "utc_status",
+     "data_type": "ENUM",
+     "enum": "UtcStatus",
+     "unit": null,
+     "scale": null,
+     "description": "UTC status (0=Invalid,1=Valid,2=Warning)",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 141,
+   "wire_id": 141,
+   "name": "RTKPOS",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 RTKPOS p.859",
+   "description": "Actual RTKPOS binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "sol_status",
+     "data_type": "ENUM",
+     "enum": "SolStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "pos_type",
+     "data_type": "ENUM",
+     "enum": "PosVelType",
+     "unit": null,
+     "scale": null,
+     "description": "Position type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 8,
+     "name": "latitude",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Latitude in degrees",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 16,
+     "length": 8,
+     "name": "longitude",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Longitude in degrees",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 24,
+     "length": 8,
+     "name": "height",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Ellipsoidal height in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 32,
+     "length": 4,
+     "name": "undulation",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Undulation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 36,
+     "length": 4,
+     "name": "datum_id",
+     "data_type": "ENUM",
+     "enum": "DatumId",
+     "unit": null,
+     "scale": null,
+     "description": "Datum ID",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 40,
+     "length": 4,
+     "name": "latitude_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Latitude standard deviation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 44,
+     "length": 4,
+     "name": "longitude_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Longitude standard deviation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 48,
+     "length": 4,
+     "name": "height_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Height standard deviation in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 52,
+     "length": 4,
+     "name": "station_id",
+     "data_type": "STRING",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Base station ID",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 12,
+     "offset": 56,
+     "length": 4,
+     "name": "differential_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Differential age in seconds",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 13,
+     "offset": 60,
+     "length": 4,
+     "name": "solution_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Solution age in seconds",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 14,
+     "offset": 64,
+     "length": 1,
+     "name": "num_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites tracked",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 15,
+     "offset": 65,
+     "length": 1,
+     "name": "num_soln_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites used in solution",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 16,
+     "offset": 66,
+     "length": 1,
+     "name": "num_soln_l1",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of L1/E1/B1 satellites used",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 17,
+     "offset": 67,
+     "length": 1,
+     "name": "num_soln_multi",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of multi-frequency satellites used",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 18,
+     "offset": 68,
+     "length": 1,
+     "name": "reserved",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 19,
+     "offset": 69,
+     "length": 1,
+     "name": "ext_sol_stat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Extended solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 20,
+     "offset": 70,
+     "length": 1,
+     "name": "galileo_beiDou_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Galileo/BeiDou signal mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 21,
+     "offset": 71,
+     "length": 1,
+     "name": "gps_glonass_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GPS/GLONASS signal mask",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 174,
+   "wire_id": 174,
+   "name": "PSRDOP",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.135",
+   "description": "Pseudorange dilution of precision",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "gdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Geometric DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "pdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Position DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "hdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Horizontal DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "htdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Horizontal + time DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "tdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Time DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "cutoff",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Elevation cut-off angle (deg)",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "num_prn",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of PRNs that follow",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "prn",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "PRN of satellite in solution",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 241,
+   "wire_id": 241,
+   "name": "BESTXYZ",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 BESTXYZ p.530",
+   "description": "Actual BESTXYZ binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "position_solution_status",
+     "data_type": "ENUM",
+     "enum": "SolStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Position solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "position_type",
+     "data_type": "ENUM",
+     "enum": "PosVelType",
+     "unit": null,
+     "scale": null,
+     "description": "Position type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 8,
+     "name": "ecef_x_position",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF X position in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 16,
+     "length": 8,
+     "name": "ecef_y_position",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Y position in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 24,
+     "length": 8,
+     "name": "ecef_z_position",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Z position in metres",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 32,
+     "length": 4,
+     "name": "ecef_x_position_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF X position standard deviation",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 36,
+     "length": 4,
+     "name": "ecef_y_position_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Y position standard deviation",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 40,
+     "length": 4,
+     "name": "ecef_z_position_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Z position standard deviation",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 44,
+     "length": 4,
+     "name": "velocity_solution_status",
+     "data_type": "ENUM",
+     "enum": "SolStatus",
+     "unit": null,
+     "scale": null,
+     "description": "Velocity solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 48,
+     "length": 4,
+     "name": "velocity_type",
+     "data_type": "ENUM",
+     "enum": "PosVelType",
+     "unit": null,
+     "scale": null,
+     "description": "Velocity type",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 11,
+     "offset": 52,
+     "length": 8,
+     "name": "ecef_x_velocity",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF X velocity in m/s",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 12,
+     "offset": 60,
+     "length": 8,
+     "name": "ecef_y_velocity",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Y velocity in m/s",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 13,
+     "offset": 68,
+     "length": 8,
+     "name": "ecef_z_velocity",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Z velocity in m/s",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 14,
+     "offset": 76,
+     "length": 4,
+     "name": "ecef_x_velocity_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF X velocity standard deviation",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 15,
+     "offset": 80,
+     "length": 4,
+     "name": "ecef_y_velocity_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Y velocity standard deviation",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 16,
+     "offset": 84,
+     "length": 4,
+     "name": "ecef_z_velocity_std_dev",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "ECEF Z velocity standard deviation",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 17,
+     "offset": 88,
+     "length": 4,
+     "name": "station_id",
+     "data_type": "STRING",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Base station ID",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 18,
+     "offset": 92,
+     "length": 4,
+     "name": "velocity_latency",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Velocity latency",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 19,
+     "offset": 96,
+     "length": 4,
+     "name": "differential_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Differential age",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 20,
+     "offset": 100,
+     "length": 4,
+     "name": "solution_age",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Solution age",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 21,
+     "offset": 104,
+     "length": 1,
+     "name": "num_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites tracked",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 22,
+     "offset": 105,
+     "length": 1,
+     "name": "num_soln_svs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites used",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 23,
+     "offset": 106,
+     "length": 1,
+     "name": "num_ggL1",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of GPS/GLONASS L1 satellites",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 24,
+     "offset": 107,
+     "length": 1,
+     "name": "num_solnMultiSVs",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of multi-frequency satellites used",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 25,
+     "offset": 108,
+     "length": 1,
+     "name": "reserved",
+     "data_type": "INT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Reserved",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 26,
+     "offset": 109,
+     "length": 1,
+     "name": "extsolstat",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Extended solution status",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 27,
+     "offset": 110,
+     "length": 1,
+     "name": "galileo_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Galileo/BeiDou signal mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 28,
+     "offset": 111,
+     "length": 1,
+     "name": "gps_mask",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GPS/GLONASS signal mask",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 492,
+   "wire_id": 492,
+   "name": "TIMESYNC",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": false,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 TIMESYNC p.958",
+   "description": "Actual TIMESYNC binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "gps_week",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "GPS reference week",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "gps_milliseconds",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Milliseconds into GPS week",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "time_status",
+     "data_type": "ENUM",
+     "enum": "TimeStatus",
+     "unit": null,
+     "scale": null,
+     "description": "GPS reference time status",
+     "is_array": false,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 952,
+   "wire_id": 952,
+   "name": "RTKDOP",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 RTKDOP p.855",
+   "description": "Actual RTKDOP binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "gdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Geometric DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "pdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Position DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "hdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Horizontal DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "htdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Horizontal/time DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "tdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Time DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "elevation_mask",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Elevation mask",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "num_sats",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellites",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "satellite_list",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellite list, variable length",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 963,
+   "wire_id": 963,
+   "name": "HWMONITOR",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 3.81",
+   "description": "Monitored hardware values (temperatures, voltages, currents)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "num_measurements",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of readings that follow",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "reading_value",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Measurement value",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "reading_status",
+     "data_type": "HEX",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Status: bits[8..15]=type, bits[0..7]=limit status",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 1043,
+   "wire_id": 1043,
+   "name": "SATVIS2",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 SATVIS2 p.897",
+   "description": "Actual SATVIS2 binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "satellite_system",
+     "data_type": "ENUM",
+     "enum": "SatelliteSystem",
+     "unit": null,
+     "scale": null,
+     "description": "Satellite system",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "satvis_valid_flag",
+     "data_type": "ENUM",
+     "enum": "ValidFlag",
+     "unit": null,
+     "scale": null,
+     "description": "Satellite visibility valid flag",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "almanac_flag",
+     "data_type": "ENUM",
+     "enum": "ValidFlag",
+     "unit": null,
+     "scale": null,
+     "description": "Almanac flag",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "num_satellites",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of satellite blocks",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "satellite_id",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellite ID",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "satellite_health",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellite health",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 8,
+     "name": "satellite_elevation",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellite elevation",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 8,
+     "offset": 32,
+     "length": 8,
+     "name": "satellite_azimuth",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Satellite azimuth",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 9,
+     "offset": 40,
+     "length": 8,
+     "name": "true_doppler",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "True Doppler",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 10,
+     "offset": 48,
+     "length": 8,
+     "name": "apparent_doppler",
+     "data_type": "DOUBLE",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Apparent Doppler",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  },
+  {
+   "direction": "TM",
+   "msg_id": 1163,
+   "wire_id": 1163,
+   "name": "PSRDOP2",
+   "node": "GPS",
+   "length_bytes": null,
+   "is_variable_length": true,
+   "is_config": false,
+   "request_via": "LOG",
+   "offset_unit": "bytes",
+   "doc_reference": "OEM7 PSRDOP2 p.765",
+   "description": "Actual PSRDOP2 binary telemetry frame from OEM7 manual; intermediate LOG OK response ignored",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "gdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Geometric DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "pdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Position DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "hdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Horizontal DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "vdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Vertical DOP",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "num_systems",
+     "data_type": "UINT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Number of GNSS systems",
+     "is_array": false,
+     "array_count": null
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "system",
+     "data_type": "ENUM",
+     "enum": "SatelliteSystem",
+     "unit": null,
+     "scale": null,
+     "description": "GNSS system entry",
+     "is_array": true,
+     "array_count": null
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "tdop",
+     "data_type": "FLOAT",
+     "enum": null,
+     "unit": null,
+     "scale": null,
+     "description": "Time DOP",
+     "is_array": true,
+     "array_count": null
+    }
+   ]
+  }
+ ]
+}

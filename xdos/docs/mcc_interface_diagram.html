@@ -1,0 +1,447 @@
+<title>MCC Subframe Feed</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --ground:    #f2f4f3;
+    --surface:   #ffffff;
+    --surface-2: #e9edec;
+    --line:      #c9d2d0;
+    --line-soft: #dde3e2;
+    --ink:       #16201f;
+    --ink-2:     #475856;
+    --ink-3:     #6d7d7b;
+    --accent:    #b3641a;
+    --vh:        #b8860b;
+    --h:         #17788a;
+    --m:         #3a7d46;
+    --l:         #7c4a94;
+    --rsv:       #97a4a2;
+    --ok:        #2f7a43;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:    #101716;
+      --surface:   #18211f;
+      --surface-2: #202b29;
+      --line:      #33423f;
+      --line-soft: #283532;
+      --ink:       #e4ecea;
+      --ink-2:     #a3b3b0;
+      --ink-3:     #7d8d8b;
+      --accent:    #e29a52;
+      --vh:        #e0b040;
+      --h:         #4fb9cc;
+      --m:         #66bd76;
+      --l:         #b585cc;
+      --rsv:       #677674;
+      --ok:        #5fc07c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:    #101716;
+    --surface:   #18211f;
+    --surface-2: #202b29;
+    --line:      #33423f;
+    --line-soft: #283532;
+    --ink:       #e4ecea;
+    --ink-2:     #a3b3b0;
+    --ink-3:     #7d8d8b;
+    --accent:    #e29a52;
+    --vh:        #e0b040;
+    --h:         #4fb9cc;
+    --m:         #66bd76;
+    --l:         #b585cc;
+    --rsv:       #677674;
+    --ok:        #5fc07c;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 44px 72px; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.12; margin: 0 0 12px; text-wrap: balance; font-weight: 600; letter-spacing: -.02em; }
+  .lede { font-size: 17px; color: var(--ink-2); max-width: 62ch; margin: 0 0 8px; }
+
+  h2 {
+    font-size: 20px; font-weight: 600; margin: 52px 0 6px; letter-spacing: -.01em;
+    padding-top: 18px; border-top: 1px solid var(--line-soft); text-wrap: balance;
+  }
+  h3 { font-size: 15px; font-weight: 600; margin: 26px 0 8px; color: var(--ink); }
+  p  { margin: 0 0 12px; max-width: 68ch; color: var(--ink-2); }
+  p strong, li strong { color: var(--ink); font-weight: 600; }
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .9em;
+    background: var(--surface-2); padding: 1px 5px; border-radius: 3px; color: var(--ink);
+  }
+
+  figure { margin: 22px 0 8px; }
+  .scroll { overflow-x: auto; }
+  svg { display: block; max-width: 100%; height: auto; }
+  figcaption {
+    font-size: 12.5px; color: var(--ink-3); margin-top: 10px; max-width: 68ch;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  /* SVG token styling */
+  .s-box   { fill: var(--surface);   stroke: var(--line); stroke-width: 1.2; }
+  .s-box2  { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.2; }
+  .s-label { fill: var(--ink);   font-family: "IBM Plex Sans", sans-serif; font-size: 12.5px; font-weight: 600; }
+  .s-sub   { fill: var(--ink-3); font-family: "IBM Plex Mono", monospace;  font-size: 10.5px; }
+  .s-mono  { fill: var(--ink);   font-family: "IBM Plex Mono", monospace;  font-size: 11px; }
+  .s-wire  { stroke: var(--ink-3); stroke-width: 1.4; fill: none; }
+  .s-flow  { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .s-tick  { stroke: var(--line); stroke-width: 1; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 14px 0 6px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line-soft); }
+  th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  td { color: var(--ink-2); }
+  td:first-child, th:first-child { padding-left: 0; }
+  .num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; padding: 0; list-style: none; }
+  .chip {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+    border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px;
+    color: var(--ink-2); background: var(--surface);
+  }
+  .chip b { color: var(--ink); font-weight: 600; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 18px 0 4px; }
+  .note {
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--accent); padding: 12px 14px; border-radius: 0 5px 5px 0;
+  }
+  .note h4 { margin: 0 0 5px; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .note p  { margin: 0; font-size: 13px; }
+
+  ul.plain { margin: 0 0 12px; padding-left: 18px; color: var(--ink-2); max-width: 68ch; }
+  ul.plain li { margin-bottom: 6px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 10px 0 0; padding: 0; list-style: none;
+            font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-2); }
+  .legend li { display: flex; align-items: center; gap: 6px; }
+  .sw { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+
+  footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line-soft);
+           font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-3); }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">XDOS Ground Station · Interface Note</p>
+  <h1>MCC Subframe Feed</h1>
+  <p class="lede">How rate-group telemetry travels from the spacecraft bus to the MCC software, and what arrives on the MCC TCP socket.</p>
+
+  <ul class="chips">
+    <li class="chip">protocol <b>XMCC v1</b></li>
+    <li class="chip">header <b>26 B</b></li>
+    <li class="chip">payload <b>1280 B</b></li>
+    <li class="chip">message <b>1306 B</b></li>
+    <li class="chip">cadence <b>1 Hz</b></li>
+  </ul>
+
+  <h2>End-to-end path</h2>
+  <p>Four hops. The OBC polls the bus and pushes one subframe per second; the ground station positions it in its master frame, decodes it for the operator, and forwards the payload on to MCC.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 940 300" width="940" role="img" aria-label="Block diagram: subsystems to OBC to ground station to MCC software">
+        <!-- subsystems -->
+        <rect class="s-box2" x="8" y="60" width="150" height="126" rx="5"/>
+        <text class="s-label" x="83" y="82" text-anchor="middle">Subsystem bus</text>
+        <text class="s-sub" x="83" y="101" text-anchor="middle">EPS · ADCS · GPS</text>
+        <text class="s-sub" x="83" y="116" text-anchor="middle">XLINK-S · UHF</text>
+        <text class="s-sub" x="83" y="140" text-anchor="middle">64 LUT commands</text>
+        <text class="s-sub" x="83" y="155" text-anchor="middle">33 polls / window</text>
+        <text class="s-sub" x="83" y="170" text-anchor="middle">30 ms gap</text>
+
+        <!-- OBC -->
+        <rect class="s-box" x="228" y="44" width="176" height="158" rx="5"/>
+        <text class="s-label" x="316" y="66" text-anchor="middle">OBC</text>
+        <text class="s-sub" x="316" y="84" text-anchor="middle">rate-group engine</text>
+        <line class="s-tick" x1="244" y1="96" x2="388" y2="96"/>
+        <text class="s-sub" x="316" y="114" text-anchor="middle">binary LUT only</text>
+        <text class="s-sub" x="316" y="129" text-anchor="middle">CRC-16 0xAFEE</text>
+        <text class="s-sub" x="316" y="151" text-anchor="middle">copies picked bytes</text>
+        <text class="s-sub" x="316" y="166" text-anchor="middle">into tier blocks</text>
+        <text class="s-sub" x="316" y="188" text-anchor="middle">no names, no ids</text>
+
+        <!-- GS -->
+        <rect class="s-box" x="474" y="44" width="186" height="158" rx="5"/>
+        <text class="s-label" x="567" y="66" text-anchor="middle">Ground station</text>
+        <text class="s-sub" x="567" y="84" text-anchor="middle">xdos_tm_view</text>
+        <line class="s-tick" x1="490" y1="96" x2="644" y2="96"/>
+        <text class="s-sub" x="567" y="114" text-anchor="middle">slot = SFC mod 16</text>
+        <text class="s-sub" x="567" y="129" text-anchor="middle">frame = SFC div 16</text>
+        <text class="s-sub" x="567" y="151" text-anchor="middle">decodes via GS twin</text>
+        <text class="s-sub" x="567" y="166" text-anchor="middle">tier coverage debug</text>
+        <text class="s-sub" x="567" y="188" text-anchor="middle">forwards payload on</text>
+
+        <!-- MCC -->
+        <rect class="s-box2" x="730" y="60" width="150" height="126" rx="5"/>
+        <text class="s-label" x="805" y="82" text-anchor="middle">MCC software</text>
+        <text class="s-sub" x="805" y="101" text-anchor="middle">TCP client</text>
+        <text class="s-sub" x="805" y="116" text-anchor="middle">or TCP server</text>
+        <text class="s-sub" x="805" y="140" text-anchor="middle">frames on magic</text>
+        <text class="s-sub" x="805" y="155" text-anchor="middle">+ length</text>
+        <text class="s-sub" x="805" y="170" text-anchor="middle">assembles blocks</text>
+
+        <!-- arrows -->
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,1 L9,5 L0,9 z" fill="var(--accent)"/>
+          </marker>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,1 L9,5 L0,9 z" fill="var(--ink-3)"/>
+          </marker>
+        </defs>
+
+        <path class="s-wire" d="M158,110 H222" marker-end="url(#ah2)"/>
+        <text class="s-sub" x="190" y="102" text-anchor="middle">poll</text>
+        <path class="s-wire" d="M222,140 H158" marker-end="url(#ah2)"/>
+        <text class="s-sub" x="190" y="158" text-anchor="middle">reply</text>
+
+        <path class="s-flow" d="M404,123 H468" marker-end="url(#ah)"/>
+        <text class="s-mono" x="436" y="112" text-anchor="middle">TCP</text>
+        <text class="s-sub" x="436" y="146" text-anchor="middle">1432 B frame</text>
+        <text class="s-sub" x="436" y="160" text-anchor="middle">port +2</text>
+
+        <path class="s-flow" d="M660,123 H724" marker-end="url(#ah)"/>
+        <text class="s-mono" x="692" y="112" text-anchor="middle">TCP</text>
+        <text class="s-sub" x="692" y="146" text-anchor="middle">1306 B msg</text>
+        <text class="s-sub" x="692" y="160" text-anchor="middle">XMCC</text>
+
+        <!-- cadence rail -->
+        <line class="s-tick" x1="8" y1="240" x2="880" y2="240"/>
+        <text class="s-sub" x="8" y="262">one subframe every 1.000 s — 16 subframes = 1 master frame = 16 s</text>
+        <text class="s-sub" x="880" y="262" text-anchor="end">T_sf / entries paces the polls</text>
+      </svg>
+    </div>
+    <figcaption>The OBC holds no database. It replays opaque TC bytes and copies byte ranges; every name lives on the ground.</figcaption>
+  </figure>
+
+  <h2>What MCC receives</h2>
+  <p>One TCP message per subframe: a fixed <strong>26-byte header</strong> saying where and when the subframe belongs, then the payload. All header fields are <strong>big-endian</strong>.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 940 210" width="940" role="img" aria-label="Byte map of the 26-byte XMCC header followed by the payload">
+        <!-- header fields, drawn to byte scale: 26 bytes across 700px -->
+        <g>
+          <!-- magic 0..4 -->
+          <rect class="s-box" x="10" y="40" width="104" height="46" rx="3"/>
+          <text class="s-mono" x="62" y="62" text-anchor="middle">"XMCC"</text>
+          <text class="s-sub" x="62" y="78" text-anchor="middle">4 B</text>
+          <text class="s-sub" x="10" y="32">0</text>
+
+          <!-- ver 4 -->
+          <rect class="s-box2" x="114" y="40" width="26" height="46" rx="3"/>
+          <text class="s-mono" x="127" y="62" text-anchor="middle">v</text>
+          <text class="s-sub" x="127" y="78" text-anchor="middle">1</text>
+          <text class="s-sub" x="114" y="32">4</text>
+
+          <!-- rsv 5 -->
+          <rect class="s-box2" x="140" y="40" width="26" height="46" rx="3"/>
+          <text class="s-mono" x="153" y="62" text-anchor="middle" fill="var(--rsv)">—</text>
+          <text class="s-sub" x="153" y="78" text-anchor="middle">1</text>
+
+          <!-- mf 6..10 -->
+          <rect class="s-box" x="166" y="40" width="104" height="46" rx="3"/>
+          <text class="s-mono" x="218" y="62" text-anchor="middle">master frame</text>
+          <text class="s-sub" x="218" y="78" text-anchor="middle">u32 · 4 B</text>
+          <text class="s-sub" x="166" y="32">6</text>
+
+          <!-- sf 10..12 -->
+          <rect class="s-box" x="270" y="40" width="52" height="46" rx="3"/>
+          <text class="s-mono" x="296" y="62" text-anchor="middle">subfr.</text>
+          <text class="s-sub" x="296" y="78" text-anchor="middle">u16 · 1..16</text>
+          <text class="s-sub" x="270" y="32">10</text>
+
+          <!-- timestamp 12..21 -->
+          <rect class="s-box" x="322" y="40" width="234" height="46" rx="3" stroke="var(--accent)"/>
+          <text class="s-mono" x="439" y="62" text-anchor="middle">timestamp — CCS Time Code</text>
+          <text class="s-sub" x="439" y="78" text-anchor="middle">year u16 · mon · day · hr · min · sec · ms u16  —  9 B</text>
+          <text class="s-sub" x="322" y="32" fill="var(--accent)">12  (new)</text>
+
+          <!-- rsv 21 -->
+          <rect class="s-box2" x="556" y="40" width="26" height="46" rx="3"/>
+          <text class="s-mono" x="569" y="62" text-anchor="middle" fill="var(--rsv)">—</text>
+          <text class="s-sub" x="569" y="78" text-anchor="middle">1</text>
+
+          <!-- len 22..26 -->
+          <rect class="s-box" x="582" y="40" width="104" height="46" rx="3"/>
+          <text class="s-mono" x="634" y="62" text-anchor="middle">length</text>
+          <text class="s-sub" x="634" y="78" text-anchor="middle">u32 · = 1280</text>
+          <text class="s-sub" x="582" y="32">22</text>
+
+          <!-- payload -->
+          <rect class="s-box2" x="694" y="40" width="236" height="46" rx="3"/>
+          <text class="s-label" x="812" y="60" text-anchor="middle">payload</text>
+          <text class="s-sub" x="812" y="78" text-anchor="middle">1280 B — subframe data field</text>
+          <text class="s-sub" x="694" y="32">26</text>
+        </g>
+
+        <!-- brace -->
+        <path class="s-wire" d="M10,96 V104 H686 V96" stroke="var(--line)"/>
+        <text class="s-sub" x="348" y="120" text-anchor="middle">header — 26 bytes</text>
+        <path class="s-wire" d="M694,96 V104 H930 V96" stroke="var(--line)"/>
+        <text class="s-sub" x="812" y="120" text-anchor="middle">payload — no TM header, no CRC</text>
+
+        <text class="s-sub" x="10" y="160">Read 26 bytes → verify magic and version → read `length` more bytes → repeat.</text>
+        <text class="s-sub" x="10" y="180">TCP is a stream: one recv() is not one subframe. Loop until the full count has arrived.</text>
+        <text class="s-sub" x="10" y="200">Lost the sync? Scan forward for the next "XMCC" and resume.</text>
+      </svg>
+    </div>
+    <figcaption>Field widths above are to scale for the header; the payload block is compressed to fit.</figcaption>
+  </figure>
+
+  <div class="note">
+    <h4>The timestamp is spacecraft time, passed through untouched</h4>
+    <p>It is the subframe's own CCS Time Code, copied field for field out of the TM header — not a ground receive time, and deliberately not converted to a Unix epoch, so no timezone or leap-second handling sits between the spacecraft and MCC.</p>
+  </div>
+
+  <h2>Inside the payload</h2>
+  <p>The 1280 bytes are partitioned into four priority tiers at fixed offsets. <strong>Only VH is complete in a single subframe</strong> — the others are slices of a wider block.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 940 250" width="940" role="img" aria-label="Payload partition into VH, H, M and L tier segments, and how each tier's block spans subframes">
+        <!-- partition bar: 1280 bytes across 900 px -->
+        <rect x="10" y="34" width="281" height="44" rx="3" fill="var(--vh)" opacity="0.22" stroke="var(--vh)"/>
+        <rect x="291" y="34" width="281" height="44" rx="3" fill="var(--h)" opacity="0.22" stroke="var(--h)"/>
+        <rect x="572" y="34" width="211" height="44" rx="3" fill="var(--m)" opacity="0.22" stroke="var(--m)"/>
+        <rect x="783" y="34" width="123" height="44" rx="3" fill="var(--l)" opacity="0.22" stroke="var(--l)"/>
+        <rect x="906" y="34" width="24" height="44" rx="3" fill="var(--rsv)" opacity="0.18" stroke="var(--rsv)"/>
+
+        <text class="s-label" x="150" y="54" text-anchor="middle" fill="var(--vh)">VH</text>
+        <text class="s-sub"   x="150" y="70" text-anchor="middle">400 B</text>
+        <text class="s-label" x="431" y="54" text-anchor="middle" fill="var(--h)">H</text>
+        <text class="s-sub"   x="431" y="70" text-anchor="middle">400 B</text>
+        <text class="s-label" x="677" y="54" text-anchor="middle" fill="var(--m)">M</text>
+        <text class="s-sub"   x="677" y="70" text-anchor="middle">300 B</text>
+        <text class="s-label" x="844" y="54" text-anchor="middle" fill="var(--l)">L</text>
+        <text class="s-sub"   x="844" y="70" text-anchor="middle">175 B</text>
+
+        <text class="s-sub" x="10"  y="26">0</text>
+        <text class="s-sub" x="291" y="26" text-anchor="middle">400</text>
+        <text class="s-sub" x="572" y="26" text-anchor="middle">800</text>
+        <text class="s-sub" x="783" y="26" text-anchor="middle">1100</text>
+        <text class="s-sub" x="930" y="26" text-anchor="end">1280</text>
+        <text class="s-sub" x="918" y="92" text-anchor="middle">rsv</text>
+
+        <!-- spans -->
+        <text class="s-sub" x="10" y="126">block spans — how many consecutive subframes must be concatenated:</text>
+
+        <g>
+          <text class="s-mono" x="10" y="152" fill="var(--vh)">VH</text>
+          <rect x="52" y="141" width="52" height="14" rx="2" fill="var(--vh)" opacity="0.5"/>
+          <text class="s-sub" x="120" y="152">1 subframe → 400 B block · complete immediately</text>
+        </g>
+        <g>
+          <text class="s-mono" x="10" y="176" fill="var(--h)">H</text>
+          <rect x="52" y="165" width="52" height="14" rx="2" fill="var(--h)" opacity="0.5"/>
+          <rect x="106" y="165" width="52" height="14" rx="2" fill="var(--h)" opacity="0.5"/>
+          <text class="s-sub" x="174" y="176">2 subframes → 800 B block</text>
+        </g>
+        <g>
+          <text class="s-mono" x="10" y="200" fill="var(--m)">M</text>
+          <rect x="52" y="189" width="52" height="14" rx="2" fill="var(--m)" opacity="0.5"/>
+          <rect x="106" y="189" width="52" height="14" rx="2" fill="var(--m)" opacity="0.5"/>
+          <rect x="160" y="189" width="52" height="14" rx="2" fill="var(--m)" opacity="0.5"/>
+          <rect x="214" y="189" width="52" height="14" rx="2" fill="var(--m)" opacity="0.5"/>
+          <text class="s-sub" x="282" y="200">4 subframes → 1200 B block</text>
+        </g>
+        <g>
+          <text class="s-mono" x="10" y="224" fill="var(--l)">L</text>
+          <rect x="52"  y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="106" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="160" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="214" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="268" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="322" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="376" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <rect x="430" y="213" width="52" height="14" rx="2" fill="var(--l)" opacity="0.5"/>
+          <text class="s-sub" x="498" y="224">8 subframes → 1400 B block</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>slice index = (subframe_number − 1) mod span. A block is valid only once every slice has arrived.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div class="note">
+      <h4>All 0xFF means "no answer"</h4>
+      <p>The OBC pre-fills every picked byte range with <code>0xFF</code> and rewrites it with <code>0xFF</code> when a poll fails. It is a down marker, never a reading of 255.</p>
+    </div>
+    <div class="note">
+      <h4>0x00 is unclaimed space</h4>
+      <p>Bytes no parameter picks are zero-padded. Both markers matter when deciding whether a field is stale.</p>
+    </div>
+  </div>
+
+  <h3>Names come from the ground twin</h3>
+  <p>The payload carries no names and no identifiers — only bytes at known offsets. Position within a tier is the <strong>only</strong> link between what the OBC sends and what the ground decodes, so MCC needs <code>rate_group_lut_bin_gs.json</code> to name anything, and must confirm its <strong>CRC-16 matches the table the OBC is running</strong>. Decoding against a mismatched twin reads every value from the wrong offset and still looks plausible.</p>
+
+  <h2>The table being flown</h2>
+  <p>64 rate-group commands across five subsystems, compiled from the pick sheet. Tier budgets are closed at build time and re-checked at uplink.</p>
+
+  <table>
+    <thead>
+      <tr><th>Tier</th><th>Commands</th><th>Picked bytes</th><th>Budget</th><th>Refresh</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="sw" style="background:var(--vh)"></span> VH</td><td class="num">17</td><td class="num">363</td><td class="num">400</td><td>every subframe</td></tr>
+      <tr><td><span class="sw" style="background:var(--h)"></span> H</td><td class="num">15</td><td class="num">578</td><td class="num">800</td><td>every 2 s</td></tr>
+      <tr><td><span class="sw" style="background:var(--m)"></span> M</td><td class="num">22</td><td class="num">682</td><td class="num">1200</td><td>every 4 s</td></tr>
+      <tr><td><span class="sw" style="background:var(--l)"></span> L</td><td class="num">10</td><td class="num">91</td><td class="num">1400</td><td>every 8 s</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note" style="margin-top:20px">
+    <h4>Discard the first master frame</h4>
+    <p>From a cold start the blocks begin at <code>0xFF</code> and each entry is polled only when its turn comes round. Measured: VH is complete from subframe 1, H from 4, M from 11, and L does not fully populate inside the first master frame at all. Everything reads valid from the second master frame onward.</p>
+  </div>
+
+  <h2>Recent changes</h2>
+  <ul class="plain">
+    <li><strong>LUT rebuilt from the pick sheet</strong> — 12 entries grew to 64 across EPS, ADCS, GPS, UHF and XLINK-S; 833 highlighted parameters resolved to database names. Binary is 2118 B, CRC-16 <code>0xAFEE</code>.</li>
+    <li><strong>Poll pacing is derived, not fixed</strong> — the gap between polls is <code>T_sf / entries</code> (33 polls in a 1000 ms window → 30 ms), replacing a fixed 50 ms per command that demanded 1650 ms of a 1000 ms window. Measured cadence holds at 1.000 s with zero overruns.</li>
+    <li><strong>Tier coverage debug</strong> — every subframe now reports all four tiers, so H, M and L are visible on the subframes where their block has not closed yet, instead of only when it completes.</li>
+    <li><strong>MCC forwarding</strong> — this interface, in either socket direction, now carrying the subframe timestamp.</li>
+  </ul>
+
+  <h2>Connecting</h2>
+  <p>The link is one-way; the ground station only sends. Either side may own the socket:</p>
+  <table>
+    <thead><tr><th>Mode</th><th>Ground station</th><th>MCC software</th><th>GS launched with</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>TCP server</td><td>TCP client</td><td class="num">--mcc-listen [HOST:]PORT</td></tr>
+      <tr><td>B</td><td>TCP client</td><td>TCP server</td><td class="num">--mcc-connect HOST:PORT</td></tr>
+    </tbody>
+  </table>
+  <p>No handshake, no login, no keep-alive — data starts on the next subframe after the socket is up. Mode A fans out to every connected client and drops one that stops reading; mode B retries on the next subframe after a failure. Anything MCC sends on this socket is ignored.</p>
+
+  <ul class="legend">
+    <li><span class="sw" style="background:var(--vh)"></span> Very High</li>
+    <li><span class="sw" style="background:var(--h)"></span> High</li>
+    <li><span class="sw" style="background:var(--m)"></span> Medium</li>
+    <li><span class="sw" style="background:var(--l)"></span> Low</li>
+    <li><span class="sw" style="background:var(--rsv)"></span> reserved</li>
+  </ul>
+
+  <footer>
+    Field-level reference and a working Python decoder: <code>docs/MCC_TCP_INTERFACE.md</code><br>
+    Frame and LUT internals: <code>docs/LUT_FORMAT_README.md</code>
+  </footer>
+
+</div>

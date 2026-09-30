@@ -12,7 +12,7 @@
 set -u
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-XDOS="$(cd "$ROOT/.." && pwd)/updated xdos"
+XDOS="$ROOT/xdos"
 DB="$ROOT/mcc.db"
 JAR="$ROOT/backend/target/mcc-backend-1.0.0.jar"
 PIDFILE="$ROOT/.backend.pid"
@@ -41,10 +41,12 @@ die() { printf '!!  %s\n' "$*" >&2; exit 1; }
 # ── toolchain ────────────────────────────────────────────────────────────────
 # /usr/bin/java works, but JAVA_HOME is usually unset and Maven wants it.
 if [ -z "${JAVA_HOME:-}" ]; then
-    if [ -x /usr/libexec/java_home ]; then
+    if [ -x /usr/libexec/java_home ]; then                       # macOS
         JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null)"
-        export JAVA_HOME
+    elif command -v java >/dev/null 2>&1; then                   # Linux: follow java on PATH
+        JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
     fi
+    export JAVA_HOME
 fi
 [ -n "${JAVA_HOME:-}" ] || die "no JDK found - install one, or set JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
@@ -131,8 +133,16 @@ say "backend up (pid $(cat "$PIDFILE"))  log: ${LOG#$ROOT/}"
 
 # ── 5. optional: the simulator ───────────────────────────────────────────────
 if [ "$WITH_SIM" -eq 1 ]; then
-    if [ ! -x "$XDOS/build-mac/xdos_gs" ]; then
-        die "no native XDOS build - run:  \"$XDOS\"/scripts/build_mac.sh"
+    # Same rule as xdos/scripts/build_dir.sh: build-mac/ on macOS, build/ elsewhere.
+    if [ -z "${XDOS_BUILD:-}" ]; then
+        if [ "$(uname -s)" = Darwin ]; then XDOS_BUILD=build-mac; else XDOS_BUILD=build; fi
+    fi
+    if [ ! -x "$XDOS/$XDOS_BUILD/xdos_gs" ]; then
+        if [ "$XDOS_BUILD" = build-mac ]; then
+            die "no native XDOS build - run:  xdos/scripts/build_mac.sh"
+        else
+            die "no native XDOS build - run:  cmake -S xdos -B xdos/$XDOS_BUILD && cmake --build xdos/$XDOS_BUILD -j"
+        fi
     fi
     say "starting the XDOS simulator"
     curl -fsS -X POST "http://localhost:$PORT/api/sim/start" >/dev/null \

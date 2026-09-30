@@ -1,0 +1,245 @@
+{
+  "profile_name": "xdos_ccsds_tc_v2",
+  "description": "XDOS CCSDS-based TC/TM frame profile \u2014 Level 2 (sheet v2)",
+  "version": "2.0",
+  "spec_refs": [
+    "CCSDS 232.0-B-4 TC Space Data Link Protocol",
+    "CCSDS 133.0-B-2 Space Packet Protocol",
+    "CCSDS 301.0-B-4 \u00a73.4.1.1 Time Code Formats (CCS, customized centisecond)"
+  ],
+  "constants": {
+    "spacecraft_id": 625,
+    "_spacecraft_id_hex": "0x271",
+    "default_vcid": 0,
+    "ground_station_id": 0,
+    "sof": "1ACF",
+    "_no_eof": true
+  },
+  "enabled_by_default": true,
+  "apid_map": {
+    "ADCS": {
+      "apid": 1,
+      "_hex": "0x001",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10020
+    },
+    "EPS": {
+      "apid": 3,
+      "_hex": "0x003",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10010
+    },
+    "GPS": {
+      "apid": 4,
+      "_hex": "0x004",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10030
+    },
+    "Payload": {
+      "apid": 5,
+      "_hex": "0x005",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10040
+    },
+    "XLINK": {
+      "apid": 6,
+      "_hex": "0x006",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10050
+    },
+    "UHF": {
+      "apid": 2,
+      "_hex": "0x002",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10060
+    },
+    "SENSOR": {
+      "apid": 10,
+      "_hex": "0x00A",
+      "sim_host": "127.0.0.1",
+      "sim_port": 10070
+    }
+  },
+  "framing_mode": "length_prefixed",
+  "layout": [
+    {
+      "section": "Start of Frame",
+      "fields": [
+        {
+          "name": "sof",
+          "bits": 16,
+          "type": "constant",
+          "value": "0x1ACF"
+        }
+      ]
+    },
+    {
+      "section": "TC Transfer Frame Primary Header",
+      "fields": [
+        {
+          "name": "tf_version_number",
+          "bits": 2,
+          "type": "constant",
+          "value": 0
+        },
+        {
+          "name": "bypass_flag",
+          "bits": 1,
+          "type": "user",
+          "default": 0
+        },
+        {
+          "name": "control_command_flag",
+          "bits": 1,
+          "type": "user",
+          "default": 0
+        },
+        {
+          "name": "reserved_spare",
+          "bits": 2,
+          "type": "constant",
+          "value": 0
+        },
+        {
+          "name": "spacecraft_id",
+          "bits": 10,
+          "type": "config",
+          "from": "spacecraft_id"
+        },
+        {
+          "name": "virtual_channel_id",
+          "bits": 6,
+          "type": "config",
+          "from": "default_vcid"
+        },
+        {
+          "name": "frame_length",
+          "bits": 10,
+          "type": "computed",
+          "compute": "total_frame_octets_minus_1"
+        },
+        {
+          "name": "frame_sequence_number",
+          "bits": 8,
+          "type": "counter",
+          "scope": "global",
+          "wrap": 256
+        }
+      ]
+    },
+    {
+      "section": "Space Packet Primary Header",
+      "fields": [
+        {
+          "name": "packet_version_number",
+          "bits": 3,
+          "type": "constant",
+          "value": 0
+        },
+        {
+          "name": "packet_type",
+          "bits": 1,
+          "type": "context",
+          "from": "direction"
+        },
+        {
+          "name": "secondary_header_flag",
+          "bits": 1,
+          "type": "constant",
+          "value": 1
+        },
+        {
+          "name": "apid",
+          "bits": 11,
+          "type": "lookup",
+          "from": "apid_map"
+        },
+        {
+          "name": "sequence_flag",
+          "bits": 2,
+          "type": "constant",
+          "value": 3
+        },
+        {
+          "name": "packet_sequence_count",
+          "bits": 14,
+          "type": "counter",
+          "scope": "per_apid",
+          "wrap": 16384
+        },
+        {
+          "name": "packet_data_length",
+          "bits": 16,
+          "type": "computed",
+          "compute": "pkt_data_field_octets_minus_1"
+        }
+      ]
+    },
+    {
+      "section": "Packet Secondary Header",
+      "fields": [
+        {
+          "name": "ground_station_id",
+          "bits": 8,
+          "type": "config",
+          "from": "ground_station_id"
+        },
+        {
+          "name": "time_code_field",
+          "bits": 64,
+          "type": "computed",
+          "compute": "ccs_time_code_8b_cs"
+        },
+        {
+          "name": "ancillary_data_length",
+          "bits": 16,
+          "type": "computed",
+          "compute": "anc_data_octets"
+        },
+        {
+          "name": "ancillary_data",
+          "bits": "variable",
+          "type": "optional",
+          "length_field": "ancillary_data_length"
+        }
+      ]
+    },
+    {
+      "section": "User Data",
+      "fields": [
+        {
+          "name": "tc_id",
+          "bits": 16,
+          "type": "user"
+        },
+        {
+          "name": "tc_len",
+          "bits": 16,
+          "type": "computed",
+          "compute": "tc_data_octets"
+        },
+        {
+          "name": "tc_data",
+          "bits": "variable",
+          "type": "payload"
+        }
+      ]
+    },
+    {
+      "section": "Frame Error Control",
+      "fields": [
+        {
+          "name": "crc16",
+          "bits": 16,
+          "type": "computed",
+          "compute": "crc16_ccitt",
+          "init": "0xFFFF",
+          "poly": "0x1021",
+          "coverage": "tc_primary_header_to_tc_data_end"
+        }
+      ]
+    }
+  ],
+  "rate_group_apid": 600,
+  "_rate_group_apid_hex": "0x258"
+}

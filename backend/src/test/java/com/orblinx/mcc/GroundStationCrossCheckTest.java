@@ -55,8 +55,8 @@ class GroundStationCrossCheckTest {
     @Test
     void differsFromTheGroundStationOnlyWhereTheGroundStationIsWrong() throws Exception {
         Path root = Replay.repoRoot();
-        Path capture = root.resolve("mcc-app/testdata/live_capture.xmcc");
-        Path gsLog = root.resolve("updated xdos/RateGroup_TM_09_21_16_34.log");
+        Path capture = root.resolve("testdata/live_capture.xmcc");
+        Path gsLog = root.resolve("testdata/RateGroup_TM_09_21_16_34.log");
         assertTrue(Files.exists(gsLog), "missing ground station log: " + gsLog);
 
         SchemaRepo schema = Replay.schema();

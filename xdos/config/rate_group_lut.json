@@ -1,0 +1,87 @@
+{
+  "_comment": "OBC-side rate-group LUT. OBC replays tc_hex and stores resp_size bytes, by order. Uplink this file to the OBC.",
+  "commands": [
+    {
+      "order": 1,
+      "resp_size": 2,
+      "subsystem": "EPS",
+      "tc_hex": "0041636b444d673d3d01"
+    },
+    {
+      "order": 2,
+      "resp_size": 64,
+      "subsystem": "EPS",
+      "tc_hex": "0041636b474b513d3d01"
+    },
+    {
+      "order": 3,
+      "resp_size": 6,
+      "subsystem": "EPS",
+      "tc_hex": "0041636b5046673d3d01"
+    },
+    {
+      "order": 4,
+      "resp_size": 72,
+      "subsystem": "GPS",
+      "tc_hex": "aa44121c010000202000000000000000000000000000000000000000000000002a00000004000000000000000000000000000000000000000000000085f73961"
+    },
+    {
+      "order": 5,
+      "resp_size": 120,
+      "subsystem": "XLINK",
+      "tc_hex": "000000000000000000000000000000000100001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "order": 6,
+      "resp_size": 20,
+      "subsystem": "EPS",
+      "tc_hex": "0041636b5153773d3d01"
+    },
+    {
+      "order": 7,
+      "resp_size": 16,
+      "subsystem": "EPS",
+      "tc_hex": "0043636b4459773d3d01"
+    },
+    {
+      "order": 8,
+      "resp_size": 100,
+      "subsystem": "EPS",
+      "tc_hex": "0043636b4564673d3d01"
+    },
+    {
+      "order": 9,
+      "resp_size": 44,
+      "subsystem": "GPS",
+      "tc_hex": "aa44121c010000202000000000000000000000000000000000000000000000006300000004000000000000000000000000000000000000000000000030a55c00"
+    },
+    {
+      "order": 10,
+      "resp_size": 120,
+      "subsystem": "XLINK",
+      "tc_hex": "0000000000000000000000000000000004000010"
+    },
+    {
+      "order": 11,
+      "resp_size": 2,
+      "subsystem": "EPS",
+      "tc_hex": "00444d6b446f773d3d01"
+    },
+    {
+      "order": 12,
+      "resp_size": 80,
+      "subsystem": "EPS",
+      "tc_hex": "00444d6b4574673d3d01"
+    },
+    {
+      "order": 13,
+      "resp_size": 12,
+      "subsystem": "GPS",
+      "tc_hex": "aa44121c01000020200000000000000000000000000000000000000000000000c3030000040000000000000000000000000000000000000000000000d3a5895f"
+    }
+  ],
+  "generated": "2026-07-08T07:58:50Z",
+  "revision": 1,
+  "signature": 41544,
+  "tm_data_bytes": 1280
+}

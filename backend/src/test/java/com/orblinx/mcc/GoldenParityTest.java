@@ -33,8 +33,8 @@ class GoldenParityTest {
     @Test
     void javaDecoderMatchesReferenceDecoder() throws Exception {
         Path root = Replay.repoRoot();
-        Path capture = root.resolve("mcc-app/testdata/live_capture.xmcc");
-        Path golden = root.resolve("mcc-app/testdata/golden_mib.txt");
+        Path capture = root.resolve("testdata/live_capture.xmcc");
+        Path golden = root.resolve("testdata/golden_mib.txt");
         assertTrue(Files.exists(capture), "missing capture: " + capture);
         assertTrue(Files.exists(golden), "missing golden file: " + golden);
 

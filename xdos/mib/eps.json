@@ -1,0 +1,5100 @@
+{
+ "subsystem": "EPS",
+ "protocol": "RS485/I2C with base64 framing per NL EPS Communication Protocol V1.0",
+ "description": "NL Spacehawk 16U Power Bus EPS subsystem MIB. 16 PDU output channels (CH1-CH14 wired, CH15-CH16 reserved), 1 PDU + 3 BMS + 1 MPPT card.",
+ "source_documents": [
+  "NL_EPS_Communication_Protocol_V1_0.xlsx",
+  "EPS_subsystem_TC_TM_colored_1.xlsx",
+  "NL_Spacehawk_Power_Mapping_Sheet.xlsx"
+ ],
+ "nodes": [
+  {
+   "name": "PDU1",
+   "address": 1,
+   "description": "Power Distribution Unit MCU (Output Channel card)"
+  },
+  {
+   "name": "BMS1",
+   "address": 9,
+   "description": "Battery Management board #1 \u2014 first battery card"
+  },
+  {
+   "name": "BMS2",
+   "address": 10,
+   "description": "Battery Management board #2 \u2014 second battery card"
+  },
+  {
+   "name": "BMS3",
+   "address": 11,
+   "description": "Battery Management board #3 \u2014 third battery card"
+  },
+  {
+   "name": "MPPT1",
+   "address": 12,
+   "description": "MPPT Converter card MCU"
+  },
+  {
+   "name": "PDU",
+   "address": 1,
+   "description": "Alias for PDU1"
+  },
+  {
+   "name": "BMS",
+   "address": 9,
+   "description": "Alias for BMS1"
+  },
+  {
+   "name": "MPPT",
+   "address": 12,
+   "description": "Alias for MPPT1"
+  }
+ ],
+ "channels": [
+  {
+   "id": 1,
+   "subsystem": "OBC-A",
+   "voltage": "Batt+",
+   "avg_power_w": 3.6,
+   "peak_power_w": 6.0,
+   "input_range": "9V-14V",
+   "owner": "Avionics"
+  },
+  {
+   "id": 2,
+   "subsystem": "OBC-B",
+   "voltage": "Batt+",
+   "avg_power_w": 3.6,
+   "peak_power_w": 6.0,
+   "input_range": "9V-14V",
+   "owner": "Avionics"
+  },
+  {
+   "id": 3,
+   "subsystem": "Avionics_Bus",
+   "voltage": "Batt+",
+   "avg_power_w": 38.5,
+   "peak_power_w": 48.5,
+   "input_range": "9V-14V",
+   "owner": "Avionics",
+   "description": "QA7 + EDGE + IO + BP + GPS"
+  },
+  {
+   "id": 4,
+   "subsystem": "ADCS",
+   "voltage": "Batt+/3.3V/5V",
+   "avg_power_w": 5.3,
+   "peak_power_w": 60.0,
+   "input_range": "8V-16V",
+   "owner": "ADCS"
+  },
+  {
+   "id": 5,
+   "subsystem": "S-Band",
+   "voltage": "Batt+",
+   "avg_power_w": null,
+   "peak_power_w": 20.0,
+   "input_range": "12V +/-4V",
+   "owner": "RF"
+  },
+  {
+   "id": 6,
+   "subsystem": "Thruster",
+   "voltage": "12V",
+   "avg_power_w": null,
+   "peak_power_w": 45.0,
+   "input_range": "12V +/-1V",
+   "owner": "ADCS"
+  },
+  {
+   "id": 7,
+   "subsystem": "MSI_Heater",
+   "voltage": "Batt+",
+   "avg_power_w": null,
+   "peak_power_w": null,
+   "input_range": "9V-12V",
+   "owner": "EPS",
+   "description": "TBD"
+  },
+  {
+   "id": 8,
+   "subsystem": "AIS",
+   "voltage": "3.3V",
+   "avg_power_w": 1.0,
+   "peak_power_w": null,
+   "input_range": null,
+   "owner": "Avionics"
+  },
+  {
+   "id": 9,
+   "subsystem": "X-Band1",
+   "voltage": "Batt+ (25V)",
+   "avg_power_w": 5.0,
+   "peak_power_w": 22.4,
+   "input_range": "25V +/-4V",
+   "owner": "RF"
+  },
+  {
+   "id": 10,
+   "subsystem": "MSI_Payload",
+   "voltage": "12V",
+   "avg_power_w": 12.0,
+   "peak_power_w": 18.0,
+   "input_range": "11.4V-12.6V",
+   "owner": "Avionics"
+  },
+  {
+   "id": 11,
+   "subsystem": "UHF",
+   "voltage": "12V",
+   "avg_power_w": 3.0,
+   "peak_power_w": 5.0,
+   "input_range": "5V",
+   "owner": "RF"
+  },
+  {
+   "id": 12,
+   "subsystem": "HRM",
+   "voltage": "Batt+",
+   "avg_power_w": null,
+   "peak_power_w": null,
+   "input_range": "9V-12V",
+   "owner": "EPS",
+   "description": "Hold-Release Mechanism"
+  },
+  {
+   "id": 13,
+   "subsystem": "UHF_BurnWire",
+   "voltage": "Batt+",
+   "avg_power_w": 0.0,
+   "peak_power_w": 2.0,
+   "input_range": "9V-12V",
+   "owner": "EPS"
+  },
+  {
+   "id": 14,
+   "subsystem": "AIS_BurnWire",
+   "voltage": "Batt+",
+   "avg_power_w": 0.0,
+   "peak_power_w": 2.0,
+   "input_range": "9V-12V",
+   "owner": "EPS"
+  },
+  {
+   "id": 15,
+   "subsystem": "RESERVED",
+   "voltage": null,
+   "avg_power_w": null,
+   "peak_power_w": null,
+   "input_range": null,
+   "owner": null,
+   "description": "Reserved spare channel"
+  },
+  {
+   "id": 16,
+   "subsystem": "RESERVED",
+   "voltage": null,
+   "avg_power_w": null,
+   "peak_power_w": null,
+   "input_range": null,
+   "owner": null,
+   "description": "Reserved spare channel"
+  }
+ ],
+ "channels_source": "NL Spacehawk Power Mapping Sheet (Master_Sheet)",
+ "channels_note": "NL16U 16U Power Bus has 16 output channels: 14 wired to subsystems and 2 reserved (CH15, CH16). Channel state is encoded as a 16-bit mask in 2 bytes (CH1-CH8 in byte 0 LSB-first, CH9-CH16 in byte 1 LSB-first).",
+ "enums": [
+  {
+   "name": "EPSModel",
+   "doc_reference": "EPS Comm Protocol \u2014 Get_FW_Version response",
+   "values": [
+    {
+     "value": 0,
+     "name": "NS",
+     "description": "NorthStar"
+    },
+    {
+     "value": 1,
+     "name": "NL",
+     "description": "NL Spacehawk (this satellite)"
+    },
+    {
+     "value": 2,
+     "name": "M200",
+     "description": "M200 platform"
+    },
+    {
+     "value": 3,
+     "name": "M400",
+     "description": "M400 platform"
+    },
+    {
+     "value": 4,
+     "name": "M600",
+     "description": "M600 platform"
+    }
+   ]
+  },
+  {
+   "name": "ExecutionMode",
+   "doc_reference": "EPS Comm Protocol \u2014 Get_FW_Version response",
+   "values": [
+    {
+     "value": 0,
+     "name": "Bootloader",
+     "description": "Boot ROM / bootloader running"
+    },
+    {
+     "value": 1,
+     "name": "EPS_Primary_FW",
+     "description": "Primary application firmware"
+    },
+    {
+     "value": 2,
+     "name": "EPS_Fallback_FW",
+     "description": "Fallback (recovery) firmware"
+    }
+   ]
+  },
+  {
+   "name": "EPSMode",
+   "doc_reference": "EPS Comm Protocol \u2014 Get_PDU_Alert_Flags response",
+   "values": [
+    {
+     "value": 0,
+     "name": "AllOff",
+     "description": "All output channels OFF"
+    },
+    {
+     "value": 1,
+     "name": "Critical",
+     "description": "Critical mode \u2014 minimum loads only"
+    },
+    {
+     "value": 2,
+     "name": "Safe",
+     "description": "Safe mode \u2014 reduced loads"
+    },
+    {
+     "value": 3,
+     "name": "Normal",
+     "description": "Normal operations"
+    },
+    {
+     "value": 4,
+     "name": "Full",
+     "description": "Full power available"
+    }
+   ]
+  },
+  {
+   "name": "SaveOrReset",
+   "doc_reference": "EPS Comm Protocol \u2014 Flash_Var_Save_Reset",
+   "values": [
+    {
+     "value": 0,
+     "name": "Reset",
+     "description": "Reset flash data to factory defaults"
+    },
+    {
+     "value": 1,
+     "name": "Save",
+     "description": "Save volatile config to flash"
+    }
+   ]
+  },
+  {
+   "name": "SuccessOrFailure",
+   "doc_reference": "EPS Comm Protocol \u2014 generic SET response",
+   "values": [
+    {
+     "value": 0,
+     "name": "Failure",
+     "description": "Operation failed"
+    },
+    {
+     "value": 1,
+     "name": "Success",
+     "description": "Operation succeeded"
+    }
+   ]
+  },
+  {
+   "name": "OBCSelection",
+   "doc_reference": "EPS Comm Protocol \u2014 OBC_Parameters",
+   "values": [
+    {
+     "value": 1,
+     "name": "OBC1",
+     "description": "Primary OBC channel = OBC1"
+    },
+    {
+     "value": 2,
+     "name": "OBC2",
+     "description": "Primary OBC channel = OBC2"
+    }
+   ]
+  },
+  {
+   "name": "BattHeatingMode",
+   "doc_reference": "EPS Comm Protocol \u2014 BMS_Set_Batt_Temp_Sense_Limit",
+   "values": [
+    {
+     "value": 0,
+     "name": "Automatic",
+     "description": "EPS manages heaters automatically"
+    },
+    {
+     "value": 1,
+     "name": "Manual",
+     "description": "OBC overrides heater on/off"
+    }
+   ]
+  },
+  {
+   "name": "Weekday",
+   "doc_reference": "EPS Comm Protocol \u2014 RTC_Time",
+   "values": [
+    {
+     "value": 0,
+     "name": "Monday"
+    },
+    {
+     "value": 1,
+     "name": "Tuesday"
+    },
+    {
+     "value": 2,
+     "name": "Wednesday"
+    },
+    {
+     "value": 3,
+     "name": "Thursday"
+    },
+    {
+     "value": 4,
+     "name": "Friday"
+    },
+    {
+     "value": 5,
+     "name": "Saturday"
+    },
+    {
+     "value": 6,
+     "name": "Sunday"
+    }
+   ]
+  },
+  {
+   "name": "SuccessFail",
+   "doc_reference": "EPS sheet \u2014 response Status fields (EP-009/013/025/027)",
+   "values": [
+    {
+     "value": 0,
+     "name": "Failure",
+     "description": "Command rejected / failed"
+    },
+    {
+     "value": 1,
+     "name": "Success",
+     "description": "Command accepted / applied"
+    }
+   ]
+  },
+  {
+   "name": "ObcSelect",
+   "doc_reference": "EPS sheet EP-009 \u2014 Primary OBC selection",
+   "values": [
+    {
+     "value": 1,
+     "name": "OBC1",
+     "description": "Select / active OBC 1"
+    },
+    {
+     "value": 2,
+     "name": "OBC2",
+     "description": "Select / active OBC 2"
+    }
+   ]
+  },
+  {
+   "name": "SaveReset",
+   "doc_reference": "EPS sheet EP-013/EP-027 \u2014 flash Save/Reset",
+   "values": [
+    {
+     "value": 0,
+     "name": "Reset",
+     "description": "Reset stored flash data"
+    },
+    {
+     "value": 1,
+     "name": "Save",
+     "description": "Save current values to flash"
+    }
+   ]
+  },
+  {
+   "name": "EpsMode",
+   "doc_reference": "EPS sheet EP-015 \u2014 EPS operating mode",
+   "values": [
+    {
+     "value": 0,
+     "name": "All_OP_Off",
+     "description": "All outputs off"
+    },
+    {
+     "value": 1,
+     "name": "Critical",
+     "description": "Critical mode"
+    },
+    {
+     "value": 2,
+     "name": "Safe",
+     "description": "Safe mode"
+    },
+    {
+     "value": 3,
+     "name": "Normal",
+     "description": "Normal mode"
+    },
+    {
+     "value": 4,
+     "name": "Full",
+     "description": "Full mode"
+    }
+   ]
+  },
+  {
+   "name": "HeaterMode",
+   "doc_reference": "EPS sheet EP-020 \u2014 battery heating mode",
+   "values": [
+    {
+     "value": 0,
+     "name": "Automatic",
+     "description": "Thermostatic control"
+    },
+    {
+     "value": 1,
+     "name": "Manual",
+     "description": "Manual heater flags"
+    }
+   ]
+  },
+  {
+   "name": "HdrmStatus",
+   "doc_reference": "EPS sheet EP-015 \u2014 HDRM release status",
+   "values": [
+    {
+     "value": 0,
+     "name": "Disconnected",
+     "description": "HDRM disconnected"
+    },
+    {
+     "value": 1,
+     "name": "Connected",
+     "description": "HDRM connected"
+    }
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "param_id": "EP-001",
+   "name": "Get_FW_Version",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 1,
+   "wire_id": 1,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-001 / Sheet row EP-001",
+   "description": "OBC requests firmware version from any EPS board (PDU/BMS/MPPT). No payload.",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-001",
+   "name": "Get_FW_Version_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 1,
+   "wire_id": 1,
+   "node": "PDU1",
+   "length_bytes": 7,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-001 / Sheet row EP-001",
+   "description": "Returns firmware version, protocol version, EPS model (1=NL), execution mode (0=Bootloader 1=Primary FW 2=Fallback FW)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Firmware Major Version",
+     "data_type": "UINT",
+     "description": "Firmware major version"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "Firmware Minor Version",
+     "data_type": "UINT",
+     "description": "Firmware minor version"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "Firmware Patch Version",
+     "data_type": "UINT",
+     "description": "Firmware patch version"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "Communication Protocol Major Version",
+     "data_type": "UINT",
+     "description": "Communication protocol major version"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 1,
+     "name": "Communication Protocol Minor Version",
+     "data_type": "UINT",
+     "description": "Communication protocol minor version"
+    },
+    {
+     "seq": 6,
+     "offset": 5,
+     "length": 1,
+     "name": "EPS Model/Satellite platform",
+     "data_type": "ENUM",
+     "description": "Platform identifier",
+     "enum_type": "EPSModel",
+     "enum": "EPSModel"
+    },
+    {
+     "seq": 7,
+     "offset": 6,
+     "length": 1,
+     "name": "Execution Mode",
+     "data_type": "ENUM",
+     "description": "Bootloader / Primary FW / Fallback FW",
+     "enum_type": "ExecutionMode",
+     "enum": "ExecutionMode"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-002",
+   "name": "Set_PDU_CH_State",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 2,
+   "wire_id": 2,
+   "node": "PDU1",
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-002 / Sheet row EP-002",
+   "description": "Enable or disable PDU output channels CH1-CH16 via 2-byte (16-bit) bitmask. CH15/CH16 are reserved on NL16U.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "CH1 to CH8 Enable/Disable",
+     "data_type": "UINT",
+     "description": "Bit 0=CH1 (LSB) ... Bit 7=CH8 (MSB). 1=enable, 0=disable"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "CH9 to CH16 Enable/Disable",
+     "data_type": "UINT",
+     "description": "Bit 0=CH9 (LSB) ... Bit 7=CH16 (MSB). 1=enable, 0=disable. CH15/CH16 reserved on NL16U"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-002",
+   "name": "Set_PDU_CH_State_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 2,
+   "wire_id": 2,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-002 / Sheet row EP-002",
+   "description": "Acknowledges PDU channel state SET command",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-003",
+   "name": "Get_PDU_CH_State",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 3,
+   "wire_id": 3,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-003 / Sheet row EP-003",
+   "description": "Request current enable/disable state of PDU output channels CH1-CH16",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-003",
+   "name": "Get_PDU_CH_State_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 3,
+   "wire_id": 3,
+   "node": "PDU1",
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-003 / Sheet row EP-003",
+   "description": "Returns current ON/OFF state of CH1-CH16 (CLI shows e.g. 'CH5 (S-Band) : ON')",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "CH1 to CH8 Enable/Disable",
+     "data_type": "UINT",
+     "description": "Bit 0=CH1 (LSB) ... Bit 7=CH8 (MSB). 1=enable, 0=disable"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "CH9 to CH16 Enable/Disable",
+     "data_type": "UINT",
+     "description": "Bit 0=CH9 (LSB) ... Bit 7=CH16 (MSB). 1=enable, 0=disable. CH15/CH16 reserved on NL16U"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-004",
+   "name": "Set_PDU_CH_Current_Limits",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 4,
+   "wire_id": 4,
+   "node": "PDU1",
+   "length_bytes": 64,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-004 / Sheet row EP-004",
+   "description": "Set over-current protection threshold (Amps, float32) for each output channel CH1-CH16",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "CH1 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 1 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "CH2 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 2 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "CH3 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 3 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "CH4 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 4 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "CH5 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 5 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "CH6 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 6 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "CH7 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 7 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "CH8 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 8 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "CH9 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 9 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "CH10 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 10 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "CH11 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 11 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "CH12 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 12 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 13,
+     "offset": 48,
+     "length": 4,
+     "name": "CH13 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 13 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 14,
+     "offset": 52,
+     "length": 4,
+     "name": "CH14 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 14 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 15,
+     "offset": 56,
+     "length": 4,
+     "name": "CH15 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 15 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 16,
+     "offset": 60,
+     "length": 4,
+     "name": "CH16 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 16 current setting (float32)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-004",
+   "name": "Set_PDU_CH_Current_Limits_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 4,
+   "wire_id": 4,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-004 / Sheet row EP-004",
+   "description": "Acknowledges current-limit SET command",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-005",
+   "name": "Get_PDU_CH_Current_Limits",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 5,
+   "wire_id": 5,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-005 / Sheet row EP-005",
+   "description": "Request configured over-current protection limits for CH1-CH16",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-005",
+   "name": "Get_PDU_CH_Current_Limits_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 5,
+   "wire_id": 5,
+   "node": "PDU1",
+   "length_bytes": 64,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-005 / Sheet row EP-005",
+   "description": "Returns per-channel over-current limit settings for CH1-CH16",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "CH1 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 1 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "CH2 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 2 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "CH3 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 3 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "CH4 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 4 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "CH5 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 5 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "CH6 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 6 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "CH7 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 7 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "CH8 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 8 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "CH9 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 9 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "CH10 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 10 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "CH11 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 11 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "CH12 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 12 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 13,
+     "offset": 48,
+     "length": 4,
+     "name": "CH13 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 13 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 14,
+     "offset": 52,
+     "length": 4,
+     "name": "CH14 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 14 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 15,
+     "offset": 56,
+     "length": 4,
+     "name": "CH15 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 15 current setting (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 16,
+     "offset": 60,
+     "length": 4,
+     "name": "CH16 Current Setting",
+     "data_type": "FLOAT",
+     "description": "Channel 16 current setting (float32)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-006",
+   "name": "Get_PDU_CH_Current_Readings",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 6,
+   "wire_id": 6,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-006 / Sheet row EP-006",
+   "description": "Request live current measurements for all PDU output channels CH1-CH16",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-006",
+   "name": "Get_PDU_CH_Current_Readings_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 6,
+   "wire_id": 6,
+   "node": "PDU1",
+   "length_bytes": 64,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-006 / Sheet row EP-006",
+   "description": "Returns measured current for CH1-CH16 (Amps, float32)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "CH1 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 1 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "CH2 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 2 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "CH3 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 3 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "CH4 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 4 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "CH5 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 5 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "CH6 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 6 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "CH7 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 7 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "CH8 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 8 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "CH9 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 9 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "CH10 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 10 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "CH11 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 11 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "CH12 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 12 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 13,
+     "offset": 48,
+     "length": 4,
+     "name": "CH13 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 13 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 14,
+     "offset": 52,
+     "length": 4,
+     "name": "CH14 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 14 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 15,
+     "offset": 56,
+     "length": 4,
+     "name": "CH15 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 15 current readings (float32)",
+     "unit": "A"
+    },
+    {
+     "seq": 16,
+     "offset": 60,
+     "length": 4,
+     "name": "CH16 Current Readings",
+     "data_type": "FLOAT",
+     "description": "Channel 16 current readings (float32)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-007",
+   "name": "Set_EPS_Mode_Voltage_Threshold",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 7,
+   "wire_id": 7,
+   "node": "PDU1",
+   "length_bytes": 12,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-007 / Sheet row EP-007",
+   "description": "Set Vbatt thresholds for EPS mode transitions (Normal, Safe, Critical)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Normal Mode Threshold Voltage",
+     "data_type": "FLOAT",
+     "description": "Vbatt above which EPS = Normal mode",
+     "unit": "V"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Safe Mode Threshold Voltage",
+     "data_type": "FLOAT",
+     "description": "Vbatt below which EPS = Safe mode",
+     "unit": "V"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Critical Mode Threshold Voltage",
+     "data_type": "FLOAT",
+     "description": "Vbatt below which EPS = Critical",
+     "unit": "V"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-007",
+   "name": "Set_EPS_Mode_Voltage_Threshold_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 7,
+   "wire_id": 7,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-007 / Sheet row EP-007",
+   "description": "Acknowledges EPS mode threshold SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-008",
+   "name": "Get_EPS_Mode_Voltage_Threshold",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 8,
+   "wire_id": 8,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-008 / Sheet row EP-008",
+   "description": "Request configured EPS mode voltage thresholds",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-008",
+   "name": "Get_EPS_Mode_Voltage_Threshold_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 8,
+   "wire_id": 8,
+   "node": "PDU1",
+   "length_bytes": 12,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-008 / Sheet row EP-008",
+   "description": "Returns configured EPS mode voltage thresholds",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Normal Mode Threshold Voltage",
+     "data_type": "FLOAT",
+     "description": "Vbatt for Normal mode",
+     "unit": "V"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Safe Mode Threshold Voltage",
+     "data_type": "FLOAT",
+     "description": "Vbatt for Safe mode",
+     "unit": "V"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Critical Mode Threshold Voltage",
+     "data_type": "FLOAT",
+     "description": "Vbatt for Critical mode",
+     "unit": "V"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-009",
+   "name": "Set_OBC_Parameters",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 9,
+   "wire_id": 9,
+   "node": "PDU1",
+   "length_bytes": 4,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-009 / Sheet row EP-009",
+   "description": "Set OBC watchdog ping interval (sec), # OBC resets before EPS self-reset, and primary OBC selection",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "Ping Interval",
+     "data_type": "UINT",
+     "description": "OBC ping interval in seconds (default 60s)",
+     "unit": "s"
+    },
+    {
+     "seq": 2,
+     "offset": 2,
+     "length": 1,
+     "name": "No. of OBC resets for EPS Reset",
+     "data_type": "UINT",
+     "description": "Number of OBC resets before EPS self-reset"
+    },
+    {
+     "seq": 3,
+     "offset": 3,
+     "length": 1,
+     "name": "Primary OBC selection",
+     "data_type": "ENUM",
+     "description": "1=select OBC1, 2=select OBC2",
+     "enum_type": "OBCSelection",
+     "enum": "ObcSelect"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-009",
+   "name": "Set_OBC_Parameters_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 9,
+   "wire_id": 9,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-009 / Sheet row EP-009",
+   "description": "Acknowledges OBC parameter SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-010",
+   "name": "Get_OBC_Parameters",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 10,
+   "wire_id": 10,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-010 / Sheet row EP-010",
+   "description": "Request OBC watchdog parameters",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-010",
+   "name": "Get_OBC_Parameters_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 10,
+   "wire_id": 10,
+   "node": "PDU1",
+   "length_bytes": 4,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-010 / Sheet row EP-010",
+   "description": "Returns OBC ping interval, reset count threshold, and primary OBC selection",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "Ping Interval",
+     "data_type": "UINT",
+     "description": "OBC ping interval",
+     "unit": "s"
+    },
+    {
+     "seq": 2,
+     "offset": 2,
+     "length": 1,
+     "name": "No. of OBC resets for EPS Reset",
+     "data_type": "UINT",
+     "description": "OBC resets before EPS self-reset"
+    },
+    {
+     "seq": 3,
+     "offset": 3,
+     "length": 1,
+     "name": "Primary OBC selection",
+     "data_type": "ENUM",
+     "description": "1=OBC1, 2=OBC2",
+     "enum_type": "OBCSelection",
+     "enum": "ObcSelect"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-011",
+   "name": "Set_HDRM_On_Time",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 11,
+   "wire_id": 11,
+   "node": "PDU1",
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-011 / Sheet row EP-011",
+   "description": "Set HDRM hold time (default 16 min)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "HDRM On Time in seconds",
+     "data_type": "UINT",
+     "description": "Hold-Release Mechanism on-time in seconds (default 960=16min)",
+     "unit": "s"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-011",
+   "name": "Set_HDRM_On_Time_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 11,
+   "wire_id": 11,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-011 / Sheet row EP-011",
+   "description": "Acknowledges HDRM time SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-012",
+   "name": "Get_HDRM_On_Time",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 12,
+   "wire_id": 12,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-012 / Sheet row EP-012",
+   "description": "Request current HDRM on-time",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-012",
+   "name": "Get_HDRM_On_Time_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 12,
+   "wire_id": 12,
+   "node": "PDU1",
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-012 / Sheet row EP-012",
+   "description": "Returns configured HDRM on-time",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "HDRM On Time in seconds",
+     "data_type": "UINT",
+     "description": "Hold-Release Mechanism on-time in seconds",
+     "unit": "s"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-013",
+   "name": "PDU_Flash_Data_Save_Reset",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 13,
+   "wire_id": 13,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-013 / Sheet row EP-013",
+   "description": "Save current PDU volatile config to flash, or reset flash data to defaults",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Save/Reset",
+     "data_type": "ENUM",
+     "description": "0=Reset, 1=Save",
+     "enum_type": "SaveOrReset",
+     "enum": "SaveReset"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-013",
+   "name": "PDU_Flash_Data_Save_Reset_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 13,
+   "wire_id": 13,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-013 / Sheet row EP-013",
+   "description": "Acknowledges flash save/reset",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-014",
+   "name": "Get_PDU_Flash_Data",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 14,
+   "wire_id": 14,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-014 / Sheet row EP-014",
+   "description": "Request PDU flash variables (reset counts, HDRM status, etc.)",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-014",
+   "name": "Get_PDU_Flash_Data_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 14,
+   "wire_id": 14,
+   "node": "PDU1",
+   "length_bytes": 18,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-014 / Sheet row EP-014",
+   "description": "Returns flash-stored counters: Total PDU reset count (never erased), PDU reset count, external reset trigger count, OBC reset count, OBC primary channel, HDRM release status",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Total PDU Reset Count",
+     "data_type": "UINT",
+     "description": "Never erased; total PDU resets"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "PDU Reset Count",
+     "data_type": "UINT",
+     "description": "PDU reset count since last flash erase"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "PDU External Reset Trigger count",
+     "data_type": "UINT",
+     "description": "External reset trigger count"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "OBC Reset Count",
+     "data_type": "UINT",
+     "description": "OBC reset count"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 1,
+     "name": "OBC_Primary_Channel",
+     "data_type": "ENUM",
+     "description": "Active OBC channel",
+     "enum_type": "OBCSelection",
+     "enum": "ObcSelect"
+    },
+    {
+     "seq": 6,
+     "offset": 17,
+     "length": 1,
+     "name": "HDRM Release Status",
+     "data_type": "UINT",
+     "description": "HDRM release status (1=released, 0=held)"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-015",
+   "name": "Get_PDU_Alert_Flags",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 15,
+   "wire_id": 15,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-015 / Sheet row EP-015",
+   "description": "Request EPS mode, over-current flags, RBF/HDRM status",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-015",
+   "name": "Get_PDU_Alert_Flags_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 15,
+   "wire_id": 15,
+   "node": "PDU1",
+   "length_bytes": 6,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-015 / Sheet row EP-015",
+   "description": "Returns EPS mode (0=AllOff 1=Critical 2=Safe 3=Normal 4=Full), CH1-CH16 over-current bitmask (1=over-current latched), RBF pin status, HDRM release flag, OBC timeout flag",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "EPS Mode",
+     "data_type": "ENUM",
+     "description": "Current EPS mode",
+     "enum_type": "EPSMode",
+     "enum": "EpsMode"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "CH1 to CH8 Over Current Flag",
+     "data_type": "UINT",
+     "description": "Bit n = CH(n+1) over-current (1=triggered)"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "CH9 to CH16 Over Current Flag",
+     "data_type": "UINT",
+     "description": "Bit n = CH(n+9) over-current (1=triggered)"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "RBF_Status",
+     "data_type": "UINT",
+     "description": "Remove-Before-Flight pin status (0=disconnected, 1=connected)"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 1,
+     "name": "HDRM_Release_Status",
+     "data_type": "UINT",
+     "description": "HDRM release status (1=released)"
+    },
+    {
+     "seq": 6,
+     "offset": 5,
+     "length": 1,
+     "name": "OBC Communication timeout flag",
+     "data_type": "UINT",
+     "description": "OBC ping timeout flag (1=timeout)"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-016",
+   "name": "Get_PDU_Voltage_Readings",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 16,
+   "wire_id": 16,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-016 / Sheet row EP-016",
+   "description": "Request converter and battery voltage readings",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-016",
+   "name": "Get_PDU_Voltage_Readings_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 16,
+   "wire_id": 16,
+   "node": "PDU1",
+   "length_bytes": 20,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-016 / Sheet row EP-016",
+   "description": "Returns output converter 1-4 voltages and battery voltage",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Conv1 OP Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "Converter 1 output voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Conv2 OP Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "Converter 2 output voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Conv3 OP Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "Converter 3 output voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "Conv4 OP Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "Converter 4 output voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "Batt Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "Battery voltage as measured by PDU",
+     "unit": "V"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-017",
+   "name": "Switch_Active_OBC",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 17,
+   "wire_id": 17,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-017 / Sheet row EP-017",
+   "description": "Command PDU to switch active OBC channel (OBC1 <-> OBC2)",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-017",
+   "name": "Switch_Active_OBC_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 17,
+   "wire_id": 17,
+   "node": "PDU1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-017 / Sheet row EP-017",
+   "description": "Returns which OBC will be active after this switch",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Active OBC",
+     "data_type": "ENUM",
+     "description": "OBC active after switch",
+     "enum_type": "OBCSelection",
+     "enum": "ObcSelect"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-018",
+   "name": "Get_PDU_Temperature_Readings",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 18,
+   "wire_id": 18,
+   "node": "PDU1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-018 / Sheet row EP-018 (filled from PDU_Get_Temperature_Readings tab in V1.0 protocol)",
+   "description": "Request PDU board temperature sensor readings (SES_A, SES_B)",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-018",
+   "name": "Get_PDU_Temperature_Readings_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 18,
+   "wire_id": 18,
+   "node": "PDU1",
+   "length_bytes": 4,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-018 (V1.0 protocol)",
+   "description": "Returns PDU board temperature readings (SES_A, SES_B as int16, deg C \u00d7 100)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "SES_A Temperature Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor A reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 2,
+     "offset": 2,
+     "length": 2,
+     "name": "SES_B Temperature Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor B reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    }
+   ]
+  },
+  {
+   "param_id": "EP-019",
+   "name": "BMS_Get_Batt_V_and_I_Readings",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 2,
+   "wire_id": 2,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-019 / Sheet row EP-019",
+   "description": "Request battery V/I readings from BMS",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-019",
+   "name": "BMS_Get_Batt_V_and_I_Readings_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 2,
+   "wire_id": 2,
+   "node": "BMS1",
+   "length_bytes": 16,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-019 / Sheet row EP-019",
+   "description": "Returns total battery voltage, total battery current, discharge switch 1 current, discharge switch 2 current (NL16U: DS2 returns NaN)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Total Battery Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "Total battery voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Total Battery Current Reading",
+     "data_type": "FLOAT",
+     "description": "Total battery current",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Discharge Switch 1 Current Reading",
+     "data_type": "FLOAT",
+     "description": "Discharge switch 1 current",
+     "unit": "A"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "Discharge Switch 2 Current Reading",
+     "data_type": "FLOAT",
+     "description": "Discharge switch 2 current (NaN on NL16U)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-020",
+   "name": "BMS_Set_Battery_Heaters_Param",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 3,
+   "wire_id": 3,
+   "node": "BMS1",
+   "length_bytes": 100,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-020 / Sheet row EP-020",
+   "description": "Set heater mode (0=Auto, 1=Manual), manual heater bitmask H1-H24 (LSB=H1), and lower/upper temp limits for TempSense 1-24",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Batt Heating Mode",
+     "data_type": "ENUM",
+     "description": "0=Automatic, 1=Manual",
+     "enum_type": "BattHeatingMode",
+     "enum": "HeaterMode"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "Batt Heating Flags for Manual Mode (Heater1-LSB to Heater8-MSB)",
+     "data_type": "UINT",
+     "description": "Heaters 1-8 enable bits (manual mode)"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "Batt Heating Flags for Manual Mode (Heater9-LSB to Heater16-MSB)",
+     "data_type": "UINT",
+     "description": "Heaters 9-16 enable bits (manual mode)"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "Batt Heating Flags for Manual Mode (Heater17-LSB to Heater24-MSB)",
+     "data_type": "UINT",
+     "description": "Heaters 17-24 enable bits (manual mode)"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 2,
+     "name": "Temp Sense1 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 1 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 6,
+     "offset": 6,
+     "length": 2,
+     "name": "Temp Sense1 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 1 upper limit (>1 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 7,
+     "offset": 8,
+     "length": 2,
+     "name": "Temp Sense2 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 2 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 8,
+     "offset": 10,
+     "length": 2,
+     "name": "Temp Sense2 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 2 upper limit (>2 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 9,
+     "offset": 12,
+     "length": 2,
+     "name": "Temp Sense3 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 3 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 10,
+     "offset": 14,
+     "length": 2,
+     "name": "Temp Sense3 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 3 upper limit (>3 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 11,
+     "offset": 16,
+     "length": 2,
+     "name": "Temp Sense4 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 4 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 12,
+     "offset": 18,
+     "length": 2,
+     "name": "Temp Sense4 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 4 upper limit (>4 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 13,
+     "offset": 20,
+     "length": 2,
+     "name": "Temp Sense5 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 5 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 14,
+     "offset": 22,
+     "length": 2,
+     "name": "Temp Sense5 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 5 upper limit (>5 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 15,
+     "offset": 24,
+     "length": 2,
+     "name": "Temp Sense6 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 6 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 16,
+     "offset": 26,
+     "length": 2,
+     "name": "Temp Sense6 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 6 upper limit (>6 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 17,
+     "offset": 28,
+     "length": 2,
+     "name": "Temp Sense7 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 7 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 18,
+     "offset": 30,
+     "length": 2,
+     "name": "Temp Sense7 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 7 upper limit (>7 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 19,
+     "offset": 32,
+     "length": 2,
+     "name": "Temp Sense8 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 8 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 20,
+     "offset": 34,
+     "length": 2,
+     "name": "Temp Sense8 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 8 upper limit (>8 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 21,
+     "offset": 36,
+     "length": 2,
+     "name": "Temp Sense9 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 9 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 22,
+     "offset": 38,
+     "length": 2,
+     "name": "Temp Sense9 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 9 upper limit (>9 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 23,
+     "offset": 40,
+     "length": 2,
+     "name": "Temp Sense10 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 10 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 24,
+     "offset": 42,
+     "length": 2,
+     "name": "Temp Sense10 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 10 upper limit (>10 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 25,
+     "offset": 44,
+     "length": 2,
+     "name": "Temp Sense11 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 11 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 26,
+     "offset": 46,
+     "length": 2,
+     "name": "Temp Sense11 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 11 upper limit (>11 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 27,
+     "offset": 48,
+     "length": 2,
+     "name": "Temp Sense12 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 12 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 28,
+     "offset": 50,
+     "length": 2,
+     "name": "Temp Sense12 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 12 upper limit (>12 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 29,
+     "offset": 52,
+     "length": 2,
+     "name": "Temp Sense13 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 13 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 30,
+     "offset": 54,
+     "length": 2,
+     "name": "Temp Sense13 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 13 upper limit (>13 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 31,
+     "offset": 56,
+     "length": 2,
+     "name": "Temp Sense14 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 14 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 32,
+     "offset": 58,
+     "length": 2,
+     "name": "Temp Sense14 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 14 upper limit (>14 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 33,
+     "offset": 60,
+     "length": 2,
+     "name": "Temp Sense15 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 15 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 34,
+     "offset": 62,
+     "length": 2,
+     "name": "Temp Sense15 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 15 upper limit (>15 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 35,
+     "offset": 64,
+     "length": 2,
+     "name": "Temp Sense16 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 16 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 36,
+     "offset": 66,
+     "length": 2,
+     "name": "Temp Sense16 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 16 upper limit (>16 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 37,
+     "offset": 68,
+     "length": 2,
+     "name": "Temp Sense17 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 17 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 38,
+     "offset": 70,
+     "length": 2,
+     "name": "Temp Sense17 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 17 upper limit (>17 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 39,
+     "offset": 72,
+     "length": 2,
+     "name": "Temp Sense18 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 18 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 40,
+     "offset": 74,
+     "length": 2,
+     "name": "Temp Sense18 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 18 upper limit (>18 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 41,
+     "offset": 76,
+     "length": 2,
+     "name": "Temp Sense19 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 19 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 42,
+     "offset": 78,
+     "length": 2,
+     "name": "Temp Sense19 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 19 upper limit (>19 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 43,
+     "offset": 80,
+     "length": 2,
+     "name": "Temp Sense20 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 20 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 44,
+     "offset": 82,
+     "length": 2,
+     "name": "Temp Sense20 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 20 upper limit (>20 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 45,
+     "offset": 84,
+     "length": 2,
+     "name": "Temp Sense21 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 21 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 46,
+     "offset": 86,
+     "length": 2,
+     "name": "Temp Sense21 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 21 upper limit (>21 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 47,
+     "offset": 88,
+     "length": 2,
+     "name": "Temp Sense22 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 22 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 48,
+     "offset": 90,
+     "length": 2,
+     "name": "Temp Sense22 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 22 upper limit (>22 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 49,
+     "offset": 92,
+     "length": 2,
+     "name": "Temp Sense23 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 23 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 50,
+     "offset": 94,
+     "length": 2,
+     "name": "Temp Sense23 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 23 upper limit (>23 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 51,
+     "offset": 96,
+     "length": 2,
+     "name": "Temp Sense24 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 24 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 52,
+     "offset": 98,
+     "length": 2,
+     "name": "Temp Sense24 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 24 upper limit (>24 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    }
+   ]
+  },
+  {
+   "param_id": "EP-020",
+   "name": "BMS_Set_Battery_Heaters_Param_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 3,
+   "wire_id": 3,
+   "node": "BMS1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-020 / Sheet row EP-020",
+   "description": "Acknowledges BMS heater parameter SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-021",
+   "name": "BMS_Get_Battery_Heater_Param",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 4,
+   "wire_id": 4,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-021 / Sheet row EP-021",
+   "description": "Request configured heater parameters",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-021",
+   "name": "BMS_Get_Battery_Heater_Param_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 4,
+   "wire_id": 4,
+   "node": "BMS1",
+   "length_bytes": 100,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-021 / Sheet row EP-021",
+   "description": "Returns heater mode, manual heater on/off flags, and temperature limit settings for TempSense 1-24",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Batt Heating Mode",
+     "data_type": "ENUM",
+     "description": "0=Automatic, 1=Manual",
+     "enum_type": "BattHeatingMode",
+     "enum": "HeaterMode"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "Batt Heating Flags for Manual Mode (Heater1-LSB to Heater8-MSB)",
+     "data_type": "UINT",
+     "description": "Heaters 1-8 enable bits (manual mode)"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "Batt Heating Flags for Manual Mode (Heater9-LSB to Heater16-MSB)",
+     "data_type": "UINT",
+     "description": "Heaters 9-16 enable bits (manual mode)"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "Batt Heating Flags for Manual Mode (Heater17-LSB to Heater24-MSB)",
+     "data_type": "UINT",
+     "description": "Heaters 17-24 enable bits (manual mode)"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 2,
+     "name": "Temp Sense1 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 1 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 6,
+     "offset": 6,
+     "length": 2,
+     "name": "Temp Sense1 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 1 upper limit (>1 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 7,
+     "offset": 8,
+     "length": 2,
+     "name": "Temp Sense2 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 2 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 8,
+     "offset": 10,
+     "length": 2,
+     "name": "Temp Sense2 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 2 upper limit (>2 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 9,
+     "offset": 12,
+     "length": 2,
+     "name": "Temp Sense3 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 3 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 10,
+     "offset": 14,
+     "length": 2,
+     "name": "Temp Sense3 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 3 upper limit (>3 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 11,
+     "offset": 16,
+     "length": 2,
+     "name": "Temp Sense4 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 4 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 12,
+     "offset": 18,
+     "length": 2,
+     "name": "Temp Sense4 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 4 upper limit (>4 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 13,
+     "offset": 20,
+     "length": 2,
+     "name": "Temp Sense5 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 5 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 14,
+     "offset": 22,
+     "length": 2,
+     "name": "Temp Sense5 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 5 upper limit (>5 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 15,
+     "offset": 24,
+     "length": 2,
+     "name": "Temp Sense6 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 6 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 16,
+     "offset": 26,
+     "length": 2,
+     "name": "Temp Sense6 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 6 upper limit (>6 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 17,
+     "offset": 28,
+     "length": 2,
+     "name": "Temp Sense7 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 7 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 18,
+     "offset": 30,
+     "length": 2,
+     "name": "Temp Sense7 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 7 upper limit (>7 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 19,
+     "offset": 32,
+     "length": 2,
+     "name": "Temp Sense8 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 8 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 20,
+     "offset": 34,
+     "length": 2,
+     "name": "Temp Sense8 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 8 upper limit (>8 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 21,
+     "offset": 36,
+     "length": 2,
+     "name": "Temp Sense9 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 9 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 22,
+     "offset": 38,
+     "length": 2,
+     "name": "Temp Sense9 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 9 upper limit (>9 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 23,
+     "offset": 40,
+     "length": 2,
+     "name": "Temp Sense10 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 10 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 24,
+     "offset": 42,
+     "length": 2,
+     "name": "Temp Sense10 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 10 upper limit (>10 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 25,
+     "offset": 44,
+     "length": 2,
+     "name": "Temp Sense11 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 11 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 26,
+     "offset": 46,
+     "length": 2,
+     "name": "Temp Sense11 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 11 upper limit (>11 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 27,
+     "offset": 48,
+     "length": 2,
+     "name": "Temp Sense12 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 12 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 28,
+     "offset": 50,
+     "length": 2,
+     "name": "Temp Sense12 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 12 upper limit (>12 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 29,
+     "offset": 52,
+     "length": 2,
+     "name": "Temp Sense13 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 13 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 30,
+     "offset": 54,
+     "length": 2,
+     "name": "Temp Sense13 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 13 upper limit (>13 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 31,
+     "offset": 56,
+     "length": 2,
+     "name": "Temp Sense14 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 14 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 32,
+     "offset": 58,
+     "length": 2,
+     "name": "Temp Sense14 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 14 upper limit (>14 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 33,
+     "offset": 60,
+     "length": 2,
+     "name": "Temp Sense15 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 15 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 34,
+     "offset": 62,
+     "length": 2,
+     "name": "Temp Sense15 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 15 upper limit (>15 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 35,
+     "offset": 64,
+     "length": 2,
+     "name": "Temp Sense16 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 16 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 36,
+     "offset": 66,
+     "length": 2,
+     "name": "Temp Sense16 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 16 upper limit (>16 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 37,
+     "offset": 68,
+     "length": 2,
+     "name": "Temp Sense17 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 17 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 38,
+     "offset": 70,
+     "length": 2,
+     "name": "Temp Sense17 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 17 upper limit (>17 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 39,
+     "offset": 72,
+     "length": 2,
+     "name": "Temp Sense18 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 18 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 40,
+     "offset": 74,
+     "length": 2,
+     "name": "Temp Sense18 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 18 upper limit (>18 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 41,
+     "offset": 76,
+     "length": 2,
+     "name": "Temp Sense19 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 19 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 42,
+     "offset": 78,
+     "length": 2,
+     "name": "Temp Sense19 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 19 upper limit (>19 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 43,
+     "offset": 80,
+     "length": 2,
+     "name": "Temp Sense20 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 20 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 44,
+     "offset": 82,
+     "length": 2,
+     "name": "Temp Sense20 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 20 upper limit (>20 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 45,
+     "offset": 84,
+     "length": 2,
+     "name": "Temp Sense21 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 21 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 46,
+     "offset": 86,
+     "length": 2,
+     "name": "Temp Sense21 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 21 upper limit (>21 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 47,
+     "offset": 88,
+     "length": 2,
+     "name": "Temp Sense22 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 22 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 48,
+     "offset": 90,
+     "length": 2,
+     "name": "Temp Sense22 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 22 upper limit (>22 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 49,
+     "offset": 92,
+     "length": 2,
+     "name": "Temp Sense23 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 23 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 50,
+     "offset": 94,
+     "length": 2,
+     "name": "Temp Sense23 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 23 upper limit (>23 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 51,
+     "offset": 96,
+     "length": 2,
+     "name": "Temp Sense24 Lower Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 24 lower limit (5-10 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 52,
+     "offset": 98,
+     "length": 2,
+     "name": "Temp Sense24 Upper Limit Setting",
+     "data_type": "INT",
+     "description": "Temp sensor 24 upper limit (>24 lower, max 20 deg C; deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    }
+   ]
+  },
+  {
+   "param_id": "EP-022",
+   "name": "BMS_Get_Battery_Temp_Reading",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 5,
+   "wire_id": 5,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-022 / Sheet row EP-022",
+   "description": "Request battery pack temperature sensor readings",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-022",
+   "name": "BMS_Get_Battery_Temp_Reading_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 5,
+   "wire_id": 5,
+   "node": "BMS1",
+   "length_bytes": 48,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-022 / Sheet row EP-022",
+   "description": "Returns battery pack temperature readings for TempSense 1-24 (NL16U uses 1-12; 13-24 return NaN). int16, deg C \u00d7 100",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "Temp Sense 1 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 1 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 2,
+     "offset": 2,
+     "length": 2,
+     "name": "Temp Sense 2 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 2 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 3,
+     "offset": 4,
+     "length": 2,
+     "name": "Temp Sense 3 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 3 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 4,
+     "offset": 6,
+     "length": 2,
+     "name": "Temp Sense 4 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 4 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 5,
+     "offset": 8,
+     "length": 2,
+     "name": "Temp Sense 5 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 5 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 6,
+     "offset": 10,
+     "length": 2,
+     "name": "Temp Sense 6 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 6 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 7,
+     "offset": 12,
+     "length": 2,
+     "name": "Temp Sense 7 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 7 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 8,
+     "offset": 14,
+     "length": 2,
+     "name": "Temp Sense 8 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 8 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 9,
+     "offset": 16,
+     "length": 2,
+     "name": "Temp Sense 9 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 9 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 10,
+     "offset": 18,
+     "length": 2,
+     "name": "Temp Sense 10 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 10 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 11,
+     "offset": 20,
+     "length": 2,
+     "name": "Temp Sense 11 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 11 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 12,
+     "offset": 22,
+     "length": 2,
+     "name": "Temp Sense 12 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 12 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 13,
+     "offset": 24,
+     "length": 2,
+     "name": "Temp Sense 13 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 13 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 14,
+     "offset": 26,
+     "length": 2,
+     "name": "Temp Sense 14 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 14 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 15,
+     "offset": 28,
+     "length": 2,
+     "name": "Temp Sense 15 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 15 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 16,
+     "offset": 30,
+     "length": 2,
+     "name": "Temp Sense 16 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 16 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 17,
+     "offset": 32,
+     "length": 2,
+     "name": "Temp Sense 17 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 17 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 18,
+     "offset": 34,
+     "length": 2,
+     "name": "Temp Sense 18 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 18 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 19,
+     "offset": 36,
+     "length": 2,
+     "name": "Temp Sense 19 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 19 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 20,
+     "offset": 38,
+     "length": 2,
+     "name": "Temp Sense 20 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 20 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 21,
+     "offset": 40,
+     "length": 2,
+     "name": "Temp Sense 21 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 21 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 22,
+     "offset": 42,
+     "length": 2,
+     "name": "Temp Sense 22 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 22 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 23,
+     "offset": 44,
+     "length": 2,
+     "name": "Temp Sense 23 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 23 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 24,
+     "offset": 46,
+     "length": 2,
+     "name": "Temp Sense 24 Reading",
+     "data_type": "INT",
+     "description": "Temperature sensor 24 reading (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    }
+   ]
+  },
+  {
+   "param_id": "EP-023",
+   "name": "Set_Battery_Current_Limits",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 6,
+   "wire_id": 6,
+   "node": "BMS1",
+   "length_bytes": 16,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-023 / Sheet row EP-023",
+   "description": "Set battery charge/discharge current limits and discharge-switch current limits (NL16U: DS2 value is ignored)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Battery Charging Current limit",
+     "data_type": "FLOAT",
+     "description": "Battery charging current limit",
+     "unit": "A"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Battery Discharging Current Limit",
+     "data_type": "FLOAT",
+     "description": "Total battery discharging current limit",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Discharge Switch 1 Current Limit",
+     "data_type": "FLOAT",
+     "description": "Discharge switch 1 current limit",
+     "unit": "A"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "Discharge Switch 2 Current Limit",
+     "data_type": "FLOAT",
+     "description": "Discharge switch 2 current limit (ignored on NL16U)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-023",
+   "name": "Set_Battery_Current_Limits_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 6,
+   "wire_id": 6,
+   "node": "BMS1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-023 / Sheet row EP-023",
+   "description": "Acknowledges battery current limit SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-024",
+   "name": "Get_Battery_Current_Limits",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 7,
+   "wire_id": 7,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-024 / Sheet row EP-024",
+   "description": "Request configured battery current limits",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-024",
+   "name": "Get_Battery_Current_Limits_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 7,
+   "wire_id": 7,
+   "node": "BMS1",
+   "length_bytes": 16,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-024 / Sheet row EP-024",
+   "description": "Returns configured battery charge, discharge, switch 1 & 2 current limits",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Battery Charging Current limit",
+     "data_type": "FLOAT",
+     "description": "Battery charging current limit",
+     "unit": "A"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Battery Discharging Current Limit",
+     "data_type": "FLOAT",
+     "description": "Total battery discharging current limit",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Discharge Switch 1 Current Limit",
+     "data_type": "FLOAT",
+     "description": "Discharge switch 1 current limit",
+     "unit": "A"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "Discharge Switch 2 Current Limit",
+     "data_type": "FLOAT",
+     "description": "Discharge switch 2 current limit (NaN on NL16U)",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-025",
+   "name": "Set_RTC_Time",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 8,
+   "wire_id": 8,
+   "node": "BMS1",
+   "length_bytes": 7,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-025 / Sheet row EP-025",
+   "description": "Set BMS real-time clock with full timestamp",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Hour",
+     "data_type": "UINT",
+     "description": "0-23 hours"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "Minutes",
+     "data_type": "UINT",
+     "description": "0-59 minutes"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "Seconds",
+     "data_type": "UINT",
+     "description": "0-59 seconds"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "Day",
+     "data_type": "UINT",
+     "description": "Day 1-31"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 1,
+     "name": "Month",
+     "data_type": "UINT",
+     "description": "Month 1-12"
+    },
+    {
+     "seq": 6,
+     "offset": 5,
+     "length": 1,
+     "name": "Year",
+     "data_type": "UINT",
+     "description": "Year 0-99 (offset from 2000)"
+    },
+    {
+     "seq": 7,
+     "offset": 6,
+     "length": 1,
+     "name": "Weekday",
+     "data_type": "ENUM",
+     "description": "0=Monday ... 6=Sunday",
+     "enum_type": "Weekday",
+     "enum": "Weekday"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-025",
+   "name": "Set_RTC_Time_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 8,
+   "wire_id": 8,
+   "node": "BMS1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-025 / Sheet row EP-025",
+   "description": "Acknowledges RTC SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-026",
+   "name": "Get_RTC_Time",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 9,
+   "wire_id": 9,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-026 / Sheet row EP-026",
+   "description": "Request current RTC value",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-026",
+   "name": "Get_RTC_Time_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 9,
+   "wire_id": 9,
+   "node": "BMS1",
+   "length_bytes": 7,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-026 / Sheet row EP-026",
+   "description": "Returns all RTC fields",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Hour",
+     "data_type": "UINT",
+     "description": "0-23 hours"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "Minutes",
+     "data_type": "UINT",
+     "description": "0-59 minutes"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "Seconds",
+     "data_type": "UINT",
+     "description": "0-59 seconds"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "Day",
+     "data_type": "UINT",
+     "description": "Day 1-31"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 1,
+     "name": "Month",
+     "data_type": "UINT",
+     "description": "Month 1-12"
+    },
+    {
+     "seq": 6,
+     "offset": 5,
+     "length": 1,
+     "name": "Year",
+     "data_type": "UINT",
+     "description": "Year 0-99 (offset from 2000)"
+    },
+    {
+     "seq": 7,
+     "offset": 6,
+     "length": 1,
+     "name": "Weekday",
+     "data_type": "ENUM",
+     "description": "0=Monday ... 6=Sunday",
+     "enum_type": "Weekday",
+     "enum": "Weekday"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-027",
+   "name": "BMS_Flash_Data_Save_Reset",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 10,
+   "wire_id": 10,
+   "node": "BMS1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-027 / Sheet row EP-027",
+   "description": "Save BMS volatile config to flash, or reset flash data",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Save/Reset",
+     "data_type": "ENUM",
+     "description": "0=Reset, 1=Save",
+     "enum_type": "SaveOrReset",
+     "enum": "SaveReset"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-027",
+   "name": "BMS_Flash_Data_Save_Reset_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 10,
+   "wire_id": 10,
+   "node": "BMS1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-027 / Sheet row EP-027",
+   "description": "Acknowledges BMS flash save/reset",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-028",
+   "name": "BMS_Get_Flash_Data",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 11,
+   "wire_id": 11,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-028 / Sheet row EP-028",
+   "description": "Request flash-stored RTC backup",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-028",
+   "name": "BMS_Get_Flash_Data_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 11,
+   "wire_id": 11,
+   "node": "BMS1",
+   "length_bytes": 7,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-028 / Sheet row EP-028",
+   "description": "Returns flash-stored RTC backup",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "RTC_Hours",
+     "data_type": "UINT",
+     "description": "RTC hours 0-23"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "RTC_Minutes",
+     "data_type": "UINT",
+     "description": "RTC minutes 0-59"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "RTC_Seconds",
+     "data_type": "UINT",
+     "description": "RTC seconds 0-59"
+    },
+    {
+     "seq": 4,
+     "offset": 3,
+     "length": 1,
+     "name": "RTC_Day",
+     "data_type": "UINT",
+     "description": "RTC day 1-31"
+    },
+    {
+     "seq": 5,
+     "offset": 4,
+     "length": 1,
+     "name": "RTC_Month",
+     "data_type": "UINT",
+     "description": "RTC month 1-12"
+    },
+    {
+     "seq": 6,
+     "offset": 5,
+     "length": 1,
+     "name": "RTC_Year",
+     "data_type": "UINT",
+     "description": "RTC year 0-99"
+    },
+    {
+     "seq": 7,
+     "offset": 6,
+     "length": 1,
+     "name": "RTC_Week",
+     "data_type": "ENUM",
+     "description": "RTC weekday",
+     "enum_type": "Weekday",
+     "enum": "Weekday"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-029",
+   "name": "BMS_Set_Orbital_Time_Period",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 12,
+   "wire_id": 12,
+   "node": "BMS1",
+   "length_bytes": 5,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-029 / Sheet row EP-029",
+   "description": "Set orbital time period (sec) and number of orbits for BMS energy averaging (total window max 49 days)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Orbital Time Period in sec",
+     "data_type": "UINT",
+     "description": "Orbital period (seconds)",
+     "unit": "s"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 1,
+     "name": "Number of Orbits",
+     "data_type": "UINT",
+     "description": "Number of orbits in averaging window"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-029",
+   "name": "BMS_Set_Orbital_Time_Period_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 12,
+   "wire_id": 12,
+   "node": "BMS1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-029 / Sheet row EP-029",
+   "description": "Acknowledges BMS orbital time period SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-030",
+   "name": "BMS_Get_Orbital_Time_Period",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 13,
+   "wire_id": 13,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-030 / Sheet row EP-030",
+   "description": "Request configured BMS orbital time period",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-030",
+   "name": "BMS_Get_Orbital_Time_Period_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 13,
+   "wire_id": 13,
+   "node": "BMS1",
+   "length_bytes": 5,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-030 / Sheet row EP-030",
+   "description": "Returns configured BMS orbital time period and number of orbits",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Orbital Time Period in sec",
+     "data_type": "UINT",
+     "description": "Orbital period (seconds)",
+     "unit": "s"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 1,
+     "name": "Number of Orbits",
+     "data_type": "UINT",
+     "description": "Number of orbits in averaging window"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-031",
+   "name": "BMS_Get_Energy_Data",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 14,
+   "wire_id": 14,
+   "node": "BMS1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-031 / Sheet row EP-031",
+   "description": "Request BMS energy data for battery and discharge switches",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-031",
+   "name": "BMS_Get_Energy_Data_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 14,
+   "wire_id": 14,
+   "node": "BMS1",
+   "length_bytes": 48,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-031 / Sheet row EP-031",
+   "description": "Returns instantaneous power, avg/peak power (previous orbit), energy (previous orbit) for battery, DS1, DS2 (NL16U: DS2 returns NaN)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - Batt",
+     "data_type": "FLOAT",
+     "description": "Battery instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - Batt",
+     "data_type": "FLOAT",
+     "description": "Battery avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - Batt",
+     "data_type": "FLOAT",
+     "description": "Battery peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - Batt",
+     "data_type": "FLOAT",
+     "description": "Battery energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - Discharging Switch1",
+     "data_type": "FLOAT",
+     "description": "DS1 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - Discharging Switch1",
+     "data_type": "FLOAT",
+     "description": "DS1 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - Discharging Switch1",
+     "data_type": "FLOAT",
+     "description": "DS1 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - Discharging Switch1",
+     "data_type": "FLOAT",
+     "description": "DS1 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - Discharging Switch2",
+     "data_type": "FLOAT",
+     "description": "DS2 instantaneous power (NaN on NL16U)",
+     "unit": "W"
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - Discharging Switch2",
+     "data_type": "FLOAT",
+     "description": "DS2 avg power last orbit (NaN on NL16U)",
+     "unit": "W"
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - Discharging Switch2",
+     "data_type": "FLOAT",
+     "description": "DS2 peak power last orbit (NaN on NL16U)",
+     "unit": "W"
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - Discharging Switch2",
+     "data_type": "FLOAT",
+     "description": "DS2 energy last orbit (NaN on NL16U)",
+     "unit": "Wh"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-032",
+   "name": "MPPT_Set_MPPT_State",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 2,
+   "wire_id": 2,
+   "node": "MPPT1",
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-032 / Sheet row EP-032",
+   "description": "Enable/disable MPPT solar converter channels MPPT1-MPPT10 (NL16U uses MPPT1-MPPT7)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "MPPT1 to MPPT8 On/Off (MPPT1 - LSB)",
+     "data_type": "UINT",
+     "description": "Bit 0=MPPT1 ... Bit 7=MPPT8. 1=On, 0=Off"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "MPPT9 to MPPT10 On/Off (MPPT9 - LSB)",
+     "data_type": "UINT",
+     "description": "Bit 0=MPPT9, Bit 1=MPPT10. 1=On, 0=Off"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-032",
+   "name": "MPPT_Set_MPPT_State_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 2,
+   "wire_id": 2,
+   "node": "MPPT1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-032 / Sheet row EP-032",
+   "description": "Acknowledges MPPT state SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-033",
+   "name": "MPPT_Get_MPPT_State",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 3,
+   "wire_id": 3,
+   "node": "MPPT1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-033 / Sheet row EP-033",
+   "description": "Request current on/off state of MPPT channels",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-033",
+   "name": "MPPT_Get_MPPT_State_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 3,
+   "wire_id": 3,
+   "node": "MPPT1",
+   "length_bytes": 2,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-033 / Sheet row EP-033",
+   "description": "Returns current on/off state of MPPT1-MPPT10",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "MPPT1 to MPPT8 On/Off (MPPT1 - LSB)",
+     "data_type": "UINT",
+     "description": "Bit 0=MPPT1 ... Bit 7=MPPT8. 1=On, 0=Off"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "MPPT9 to MPPT10 On/Off (MPPT9 - LSB)",
+     "data_type": "UINT",
+     "description": "Bit 0=MPPT9, Bit 1=MPPT10. 1=On, 0=Off"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-034",
+   "name": "Get_MPPT_Voltage_Current_Readings",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 4,
+   "wire_id": 4,
+   "node": "MPPT1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-034 / Sheet row EP-034",
+   "description": "Request solar panel V/I for all MPPT channels",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-034",
+   "name": "Get_MPPT_Voltage_Current_Readings_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 4,
+   "wire_id": 4,
+   "node": "MPPT1",
+   "length_bytes": 80,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-034 / Sheet row EP-034",
+   "description": "Returns solar panel V and I for MPPT1-MPPT10 (NL16U: MPPT8-10 return NaN)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "MPPT1 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT1 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "MPPT1 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT1 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "MPPT2 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT2 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "MPPT2 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT2 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "MPPT3 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT3 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "MPPT3 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT3 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "MPPT4 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT4 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "MPPT4 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT4 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "MPPT5 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT5 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "MPPT5 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT5 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "MPPT6 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT6 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "MPPT6 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT6 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 13,
+     "offset": 48,
+     "length": 4,
+     "name": "MPPT7 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT7 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 14,
+     "offset": 52,
+     "length": 4,
+     "name": "MPPT7 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT7 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 15,
+     "offset": 56,
+     "length": 4,
+     "name": "MPPT8 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT8 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 16,
+     "offset": 60,
+     "length": 4,
+     "name": "MPPT8 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT8 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 17,
+     "offset": 64,
+     "length": 4,
+     "name": "MPPT9 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT9 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 18,
+     "offset": 68,
+     "length": 4,
+     "name": "MPPT9 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT9 solar panel current",
+     "unit": "A"
+    },
+    {
+     "seq": 19,
+     "offset": 72,
+     "length": 4,
+     "name": "MPPT10 Voltage Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT10 solar panel voltage",
+     "unit": "V"
+    },
+    {
+     "seq": 20,
+     "offset": 76,
+     "length": 4,
+     "name": "MPPT10 Current Reading",
+     "data_type": "FLOAT",
+     "description": "MPPT10 solar panel current",
+     "unit": "A"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-035",
+   "name": "Get_PV_Temp_Readings",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 5,
+   "wire_id": 5,
+   "node": "MPPT1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-035 / Sheet row EP-035",
+   "description": "Request PV temperature readings from on-board sensors",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-035",
+   "name": "Get_PV_Temp_Readings_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 5,
+   "wire_id": 5,
+   "node": "MPPT1",
+   "length_bytes": 20,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-035 / Sheet row EP-035",
+   "description": "Returns PV temperature readings 1-10 (int16, deg C \u00d7 100). NL16U uses sensors 1-7; 8-10 return INT16_MIN",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 2,
+     "name": "Temperature Sensor 1",
+     "data_type": "INT",
+     "description": "PV temperature sensor 1 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 2,
+     "offset": 2,
+     "length": 2,
+     "name": "Temperature Sensor 2",
+     "data_type": "INT",
+     "description": "PV temperature sensor 2 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 3,
+     "offset": 4,
+     "length": 2,
+     "name": "Temperature Sensor 3",
+     "data_type": "INT",
+     "description": "PV temperature sensor 3 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 4,
+     "offset": 6,
+     "length": 2,
+     "name": "Temperature Sensor 4",
+     "data_type": "INT",
+     "description": "PV temperature sensor 4 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 5,
+     "offset": 8,
+     "length": 2,
+     "name": "Temperature Sensor 5",
+     "data_type": "INT",
+     "description": "PV temperature sensor 5 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 6,
+     "offset": 10,
+     "length": 2,
+     "name": "Temperature Sensor 6",
+     "data_type": "INT",
+     "description": "PV temperature sensor 6 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 7,
+     "offset": 12,
+     "length": 2,
+     "name": "Temperature Sensor 7",
+     "data_type": "INT",
+     "description": "PV temperature sensor 7 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 8,
+     "offset": 14,
+     "length": 2,
+     "name": "Temperature Sensor 8",
+     "data_type": "INT",
+     "description": "PV temperature sensor 8 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 9,
+     "offset": 16,
+     "length": 2,
+     "name": "Temperature Sensor 9",
+     "data_type": "INT",
+     "description": "PV temperature sensor 9 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    },
+    {
+     "seq": 10,
+     "offset": 18,
+     "length": 2,
+     "name": "Temperature Sensor 10",
+     "data_type": "INT",
+     "description": "PV temperature sensor 10 (deg C \u00d7 100)",
+     "unit": "\u00b0C",
+     "scale": 0.01
+    }
+   ]
+  },
+  {
+   "param_id": "EP-036",
+   "name": "MPPT_Set_Orbital_Time_Period",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 6,
+   "wire_id": 6,
+   "node": "MPPT1",
+   "length_bytes": 5,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-036 / Sheet row EP-036",
+   "description": "Set MPPT orbital time period (sec) and number of orbits for energy averaging",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Orbital Time Period in sec",
+     "data_type": "UINT",
+     "description": "Orbital period (seconds)",
+     "unit": "s"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 1,
+     "name": "Number of Orbits",
+     "data_type": "UINT",
+     "description": "Number of orbits in averaging window"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-036",
+   "name": "MPPT_Set_Orbital_Time_Period_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 6,
+   "wire_id": 6,
+   "node": "MPPT1",
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-036 / Sheet row EP-036",
+   "description": "Acknowledges MPPT orbital time period SET",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Failure",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-037",
+   "name": "MPPT_Get_Orbital_Time_Period",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 7,
+   "wire_id": 7,
+   "node": "MPPT1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-037 / Sheet row EP-037",
+   "description": "Request configured MPPT orbital time period",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-037",
+   "name": "MPPT_Get_Orbital_Time_Period_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 7,
+   "wire_id": 7,
+   "node": "MPPT1",
+   "length_bytes": 5,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-037 / Sheet row EP-037",
+   "description": "Returns configured MPPT orbital time period and number of orbits",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Orbital Time Period in sec",
+     "data_type": "UINT",
+     "description": "Orbital period (seconds)",
+     "unit": "s"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 1,
+     "name": "Number of Orbits",
+     "data_type": "UINT",
+     "description": "Number of orbits in averaging window"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-038",
+   "name": "MPPT_Get_Energy_Data",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 8,
+   "wire_id": 8,
+   "node": "MPPT1",
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-038 / Sheet row EP-038",
+   "description": "Request MPPT energy data for all channels",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-038",
+   "name": "MPPT_Get_Energy_Data_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 8,
+   "wire_id": 8,
+   "node": "MPPT1",
+   "length_bytes": 160,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-038 / Sheet row EP-038",
+   "description": "Returns inst/avg/peak power and energy (previous orbit) for MPPT1-MPPT10 (NL16U: MPPT8-10 return NaN)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT1",
+     "data_type": "FLOAT",
+     "description": "MPPT1 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 2,
+     "offset": 4,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT1",
+     "data_type": "FLOAT",
+     "description": "MPPT1 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 3,
+     "offset": 8,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT1",
+     "data_type": "FLOAT",
+     "description": "MPPT1 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 4,
+     "offset": 12,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT1",
+     "data_type": "FLOAT",
+     "description": "MPPT1 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 5,
+     "offset": 16,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT2",
+     "data_type": "FLOAT",
+     "description": "MPPT2 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 6,
+     "offset": 20,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT2",
+     "data_type": "FLOAT",
+     "description": "MPPT2 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 7,
+     "offset": 24,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT2",
+     "data_type": "FLOAT",
+     "description": "MPPT2 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 8,
+     "offset": 28,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT2",
+     "data_type": "FLOAT",
+     "description": "MPPT2 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 9,
+     "offset": 32,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT3",
+     "data_type": "FLOAT",
+     "description": "MPPT3 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 10,
+     "offset": 36,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT3",
+     "data_type": "FLOAT",
+     "description": "MPPT3 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 11,
+     "offset": 40,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT3",
+     "data_type": "FLOAT",
+     "description": "MPPT3 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 12,
+     "offset": 44,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT3",
+     "data_type": "FLOAT",
+     "description": "MPPT3 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 13,
+     "offset": 48,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT4",
+     "data_type": "FLOAT",
+     "description": "MPPT4 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 14,
+     "offset": 52,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT4",
+     "data_type": "FLOAT",
+     "description": "MPPT4 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 15,
+     "offset": 56,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT4",
+     "data_type": "FLOAT",
+     "description": "MPPT4 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 16,
+     "offset": 60,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT4",
+     "data_type": "FLOAT",
+     "description": "MPPT4 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 17,
+     "offset": 64,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT5",
+     "data_type": "FLOAT",
+     "description": "MPPT5 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 18,
+     "offset": 68,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT5",
+     "data_type": "FLOAT",
+     "description": "MPPT5 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 19,
+     "offset": 72,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT5",
+     "data_type": "FLOAT",
+     "description": "MPPT5 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 20,
+     "offset": 76,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT5",
+     "data_type": "FLOAT",
+     "description": "MPPT5 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 21,
+     "offset": 80,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT6",
+     "data_type": "FLOAT",
+     "description": "MPPT6 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 22,
+     "offset": 84,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT6",
+     "data_type": "FLOAT",
+     "description": "MPPT6 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 23,
+     "offset": 88,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT6",
+     "data_type": "FLOAT",
+     "description": "MPPT6 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 24,
+     "offset": 92,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT6",
+     "data_type": "FLOAT",
+     "description": "MPPT6 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 25,
+     "offset": 96,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT7",
+     "data_type": "FLOAT",
+     "description": "MPPT7 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 26,
+     "offset": 100,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT7",
+     "data_type": "FLOAT",
+     "description": "MPPT7 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 27,
+     "offset": 104,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT7",
+     "data_type": "FLOAT",
+     "description": "MPPT7 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 28,
+     "offset": 108,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT7",
+     "data_type": "FLOAT",
+     "description": "MPPT7 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 29,
+     "offset": 112,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT8",
+     "data_type": "FLOAT",
+     "description": "MPPT8 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 30,
+     "offset": 116,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT8",
+     "data_type": "FLOAT",
+     "description": "MPPT8 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 31,
+     "offset": 120,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT8",
+     "data_type": "FLOAT",
+     "description": "MPPT8 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 32,
+     "offset": 124,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT8",
+     "data_type": "FLOAT",
+     "description": "MPPT8 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 33,
+     "offset": 128,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT9",
+     "data_type": "FLOAT",
+     "description": "MPPT9 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 34,
+     "offset": 132,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT9",
+     "data_type": "FLOAT",
+     "description": "MPPT9 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 35,
+     "offset": 136,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT9",
+     "data_type": "FLOAT",
+     "description": "MPPT9 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 36,
+     "offset": 140,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT9",
+     "data_type": "FLOAT",
+     "description": "MPPT9 energy last orbit",
+     "unit": "Wh"
+    },
+    {
+     "seq": 37,
+     "offset": 144,
+     "length": 4,
+     "name": "Power Instantanious (Watts) - MPPT10",
+     "data_type": "FLOAT",
+     "description": "MPPT10 instantaneous power",
+     "unit": "W"
+    },
+    {
+     "seq": 38,
+     "offset": 148,
+     "length": 4,
+     "name": "Power Average - Previous Orbit (Watts) - MPPT10",
+     "data_type": "FLOAT",
+     "description": "MPPT10 avg power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 39,
+     "offset": 152,
+     "length": 4,
+     "name": "Power Peak - Previous Orbit (Watts) - MPPT10",
+     "data_type": "FLOAT",
+     "description": "MPPT10 peak power last orbit",
+     "unit": "W"
+    },
+    {
+     "seq": 40,
+     "offset": 156,
+     "length": 4,
+     "name": "Energy - Previous Orbit (Watt hours) - MPPT10",
+     "data_type": "FLOAT",
+     "description": "MPPT10 energy last orbit",
+     "unit": "Wh"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-039",
+   "name": "Prepare_To_Enter_FW_Update_Mode",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 194,
+   "wire_id": 194,
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-039 / Sheet row EP-039",
+   "description": "Instruct EPS board to prepare for firmware update. BMS checks Vbatt >= 29V; PDU/OPCH halt OBC timeout watchdog",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-039",
+   "name": "Prepare_To_Enter_FW_Update_Mode_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 194,
+   "wire_id": 194,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-039 / Sheet row EP-039",
+   "description": "Board confirms readiness to enter FW update mode (BMS Fails if Vbatt < 29V)",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Fail",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-040",
+   "name": "Prepare_To_Exit_FW_Update_Mode",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 195,
+   "wire_id": 195,
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-040 / Sheet row EP-040",
+   "description": "Instruct EPS board to resume normal ops after firmware update is complete",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-040",
+   "name": "Prepare_To_Exit_FW_Update_Mode_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 195,
+   "wire_id": 195,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-040 / Sheet row EP-040",
+   "description": "Board confirms exit from FW update mode",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Fail",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  },
+  {
+   "param_id": "EP-041",
+   "name": "Execute_Bootloader",
+   "subsystem": "EPS",
+   "direction": "TC",
+   "msg_id": 196,
+   "wire_id": 196,
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-041 / Sheet row EP-041",
+   "description": "Command EPS board to jump to bootloader for firmware flashing",
+   "parameters": []
+  },
+  {
+   "param_id": "EP-041",
+   "name": "Execute_Bootloader_RSP",
+   "subsystem": "EPS",
+   "direction": "TM",
+   "msg_id": 196,
+   "wire_id": 196,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "EPS Comm Protocol \u00a7EP-041 / Sheet row EP-041",
+   "description": "Board confirms jump to bootloader",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Status",
+     "data_type": "ENUM",
+     "description": "1=Success, 0=Fail",
+     "enum_type": "SuccessOrFailure",
+     "enum": "SuccessFail"
+    }
+   ]
+  }
+ ]
+}

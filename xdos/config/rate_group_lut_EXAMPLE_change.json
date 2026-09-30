@@ -1,0 +1,12 @@
+{
+  "_comment": "EXAMPLE OBC-side rate-group LUT change file (NO command id — the OBC does not store ids to save memory). To change the polled set: copy config/rate_group_lut.json, edit the 'commands' array (reorder/remove rows or change resp_size), BUMP 'revision', then uplink it from the GS with the [u] menu. Rows are matched to the GS-side labels purely by 'order'. Each row must be self-contained: 'tc_hex' is the exact native TC bytes (regenerate with xdos_gen_rate_lut if you change WHICH command — only the ground can build TC bytes from the Database). Keep the matching config/rate_group_lut_gs.json (with ids + response names) on the ground for decoding; the shared 'signature' keeps the two in lockstep.",
+  "revision": 2,
+  "generated": "hand-edited example",
+  "signature": 0,
+  "tm_data_bytes": 1280,
+  "commands": [
+    { "order": 1, "subsystem": "EPS", "tc_hex": "0041636b444d673d3d01", "resp_size": 2 },
+    { "order": 2, "subsystem": "EPS", "tc_hex": "0041636b474b513d3d01", "resp_size": 64 },
+    { "order": 3, "subsystem": "GPS", "tc_hex": "aa44121c01000020200000...", "resp_size": 72 }
+  ]
+}

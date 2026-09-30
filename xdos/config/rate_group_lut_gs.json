@@ -1,0 +1,100 @@
+{
+  "_comment": "GS-side rate-group LUT (labels + response names for decode). Matches the OBC LUT by 'order'; same 'signature'. Keep on the ground; do NOT uplink.",
+  "commands": [
+    {
+      "id": "EP-003",
+      "order": 1,
+      "resp_size": 2,
+      "rsp_name": "Get_PDU_CH_State_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "EP-006",
+      "order": 2,
+      "resp_size": 64,
+      "rsp_name": "Get_PDU_CH_Current_Readings_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "EP-015",
+      "order": 3,
+      "resp_size": 6,
+      "rsp_name": "Get_PDU_Alert_Flags_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "GPS-42",
+      "order": 4,
+      "resp_size": 72,
+      "rsp_name": "BESTPOS",
+      "subsystem": "GPS"
+    },
+    {
+      "id": "XL-010",
+      "order": 5,
+      "resp_size": 120,
+      "rsp_name": "DEVICE_CONF_RSP",
+      "subsystem": "XLINK"
+    },
+    {
+      "id": "EP-016",
+      "order": 6,
+      "resp_size": 20,
+      "rsp_name": "Get_PDU_Voltage_Readings_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "EP-019",
+      "order": 7,
+      "resp_size": 16,
+      "rsp_name": "BMS_Get_Batt_V_and_I_Readings_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "EP-021",
+      "order": 8,
+      "resp_size": 100,
+      "rsp_name": "BMS_Get_Battery_Heater_Param_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "GPS-99",
+      "order": 9,
+      "resp_size": 44,
+      "rsp_name": "BESTVEL",
+      "subsystem": "GPS"
+    },
+    {
+      "id": "XL-008",
+      "order": 10,
+      "resp_size": 120,
+      "rsp_name": "HOUSE_KEEPING_RSP",
+      "subsystem": "XLINK"
+    },
+    {
+      "id": "EP-033",
+      "order": 11,
+      "resp_size": 2,
+      "rsp_name": "MPPT_Get_MPPT_State_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "EP-034",
+      "order": 12,
+      "resp_size": 80,
+      "rsp_name": "Get_MPPT_Voltage_Current_Readings_RSP",
+      "subsystem": "EPS"
+    },
+    {
+      "id": "GPS-963",
+      "order": 13,
+      "resp_size": 12,
+      "rsp_name": "HWMONITOR",
+      "subsystem": "GPS"
+    }
+  ],
+  "generated": "2026-07-08T07:58:50Z",
+  "revision": 1,
+  "signature": 41544,
+  "tm_data_bytes": 1280
+}

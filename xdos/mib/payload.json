@@ -1,0 +1,214 @@
+{
+ "subsystem": "Payload",
+ "protocol": "Payload Server 3-byte header (Type/CommandID/Length) carried as CCSDS TC_Data under APID 5",
+ "description": "Payload Server command set per 'Command and Data Format Specification'. Frame = [3-bit Message Type | 10-bit Command ID | 11-bit Length] + Data. The Command ID is also carried in the CCSDS TC_ID field. Telecommand and telemetry share one port.",
+ "source_documents": [
+  "Command and Data Format Specification (Sections 1-5)"
+ ],
+ "enums": [
+  {
+   "name": "PayloadId",
+   "doc_reference": "Spec §3.1 — Payload identifier value",
+   "values": [
+    { "value": 0, "name": "MSI",     "description": "Multispectral Imager payload" },
+    { "value": 1, "name": "SCANWAY", "description": "Scanway payload" },
+    { "value": 2, "name": "SAR",     "description": "Synthetic Aperture Radar payload" }
+   ]
+  },
+  {
+   "name": "MessageType",
+   "doc_reference": "Spec §2 — Message Types",
+   "values": [
+    { "value": 0, "name": "Telecommand",   "description": "Ground to payload command" },
+    { "value": 1, "name": "Telemetry",     "description": "Payload to ground response" },
+    { "value": 2, "name": "Heartbeat",     "description": "Liveness beacon" },
+    { "value": 3, "name": "Ephemeris",     "description": "Ephemeris request" },
+    { "value": 4, "name": "HealthMetrics", "description": "Health metrics" },
+    { "value": 5, "name": "Event",         "description": "Asynchronous event" },
+    { "value": 6, "name": "Reserved6",     "description": "Reserved" },
+    { "value": 7, "name": "Reserved7",     "description": "Reserved" }
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "param_id": "PL-545",
+   "name": "Container_Operation_ON",
+   "subsystem": "Payload",
+   "direction": "TC",
+   "msg_id": 545,
+   "wire_id": 545,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §3 — Container Operation, Command ID 545",
+   "description": "Enable (start) the payload container. Data carries the target Payload ID.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Payload ID",
+     "data_type": "ENUM",
+     "enum_type": "PayloadId",
+     "description": "Target payload: 0=MSI, 1=SCANWAY, 2=SAR"
+    }
+   ]
+  },
+  {
+   "param_id": "PL-546",
+   "name": "Container_Operation_OFF",
+   "subsystem": "Payload",
+   "direction": "TC",
+   "msg_id": 546,
+   "wire_id": 546,
+   "length_bytes": 1,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §3 — Container Operation, Command ID 546",
+   "description": "Disable (stop) the payload container. Data carries the target Payload ID.",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Payload ID",
+     "data_type": "ENUM",
+     "enum_type": "PayloadId",
+     "description": "Target payload: 0=MSI, 1=SCANWAY, 2=SAR"
+    }
+   ]
+  },
+  {
+   "param_id": "PL-600",
+   "name": "Custom_Payload_Sequence",
+   "subsystem": "Payload",
+   "direction": "TC",
+   "msg_id": 600,
+   "wire_id": 600,
+   "is_variable_length": true,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §3.1 — Custom Payload Sequence Parameters",
+   "description": "Run a named operation on a payload. Fixed 3-byte prefix followed by the operation name (max 16 chars) then the arguments (max 128 chars).",
+   "parameters": [
+    {
+     "seq": 1,
+     "offset": 0,
+     "length": 1,
+     "name": "Payload ID",
+     "data_type": "ENUM",
+     "enum_type": "PayloadId",
+     "description": "Target payload: 0=MSI, 1=SCANWAY, 2=SAR"
+    },
+    {
+     "seq": 2,
+     "offset": 1,
+     "length": 1,
+     "name": "Payload Operation Sequence Length",
+     "data_type": "UINT",
+     "description": "Length in bytes of the operation name that follows (max 16)"
+    },
+    {
+     "seq": 3,
+     "offset": 2,
+     "length": 1,
+     "name": "Payload Parameters Length",
+     "data_type": "UINT",
+     "description": "Length in bytes of the arguments that follow (max 128)"
+    }
+   ]
+  },
+  {
+   "param_id": "PL-601",
+   "name": "Capture_MSI",
+   "subsystem": "Payload",
+   "direction": "TC",
+   "msg_id": 601,
+   "wire_id": 601,
+   "is_variable_length": true,
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §3.2 — Capture, Command ID 601, target MSI",
+   "description": "Trigger a capture on MSI. Target is implied by the Command ID. No data required; capture parameters may be appended if applicable.",
+   "parameters": []
+  },
+  {
+   "param_id": "PL-602",
+   "name": "Capture_SCANWAY",
+   "subsystem": "Payload",
+   "direction": "TC",
+   "msg_id": 602,
+   "wire_id": 602,
+   "is_variable_length": true,
+   "length_bytes": 0,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §3.2 — Capture, Command ID 602, target SCANWAY",
+   "description": "Trigger a capture on SCANWAY. Target is implied by the Command ID. No data required; capture parameters may be appended if applicable.",
+   "parameters": []
+  },
+
+  {
+   "param_id": "PL-545",
+   "name": "Container_Operation_ON_RSP",
+   "subsystem": "Payload",
+   "direction": "TM",
+   "msg_id": 545,
+   "wire_id": 545,
+   "is_variable_length": true,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §2 — Telemetry (Type 1), Command ID 545",
+   "description": "Telemetry response to Container Operation ON. Data field layout is not defined in the specification; bytes are surfaced raw.",
+   "parameters": []
+  },
+  {
+   "param_id": "PL-546",
+   "name": "Container_Operation_OFF_RSP",
+   "subsystem": "Payload",
+   "direction": "TM",
+   "msg_id": 546,
+   "wire_id": 546,
+   "is_variable_length": true,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §2 — Telemetry (Type 1), Command ID 546",
+   "description": "Telemetry response to Container Operation OFF. Data field layout is not defined in the specification; bytes are surfaced raw.",
+   "parameters": []
+  },
+  {
+   "param_id": "PL-600",
+   "name": "Custom_Payload_Sequence_RSP",
+   "subsystem": "Payload",
+   "direction": "TM",
+   "msg_id": 600,
+   "wire_id": 600,
+   "is_variable_length": true,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §2 — Telemetry (Type 1), Command ID 600",
+   "description": "Telemetry response to a Custom Payload Sequence. Data field layout is not defined in the specification; bytes are surfaced raw.",
+   "parameters": []
+  },
+  {
+   "param_id": "PL-601",
+   "name": "Capture_MSI_RSP",
+   "subsystem": "Payload",
+   "direction": "TM",
+   "msg_id": 601,
+   "wire_id": 601,
+   "is_variable_length": true,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §2 — Telemetry (Type 1), Command ID 601",
+   "description": "Telemetry response to an MSI capture. Data field layout is not defined in the specification; bytes are surfaced raw.",
+   "parameters": []
+  },
+  {
+   "param_id": "PL-602",
+   "name": "Capture_SCANWAY_RSP",
+   "subsystem": "Payload",
+   "direction": "TM",
+   "msg_id": 602,
+   "wire_id": 602,
+   "is_variable_length": true,
+   "offset_unit": "bytes",
+   "doc_reference": "Spec §2 — Telemetry (Type 1), Command ID 602",
+   "description": "Telemetry response to a SCANWAY capture. Data field layout is not defined in the specification; bytes are surfaced raw.",
+   "parameters": []
+  }
+ ]
+}
