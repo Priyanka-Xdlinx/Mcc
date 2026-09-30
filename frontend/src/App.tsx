@@ -7,6 +7,7 @@ import { ChartsDashboard } from './ox/ChartsDashboard'
 import { DecodeView } from './components/DecodeView'
 import { Docs } from './components/Docs'
 import { XdlinxPage } from './components/XdlinxPage'
+import { DisplayDesk } from './components/display/DisplayDesk'
 
 // three.js is large, so the 3D page loads only when it is opened.
 const OrbitPage = lazy(() => import('./components/orbit/OrbitPage'))
@@ -101,6 +102,9 @@ export default function App() {
         <ChartsDashboard rows={rows} lutCrc={status?.feed.lutCrc16 ?? (backendUp === false && rows.length ? 0 : null)} pick={chartIds} />
       )}
       {tab === 'decode' && <DecodeView rows={rows} live={live} />}
+      {tab === 'display' && (
+        <DisplayDesk rows={rows} status={status} live={live} lastMsgAt={lastMsgAt} lastFrame={lastFrame} />
+      )}
       {tab === 'docs' && <Docs theme={theme.choice} />}
       {tab === 'xdlinx' && <XdlinxPage />}
       {tab === 'track' && (

@@ -171,3 +171,26 @@ CREATE TABLE telemetry_history (
 CREATE INDEX ix_hist_param ON telemetry_history(parameter_id, id DESC);
 CREATE INDEX ix_hist_frame ON telemetry_history(master_frame, subframe);
 CREATE INDEX ix_hist_session ON telemetry_history(session, parameter_id, id);
+
+-- Display pages. Operator-owned, not derived from the MIB: the backend also
+-- creates these at startup (store/DisplayRepo) so an existing mcc.db gains them
+-- without a rebuild that would throw away telemetry history.
+CREATE TABLE IF NOT EXISTS app_user (
+  id         INTEGER PRIMARY KEY,
+  name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS display_page (
+  id         INTEGER PRIMARY KEY,
+  owner_id   INTEGER NOT NULL REFERENCES app_user(id),
+  name       TEXT NOT NULL,
+  params     TEXT NOT NULL,     -- JSON array, exactly 20 entries, each a parameter id (int) or null
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE (owner_id, name)
+);
+CREATE TABLE IF NOT EXISTS user_workspace (
+  user_id    INTEGER PRIMARY KEY REFERENCES app_user(id),
+  layout     TEXT NOT NULL,     -- JSON, opaque to the backend (validated only as JSON, <= 64 KB)
+  updated_at TEXT NOT NULL
+);

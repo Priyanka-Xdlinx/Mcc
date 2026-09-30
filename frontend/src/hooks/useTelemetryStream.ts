@@ -24,6 +24,8 @@ export interface LastFrame {
   masterFrame: number
   subframe: number
   spacecraftTime: string | null
+  /** When the backend received this subframe (ISO-8601 UTC), if it said. */
+  receivedAt: string | null
 }
 
 interface SocketMessage {
@@ -31,6 +33,7 @@ interface SocketMessage {
   masterFrame?: number
   subframe?: number
   spacecraftTime?: string
+  receivedAt?: string
   updates?: Update[]
   status?: Status['feed']
 }
@@ -166,6 +169,7 @@ export function useTelemetryStream() {
             master_frame: msg.masterFrame ?? prev.master_frame,
             subframe: msg.subframe ?? prev.subframe,
             spacecraft_time: msg.spacecraftTime ?? prev.spacecraft_time,
+            received_at: msg.receivedAt ?? prev.received_at,
           }
         }
         current.current = next
@@ -176,6 +180,7 @@ export function useTelemetryStream() {
             masterFrame: msg.masterFrame,
             subframe: msg.subframe,
             spacecraftTime: msg.spacecraftTime ?? null,
+            receivedAt: msg.receivedAt ?? null,
           })
         }
         if (moved) setMovers(Array.from(moving.current.values()))

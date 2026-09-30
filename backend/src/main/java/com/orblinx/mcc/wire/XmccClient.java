@@ -36,6 +36,7 @@ public final class XmccClient implements Runnable {
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private final AtomicLong received = new AtomicLong();
+    private final AtomicLong rejected = new AtomicLong();
     private volatile Thread thread;
     private volatile Socket socket;
 
@@ -62,6 +63,8 @@ public final class XmccClient implements Runnable {
 
     public boolean isConnected() { return connected.get(); }
     public long subframesReceived() { return received.get(); }
+    /** Headers thrown away as out of sync (bad magic or implausible length). */
+    public long headersRejected() { return rejected.get(); }
 
     @Override
     public void run() {
@@ -106,6 +109,7 @@ public final class XmccClient implements Runnable {
             try {
                 h = XmccHeader.parse(header);
             } catch (XmccHeader.OutOfSyncException oos) {
+                rejected.incrementAndGet();
                 log.warn("{} - resyncing on the next XMCC magic", oos.getMessage());
                 resync(in, header);
                 headerReady = true;

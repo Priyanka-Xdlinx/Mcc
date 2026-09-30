@@ -38,6 +38,14 @@ export interface FeedStatus {
   incompleteBlocks: number
   subframeGaps: number
   historyRows: number
+  /** ISO-8601 UTC instant the newest subframe was received (null before the first). */
+  lastReceivedAt?: string | null
+  /** Subframes whose header parsed OK since backend start. */
+  framesValid?: number
+  /** Headers rejected (bad magic / implausible length) since backend start. */
+  framesRejected?: number
+  /** Subframes received in the current session. */
+  sessionSubframes?: number
 }
 
 export interface SimStatus {

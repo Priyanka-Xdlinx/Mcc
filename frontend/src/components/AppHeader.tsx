@@ -5,7 +5,7 @@ import type { ThemeChoice } from '../theme'
 import { SimControl } from './SimControl'
 import { Icon, type IconName } from './Icon'
 
-export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'track' | 'decode' | 'docs' | 'xdlinx'
+export type Tab = 'dashboard' | 'telemetry' | 'charts' | 'track' | 'decode' | 'display' | 'docs' | 'xdlinx'
 
 export const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: 'dashboard', label: 'Dashboard', hint: 'Mission overview' },
@@ -13,6 +13,7 @@ export const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: 'charts', label: 'Charts', hint: 'Values over time' },
   { id: 'track', label: 'Ground track', hint: 'Spacecraft position on a globe and a map, from GPS telemetry' },
   { id: 'decode', label: 'Decode trace', hint: 'From payload bytes to engineering value' },
+  { id: 'display', label: 'Display', hint: 'Display pages: floating windows of 20 parameters' },
   { id: 'docs', label: 'Docs', hint: 'How it is built, database schema, REST API (Swagger), live stream' },
   { id: 'xdlinx', label: 'XDLINX', hint: 'XDSAT satellite platforms and links' },
 ]

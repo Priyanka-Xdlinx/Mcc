@@ -63,6 +63,9 @@ public class IngestService {
     private final AtomicLong incompleteBlocks = new AtomicLong();
     private final AtomicLong subframeGaps = new AtomicLong();
     private volatile int lastSubframe = -1;
+    /** Backend clock when the newest subframe arrived; null until the first. */
+    private volatile java.time.Instant lastReceivedAt;
+    private final AtomicLong sessionSubframes = new AtomicLong();
     /**
      * Identifies one run of the spacecraft. The master-frame counter restarts at
      * 0 every time the OBC boots, so stored history has to be separable by run or
@@ -133,6 +136,8 @@ public class IngestService {
     // ── per-subframe pipeline ───────────────────────────────────────────────
 
     void onSubframe(Subframe sf) {
+        java.time.Instant receivedAt = java.time.Instant.now();
+        lastReceivedAt = receivedAt;
         frames.add(sf);
         if (warmupMasterFrame < 0) {
             warmupMasterFrame = sf.masterFrame();
@@ -141,6 +146,7 @@ public class IngestService {
         if (currentMasterFrame >= 0 && sf.masterFrame() < currentMasterFrame) {
             // The counter went backwards: the OBC rebooted, so this is a new run.
             session = newSession();
+            sessionSubframes.set(0);
             warmupMasterFrame = sf.masterFrame();
             log.info("master frame went {} -> {}: new run, session {}",
                      currentMasterFrame, sf.masterFrame(), session);
@@ -164,17 +170,19 @@ public class IngestService {
         }
         lastSubframe = sf.subframe();
         lastSpacecraftTime = sf.spacecraftTime();
+        sessionSubframes.incrementAndGet();
 
         boolean warmup = sf.masterFrame() == warmupMasterFrame;
 
         for (Tier tier : Tier.values()) {
             byte[] block = assembler.feed(tier, sf);
             if (block == null) continue;
-            decodeTier(tier, block, sf, warmup ? Quality.WARMUP : Quality.OK);
+            decodeTier(tier, block, sf, receivedAt, warmup ? Quality.WARMUP : Quality.OK);
         }
     }
 
-    private void decodeTier(Tier tier, byte[] block, Subframe sf, Quality blockQuality) {
+    private void decodeTier(Tier tier, byte[] block, Subframe sf, java.time.Instant receivedAt,
+                            Quality blockQuality) {
         List<Map<String, Object>> updates = new ArrayList<>();
         for (EntryDef e : schema.entriesOf(tier)) {
             MessageDef msg = schema.message(e.messageId());
@@ -201,6 +209,7 @@ public class IngestService {
                     "masterFrame", sf.masterFrame(),
                     "subframe", sf.subframe(),
                     "spacecraftTime", sf.spacecraftTime(),
+                    "receivedAt", receivedAt.toString(),
                     "updates", updates));
         }
     }
@@ -264,6 +273,11 @@ public class IngestService {
         m.put("historyRows", store.historyRows());
         m.put("bufferedFrames", frames.size());
         m.put("session", session);
+        java.time.Instant rx = lastReceivedAt;
+        m.put("lastReceivedAt", rx == null ? null : rx.toString());
+        m.put("framesValid", client == null ? 0 : client.subframesReceived());
+        m.put("framesRejected", client == null ? 0 : client.headersRejected());
+        m.put("sessionSubframes", sessionSubframes.get());
         return m;
     }
 }

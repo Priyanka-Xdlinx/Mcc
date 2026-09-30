@@ -29,6 +29,7 @@ public class OpenApiConfig {
                         new Tag().name("Telemetry").description("Latest values, history and feed status"),
                         new Tag().name("Decode").description("Buffered subframes and the byte-level decode trace"),
                         new Tag().name("Feed control").description("Start and stop the XDLINX telemetry stack"),
+                        new Tag().name("Display pages").description("Operators, their saved display pages and window layouts"),
                         new Tag().name("Documentation").description("The live database schema")));
     }
 }
