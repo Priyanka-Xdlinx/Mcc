@@ -21,39 +21,34 @@ Everything the app needs is in this repository. Install these tools once:
 | Node.js | 22 | web UI build |
 | Python 3.10+ | standard library | `mcc.py` launcher, builds `mcc.db`, runs the recorded telemetry feed |
 
-Optional, only for the live test stack on macOS or Linux: a C++ toolchain with
-CMake (Xcode Command Line Tools on macOS, GCC + CMake on Linux). On Windows the
-recorded feed is always used.
+Only for the live test stack (start.sh, macOS / Linux): a C++ toolchain with
+CMake (Xcode Command Line Tools on macOS, GCC + CMake on Linux).
 
 ## First run after cloning
 
-**Windows, macOS or Linux** (Python 3.10 or later):
+There are two ways to run it; they differ only in where the telemetry comes from.
+
+**Developers (Windows, macOS or Linux) - recorded feed, no C++ build.**
+`mcc.py` needs Python 3.10+. Its feed is always the recording: real XMCC from
+the test stack (`testdata/feed_capture.xmcc`) served by `feed/xmcc_replay.py`
+on port 9100, decoded exactly like the live feed.
 
 ```bash
-python mcc.py start --build --sim     # build everything, start the app and the telemetry feed
-python mcc.py status                  # what is running
-python mcc.py stop                    # stop the feed and the app
+python mcc.py start --build --sim     # first time: build everything, start the app and the feed
+python mcc.py start --sim             # afterwards
+python mcc.py status
+python mcc.py stop
 ```
 
-`start.sh` / `stop.sh` do the same on macOS and Linux:
-
-```bash
-./start.sh --build --sim
-```
-
-Then open <http://localhost:8080/>. With no C++ build, **Start feed** (and
-`--sim`) serves real recorded telemetry from `testdata/feed_capture.xmcc`
-through `feed/xmcc_replay.py` on port 9100 — Python standard library only,
-decoded exactly like the live feed.
-
-For the live XDLINX test stack instead, build it once; Start feed then uses it:
+**Live XDLINX test stack (macOS / Linux) - `start.sh` / `stop.sh`.**
+Build the C++ stack once, then Start feed runs it:
 
 ```bash
 xdos/scripts/build_mac.sh                                    # macOS
 cmake -S xdos -B xdos/build && cmake --build xdos/build -j   # Linux
+./start.sh --build --sim
 ```
 
-Force the recording even when the stack is built: `MCC_FEED=replay ./start.sh --sim`.
 `mcc.db`, `frontend/dist` and the jar are generated, never committed.
 
 ## Run it

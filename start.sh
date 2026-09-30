@@ -137,11 +137,14 @@ if [ "$WITH_SIM" -eq 1 ]; then
     if [ -z "${XDOS_BUILD:-}" ]; then
         if [ "$(uname -s)" = Darwin ]; then XDOS_BUILD=build-mac; else XDOS_BUILD=build; fi
     fi
-    if [ ! -x "$XDOS/$XDOS_BUILD/xdos_gs" ] || [ "${MCC_FEED:-}" = replay ]; then
-        say "no native test-stack build - using the recorded feed (feed/xmcc_replay.py, Python only)"
-        say "  (for the live stack, build it once: xdos/scripts/build_mac.sh on macOS, CMake on Linux)"
+    if [ ! -x "$XDOS/$XDOS_BUILD/xdos_gs" ]; then
+        if [ "$XDOS_BUILD" = build-mac ]; then
+            die "no native XDOS build - run:  xdos/scripts/build_mac.sh"
+        else
+            die "no native XDOS build - run:  cmake -S xdos -B xdos/$XDOS_BUILD && cmake --build xdos/$XDOS_BUILD -j"
+        fi
     fi
-    say "starting the telemetry feed"
+    say "starting the XDOS simulator"
     SIMERR=$(curl -fsS -X POST "http://localhost:$PORT/api/sim/start" 2>/dev/null \
         | "$PY" -c 'import sys,json; print(json.load(sys.stdin).get("error") or "")' 2>/dev/null) \
         || die "simulator failed to start - check the UI for the reason"

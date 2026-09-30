@@ -13,8 +13,9 @@ every OS (standard library only).
     python mcc.py stop --sim      stop the feed only
     python mcc.py status          show what is running
 
-The telemetry feed is the recorded XMCC feed (feed/xmcc_replay.py) unless the
-XDLINX test stack has been built natively (macOS / Linux only).
+The telemetry feed started by mcc.py is always the recorded XMCC feed
+(feed/xmcc_replay.py), so no C++ build is needed. start.sh / stop.sh are for
+the live XDLINX test stack (macOS / Linux, built with xdos/scripts/build_mac.sh).
 """
 import argparse
 import json
@@ -126,7 +127,9 @@ def start(args: argparse.Namespace) -> None:
         PIDFILE.unlink(missing_ok=True)
         build(args.build)
 
-        env = dict(os.environ, MCC_DB=str(DB), MCC_XDOS_HOME=str(XDOS))
+        # mcc.py is the launcher for developers without the C++ test stack: its feed is the
+        # recording (feed/xmcc_replay.py). start.sh keeps using the native stack.
+        env = dict(os.environ, MCC_DB=str(DB), MCC_XDOS_HOME=str(XDOS), MCC_FEED="replay")
         cmd = [java_exe(), "-jar", str(JAR)]
         if args.fg:
             say("starting the backend in this window - Ctrl-C to stop")

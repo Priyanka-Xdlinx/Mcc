@@ -50,19 +50,15 @@ public class SimulatorService {
     }
 
     /**
-     * Starts a telemetry feed on 127.0.0.1:9100: the native XDLINX test stack when it has been
-     * built, otherwise the recorded feed (feed/xmcc_replay.py, Python standard library only), so
-     * a fresh clone runs without a C++ build. MCC_FEED=replay forces the recorded feed.
+     * Starts a telemetry feed on 127.0.0.1:9100. By default this is the native XDLINX test stack
+     * (C++, started by xdos/scripts/run_stack.sh). The recorded feed (feed/xmcc_replay.py, Python
+     * standard library only) runs only when asked for with MCC_FEED=replay - which mcc.py sets for
+     * developers without the C++ build - or on Windows, where the bash-started stack cannot run.
      */
     public synchronized Map<String, Object> start() {
         if (isRunning()) return status();
         lastError = null;
-        boolean forceReplay = "replay".equalsIgnoreCase(System.getenv("MCC_FEED"));
-        String buildDir = System.getenv().getOrDefault("XDOS_BUILD",
-                System.getProperty("os.name", "").toLowerCase().contains("mac") ? "build-mac" : "build");
-        // The native stack is started by a bash script, so on Windows only the recording runs.
-        boolean nativeBuilt = !WINDOWS && Files.exists(xdosHome.resolve(buildDir).resolve("xdos_gs"));
-        if (forceReplay || !nativeBuilt) return startReplay(nativeBuilt ? null : buildDir);
+        if (WINDOWS || "replay".equalsIgnoreCase(System.getenv("MCC_FEED"))) return startReplay(null);
         return startNative();
     }
 
@@ -125,6 +121,18 @@ public class SimulatorService {
         Path script = xdosHome.resolve("scripts/run_stack.sh");
         if (!Files.exists(script)) {
             lastError = "run_stack.sh not found at " + script;
+            return status();
+        }
+        // Same rule as xdos/scripts/build_dir.sh: build-mac/ on macOS, build/ elsewhere,
+        // XDOS_BUILD overrides.
+        String buildDir = System.getenv().getOrDefault("XDOS_BUILD",
+                System.getProperty("os.name", "").toLowerCase().contains("mac") ? "build-mac" : "build");
+        Path binary = xdosHome.resolve(buildDir).resolve("xdos_gs");
+        if (!Files.exists(binary)) {
+            lastError = "no native build at " + binary + " - build it first:  "
+                      + ("build-mac".equals(buildDir) ? "xdos/scripts/build_mac.sh"
+                                                      : "cmake -S xdos -B xdos/" + buildDir + " && cmake --build xdos/" + buildDir + " -j")
+                      + "  (or use the recorded feed: python mcc.py start --sim)";
             return status();
         }
         try {
