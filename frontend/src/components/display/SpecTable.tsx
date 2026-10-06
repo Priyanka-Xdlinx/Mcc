@@ -35,7 +35,6 @@ export const HeaderBlock = memo(function HeaderBlock({ pageNo }: { pageNo: numbe
   const h = useHeader()
   return (
     <div className="dp-head" role="group" aria-label="Frame header">
-      <div className="dp-hl">HEADER 1</div>
       <Missing k="SAT ID" />
       <HCell k="Time of frame" v={h.frameTime} title="Spacecraft time of the newest subframe" />
       <HCell k="Frame no" v={h.frameNo} title="Master frame and subframe of the newest subframe" />
@@ -48,7 +47,6 @@ export const HeaderBlock = memo(function HeaderBlock({ pageNo }: { pageNo: numbe
         title="Subframes received in the current session"
         span
       />
-      <div className="dp-hl">HEADER 2</div>
       <Missing k="Last TC" />
       <Missing k="Last U/L Cmd" />
       <HCell
@@ -60,7 +58,7 @@ export const HeaderBlock = memo(function HeaderBlock({ pageNo }: { pageNo: numbe
       />
       <HCell k="Time of recd frame" v={utcClock(h.receivedAt)} title={h.receivedAt ?? 'When the backend received the newest subframe'} />
       <div className="dp-hc blank" aria-hidden="true" />
-      <HCell k="Page no" v={pageNo} title="This window's number among the open windows" />
+      <HCell k="Page no" v={pageNo} title="This window's page number (kept when other windows close)" />
     </div>
   )
 })
@@ -161,7 +159,6 @@ function SpecTableImpl({ params, slots, stale, editing, activeSlot, onSlot }: Sp
     const b = a + 1
     lines.push(
       <tr key={r}>
-        <th scope="row" className="dp-rl">DATA PART{r + 1}</th>
         <SlotCells i={a} id={params[a]} row={slots[a]} stale={stale[a] === '1'} dup={dups[a]}
           editing={editing} active={activeSlot === a} onSlot={onSlot} />
         <SlotCells i={b} id={params[b]} row={slots[b]} stale={stale[b] === '1'} dup={dups[b]}
@@ -172,13 +169,11 @@ function SpecTableImpl({ params, slots, stale, editing, activeSlot, onSlot }: Sp
   return (
     <table className="dp-table">
       <colgroup>
-        <col className="c-rl" />
         <col className="c-id" /><col className="c-n" /><col className="c-v" />
         <col className="c-id" /><col className="c-n" /><col className="c-v" />
       </colgroup>
       <thead>
         <tr>
-          <th />
           <th>Parameter ID</th><th>Parameter name</th><th>Engineering value</th>
           <th>Parameter ID</th><th>Parameter name</th><th>Engineering value</th>
         </tr>

@@ -3,17 +3,17 @@
 #
 #   ./start.sh              backend only; start the simulator from the UI
 #   ./start.sh --sim        also start the XDOS simulator stack
-#   ./start.sh --build      rebuild schema, frontend and backend first
+#   ./start.sh --build      rebuild frontend and backend first
 #   ./start.sh --fg         run the backend in the foreground (Ctrl-C stops it)
 #
-# Anything missing is built on demand, so a clean checkout needs no extra steps.
+# Anything missing is built on demand, including the database: two SQLite
+# files beside this script (mcc.db, mcc-auth.db), created on first start.
 # Written for macOS's bash 3.2: no ${v^^}, no associative arrays, no mapfile.
 
 set -u
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 XDOS="$ROOT/xdos"
-DB="$ROOT/mcc.db"
 JAR="$ROOT/backend/target/mcc-backend-1.0.0.jar"
 PIDFILE="$ROOT/.backend.pid"
 LOG="$ROOT/backend.log"
@@ -54,9 +54,9 @@ JAVA="$JAVA_HOME/bin/java"
 # The system python3 is a licence-blocked shim on this machine; prefer Homebrew's.
 PY=""
 for cand in /opt/homebrew/bin/python3 /usr/local/bin/python3 python3; do
-    if "$cand" -c 'import sqlite3' >/dev/null 2>&1; then PY="$cand"; break; fi
+    if "$cand" -c 'import json' >/dev/null 2>&1; then PY="$cand"; break; fi
 done
-[ -n "$PY" ] || die "no working python3 found (needed to build the decode schema)"
+[ -n "$PY" ] || die "no working python3 found (needed to read the backend's replies)"
 
 # ── already running? ─────────────────────────────────────────────────────────
 if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
@@ -66,15 +66,7 @@ else
     rm -f "$PIDFILE"
 fi
 
-# ── 1. decode schema ─────────────────────────────────────────────────────────
-if [ "$FORCE_BUILD" -eq 1 ] || [ ! -f "$DB" ]; then
-    say "building the decode schema from the MIB"
-    ( cd "$ROOT/schema" && "$PY" build_schema.py ) || die "schema build failed"
-else
-    say "decode schema present ($(basename "$DB"))"
-fi
-
-# ── 2. frontend ──────────────────────────────────────────────────────────────
+# ── 1. frontend ──────────────────────────────────────────────────────────────
 STATIC="$ROOT/backend/src/main/resources/static"
 if [ "$FORCE_BUILD" -eq 1 ] || [ ! -f "$STATIC/index.html" ]; then
     say "building the frontend"
@@ -88,7 +80,7 @@ else
     say "frontend already staged"
 fi
 
-# ── 3. backend ───────────────────────────────────────────────────────────────
+# ── 2. backend ───────────────────────────────────────────────────────────────
 if [ "$FORCE_BUILD" -eq 1 ] || [ ! -f "$JAR" ]; then
     say "building the backend (this downloads dependencies on first run)"
     ( cd "$ROOT/backend" && mvn -B -DskipTests package ) || die "backend build failed"
@@ -96,8 +88,13 @@ else
     say "backend jar present"
 fi
 
-# ── 4. run ───────────────────────────────────────────────────────────────────
-export MCC_DB="$DB"
+# ── 3. run ───────────────────────────────────────────────────────────────────
+export MCC_DB="$ROOT/mcc.db"
+export MCC_AUTH_DB="$ROOT/mcc-auth.db"
+export MCC_DATA_DIR="$ROOT"
+# The backend writes this on start; it lets these curls use /api/status and
+# /api/sim without signing in (localhost only, see LauncherToken.java).
+launcher() { cat "$ROOT/.mcc-launcher-token" 2>/dev/null; }
 export MCC_XDOS_HOME="$XDOS"
 
 if [ "$FOREGROUND" -eq 1 ]; then
@@ -115,7 +112,7 @@ echo $! > "$PIDFILE"
 say "waiting for http://localhost:$PORT/ ..."
 i=0
 while [ $i -lt 90 ]; do
-    if curl -fsS "http://localhost:$PORT/api/status" >/dev/null 2>&1; then
+    if curl -fsS -H "X-MCC-Launcher: $(launcher)" "http://localhost:$PORT/api/status" >/dev/null 2>&1; then
         break
     fi
     if ! kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
@@ -145,7 +142,7 @@ if [ "$WITH_SIM" -eq 1 ]; then
         fi
     fi
     say "starting the XDOS simulator"
-    SIMERR=$(curl -fsS -X POST "http://localhost:$PORT/api/sim/start" 2>/dev/null \
+    SIMERR=$(curl -fsS -H "X-MCC-Launcher: $(launcher)" -X POST "http://localhost:$PORT/api/sim/start" 2>/dev/null \
         | "$PY" -c 'import sys,json; print(json.load(sys.stdin).get("error") or "")' 2>/dev/null) \
         || die "simulator failed to start - check the UI for the reason"
     [ -z "$SIMERR" ] || die "simulator failed to start: $SIMERR"
@@ -153,7 +150,7 @@ if [ "$WITH_SIM" -eq 1 ]; then
     say "waiting for telemetry ..."
     i=0
     while [ $i -lt 60 ]; do
-        n=$(curl -fsS "http://localhost:$PORT/api/status" 2>/dev/null \
+        n=$(curl -fsS -H "X-MCC-Launcher: $(launcher)" "http://localhost:$PORT/api/status" 2>/dev/null \
             | "$PY" -c 'import sys,json; print(json.load(sys.stdin)["feed"]["subframesReceived"])' 2>/dev/null)
         [ -n "${n:-}" ] && [ "$n" -gt 0 ] && break
         i=$((i + 1))

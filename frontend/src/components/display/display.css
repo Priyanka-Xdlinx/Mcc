@@ -44,12 +44,15 @@
 
 /* desk */
 .dp-desk {
-  flex: 1; min-height: 0; position: relative; overflow: hidden;
+  flex: 1; min-height: 0; position: relative; overflow: hidden auto;
   background:
     radial-gradient(circle, color-mix(in srgb, var(--line) 70%, transparent) 1px, transparent 1.2px) 0 0 / 22px 22px,
     var(--bg);
+  background-attachment: local;
   isolation: isolate;
 }
+/* keeps some empty desk below the lowest window, so there is room to drag or resize further down */
+.dp-spacer { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
 .dp-hint {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 4px; color: var(--dim); text-align: center; padding: 24px; pointer-events: none;
@@ -71,10 +74,18 @@
   box-shadow: var(--shadow); overflow: hidden; outline: none;
 }
 .dp-win.top { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+/* focus mode: header and toolbar hidden, windows stand out on a dimmed desk */
+.dp-toolbar[hidden] { display: none; }
+.dp-root.focused .dp-desk { background: color-mix(in srgb, var(--bg) 85%, #000); }
+.dp-root.focused .dp-win {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+  box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+}
 .dp-win:focus-visible { box-shadow: var(--shadow), 0 0 0 2px var(--accent); }
 .dp-title {
   flex: none; display: flex; align-items: center; gap: 8px;
-  padding: 5px 6px 5px 10px; cursor: grab; user-select: none; touch-action: none;
+  padding: 3px 4px 3px 8px; cursor: grab; user-select: none; touch-action: none;
   background: var(--panel-2); border-bottom: 1px solid var(--line); color: var(--dim);
 }
 .dp-win.top .dp-title { background: color-mix(in srgb, var(--accent) 9%, var(--panel-2)); }
@@ -88,8 +99,8 @@
 }
 .dp-dirty { color: var(--warn); }
 .dp-title-btns { display: flex; gap: 4px; flex: none; }
-.dp-root .dp-title-btns button { padding: 4px 8px; font-size: 12px; font-weight: 550; cursor: pointer; }
-.dp-root .dp-title-btns button.icon { padding: 4px 6px; }
+.dp-root .dp-title-btns button { padding: 2px 7px; font-size: 12px; font-weight: 550; cursor: pointer; }
+.dp-root .dp-title-btns button.icon { padding: 2px 5px; }
 .dp-root .dp-title-btns button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--fg); }
 .dp-win.narrow .dp-title-btns .lbl { display: none; }
 
@@ -108,7 +119,12 @@
 }
 .dp-root .dp-error button { background: transparent; border-color: color-mix(in srgb, var(--bad) 45%, transparent); color: var(--bad); }
 
-.dp-body { flex: 1; min-height: 0; overflow: auto; padding: 8px; position: relative; }
+.dp-body { flex: 1; min-height: 0; overflow: auto; padding: 4px; position: relative; display: flex; flex-direction: column; }
+.dp-body > .dp-head { flex: none; }
+/* the parameter table always fills the rest of the window: the 10 rows share its height (--row-h, set by the window) */
+.dp-body > .dp-tablewrap { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.dp-tablewrap > .dp-table { height: 100%; }
+.dp-table tbody tr { height: var(--row-h, 1.6em); }
 .dp-loading {
   position: absolute; top: 8px; right: 12px; z-index: 2; font-size: 11.5px; color: var(--dim);
   background: var(--raised); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px;
@@ -128,9 +144,9 @@
 /* header block (green tint) */
 .dp-head {
   --hdr: color-mix(in srgb, var(--ok) 13%, var(--panel));
-  display: grid; grid-template-columns: 7.2em repeat(7, minmax(0, 1fr));
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
   border: 1px solid color-mix(in srgb, var(--ok) 40%, var(--line)); border-radius: 6px 6px 0 0;
-  background: var(--hdr); overflow: hidden; min-width: 540px;
+  background: var(--hdr); overflow: hidden;
 }
 .dp-hl {
   display: flex; align-items: center; padding: 4px 8px;
@@ -140,7 +156,7 @@
   border-right: 1px solid color-mix(in srgb, var(--ok) 30%, var(--line));
 }
 .dp-hc {
-  padding: 3px 7px; min-width: 0;
+  padding: 1px 6px; min-width: 0; line-height: 1.3;
   border-right: 1px solid color-mix(in srgb, var(--ok) 22%, var(--line));
   border-bottom: 1px solid color-mix(in srgb, var(--ok) 22%, var(--line));
 }
@@ -155,23 +171,23 @@
   --dat: color-mix(in srgb, var(--warmup) 7%, var(--panel));
   --dat-2: color-mix(in srgb, var(--warmup) 12%, var(--panel));
   --dat-line: color-mix(in srgb, var(--warmup) 22%, var(--line));
-  width: 100%; min-width: 540px; table-layout: fixed; border-collapse: collapse;
+  width: 100%; table-layout: fixed; border-collapse: collapse;
   border: 1px solid var(--dat-line); border-top: 0; font-size: 1em;
 }
 .dp-table col.c-rl { width: 7.2em; }
-.dp-table col.c-id { width: 4.6em; }
-.dp-table col.c-v { width: 19%; }
+.dp-table col.c-id { width: 12%; }
+.dp-table col.c-v { width: 21%; }
 .dp-table thead th {
   position: static; background: color-mix(in srgb, var(--warmup) 16%, var(--panel));
-  font-size: .7em; padding: 4px 6px; color: var(--dim); border-bottom: 1px solid var(--dat-line);
+  font-size: .7em; padding: 2px 6px; color: var(--dim); border-bottom: 1px solid var(--dat-line);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .dp-table tbody tr { background: var(--dat); }
 .dp-table tbody tr:nth-child(even) { background: var(--dat-2); }
 .dp-table tbody tr:hover { background: color-mix(in srgb, var(--warmup) 18%, var(--panel)); }
 .dp-table td, .dp-table th.dp-rl {
-  padding: 4px 6px; border-bottom: 1px solid var(--dat-line);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 2.1em;
+  padding: 0 6px; border-bottom: 1px solid var(--dat-line);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
 }
 .dp-table th.dp-rl {
   text-align: left; font-family: var(--cond); font-weight: 700; font-size: .78em; letter-spacing: .04em;

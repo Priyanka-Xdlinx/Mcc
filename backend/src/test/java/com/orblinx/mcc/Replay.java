@@ -12,8 +12,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sqlite.SQLiteDataSource;
-
 /**
  * Replays a captured XMCC byte stream through the real decode path, so tests
  * exercise the same code the live feed does rather than a parallel copy.
@@ -24,21 +22,16 @@ public final class Replay {
     public record Row(long masterFrame, int subframe, String tier, String entry,
                       String name, String formatted) {}
 
+    /** The decode schema as production loads it: xdos/ into SQLite, then read back. */
     public static SchemaRepo schema() {
-        Path db = repoRoot().resolve("mcc.db");
-        if (!Files.exists(db)) {
-            throw new IllegalStateException("build the schema first: python3 schema/build_schema.py");
-        }
-        SQLiteDataSource ds = new SQLiteDataSource();
-        ds.setUrl("jdbc:sqlite:" + db);
-        return new SchemaRepo(ds);
+        return new SchemaRepo(TestDb.jdbc(), TestDb.decode());
     }
 
-    /** The mcc-app repository root: the directory holding schema/ and xdos/. */
+    /** The mcc-app repository root: the directory holding backend/ and xdos/. */
     public static Path repoRoot() {
         Path p = Path.of("").toAbsolutePath();       // .../mcc-app/backend
-        while (p != null && !(Files.isDirectory(p.resolve("schema")) && Files.isDirectory(p.resolve("xdos")))) p = p.getParent();
-        if (p == null) throw new IllegalStateException("cannot locate the mcc-app root (schema/ and xdos/)");
+        while (p != null && !(Files.isDirectory(p.resolve("backend")) && Files.isDirectory(p.resolve("xdos")))) p = p.getParent();
+        if (p == null) throw new IllegalStateException("cannot locate the mcc-app root (backend/ and xdos/)");
         return p;
     }
 

@@ -15,7 +15,7 @@ import {
   type WidgetHeight,
 } from '../lib/layout';
 import { fmtAge, isStale } from '../lib/widgets';
-import { BitsBody, GaugeBody, PlotBody, StateBody, StatBody, TableBody, ValueBody } from './WidgetBodies';
+import { BitsBody, CannotChart, GaugeBody, PlotBody, StateBody, StatBody, TableBody, ValueBody } from './WidgetBodies';
 import { WidgetSettingsPanel } from './WidgetSettings';
 
 export interface WidgetMeta {
@@ -76,6 +76,8 @@ export interface WidgetProps {
   live: boolean;
   /** Telemetry period in ms (stale = older than 3 periods). */
   periodMs: number;
+  /** Why this plot or bar cannot be formed from its series, or null when it can. */
+  cannot?: string | null;
 }
 
 const HEIGHTS: WidgetHeight[] = ['s', 'm', 'l'];
@@ -248,7 +250,7 @@ function WidgetView(props: WidgetProps) {
   switch (w.type) {
     case 'plot':
     case 'bar':
-      body = <PlotBody {...props} />;
+      body = props.cannot ? <CannotChart reason={props.cannot} /> : <PlotBody {...props} />;
       break;
     case 'gauge':
       body = <GaugeBody {...props} />;

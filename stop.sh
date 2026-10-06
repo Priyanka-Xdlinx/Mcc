@@ -35,7 +35,7 @@ say() { printf '==> %s\n' "$*"; }
 # ── 1. simulator ─────────────────────────────────────────────────────────────
 # Ask the backend first so it releases its own process handle cleanly; fall back
 # to signals when the backend is already gone.
-if curl -fsS -X POST "http://localhost:$PORT/api/sim/stop" >/dev/null 2>&1; then
+if curl -fsS -H "X-MCC-Launcher: $(cat "$ROOT/.mcc-launcher-token" 2>/dev/null)" -X POST "http://localhost:$PORT/api/sim/stop" >/dev/null 2>&1; then
     say "simulator stopped via the backend"
 else
     say "backend not reachable - signalling the simulator directly"

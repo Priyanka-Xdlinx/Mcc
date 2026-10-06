@@ -5,7 +5,6 @@ import com.orblinx.mcc.decode.DecodedValue;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -19,16 +18,47 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TelemetryRepo {
 
+    private static final String DDL = """
+            CREATE TABLE IF NOT EXISTS telemetry_latest (
+                parameter_id    INTEGER PRIMARY KEY REFERENCES parameter(id),
+                entry_id        INTEGER REFERENCES lut_entry(id),
+                master_frame    INTEGER,
+                subframe        INTEGER,
+                spacecraft_time TEXT,
+                received_at     TEXT,
+                raw_hex         TEXT,
+                value_num       REAL,
+                value_text      TEXT,
+                quality         TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS telemetry_history (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                session         TEXT    NOT NULL DEFAULT '',
+                parameter_id    INTEGER NOT NULL REFERENCES parameter(id),
+                master_frame    INTEGER,
+                subframe        INTEGER,
+                spacecraft_time TEXT,
+                received_at     TEXT,
+                value_num       REAL,
+                value_text      TEXT,
+                quality         TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS ix_hist_param ON telemetry_history(parameter_id, id DESC);
+            CREATE INDEX IF NOT EXISTS ix_hist_session ON telemetry_history(session, parameter_id, id);""";
+
     private final JdbcTemplate jdbc;
     private final boolean historyEnabled;
     private final long historyMaxRows;
 
-    public TelemetryRepo(DataSource ds,
+    public TelemetryRepo(JdbcTemplate jdbc,
                          @Value("${mcc.history.enabled:true}") boolean historyEnabled,
                          @Value("${mcc.history.max-rows:2000000}") long historyMaxRows) {
-        this.jdbc = new JdbcTemplate(ds);
+        this.jdbc = jdbc;
         this.historyEnabled = historyEnabled;
         this.historyMaxRows = historyMaxRows;
+        for (String stmt : DDL.split(";")) {
+            if (!stmt.isBlank()) jdbc.execute(stmt);
+        }
     }
 
     private static final String UPSERT_LATEST = """
@@ -36,7 +66,7 @@ public class TelemetryRepo {
                                           spacecraft_time, received_at, raw_hex,
                                           value_num, value_text, quality)
             VALUES (?,?,?,?,?,?,?,?,?,?)
-            ON CONFLICT(parameter_id) DO UPDATE SET
+            ON CONFLICT (parameter_id) DO UPDATE SET
                 entry_id        = excluded.entry_id,
                 master_frame    = excluded.master_frame,
                 subframe        = excluded.subframe,
@@ -70,7 +100,7 @@ public class TelemetryRepo {
                 ps.setString(5, spacecraftTime);
                 ps.setString(6, now);
                 ps.setString(7, null);
-                if (v.valueNum() == null) ps.setNull(8, java.sql.Types.REAL);
+                if (v.valueNum() == null) ps.setNull(8, java.sql.Types.DOUBLE);
                 else ps.setDouble(8, v.valueNum());
                 ps.setString(9, v.formatted());
                 ps.setString(10, v.quality().name());
@@ -88,7 +118,7 @@ public class TelemetryRepo {
                 ps.setInt(4, subframe);
                 ps.setString(5, spacecraftTime);
                 ps.setString(6, now);
-                if (v.valueNum() == null) ps.setNull(7, java.sql.Types.REAL);
+                if (v.valueNum() == null) ps.setNull(7, java.sql.Types.DOUBLE);
                 else ps.setDouble(7, v.valueNum());
                 ps.setString(8, v.formatted());
                 ps.setString(9, v.quality().name());
@@ -102,11 +132,20 @@ public class TelemetryRepo {
         if (!historyEnabled) return;
         Long n = jdbc.queryForObject("SELECT COUNT(*) FROM telemetry_history", Long.class);
         if (n != null && n > historyMaxRows) {
+            // Ids only grow, so everything below the cut-off id is the oldest rows.
             jdbc.update("""
-                    DELETE FROM telemetry_history WHERE id IN (
-                        SELECT id FROM telemetry_history ORDER BY id ASC LIMIT ?)""",
+                    DELETE FROM telemetry_history WHERE id < (
+                        SELECT id FROM telemetry_history ORDER BY id ASC LIMIT 1 OFFSET ?)""",
                     n - historyMaxRows);
         }
+    }
+
+    /** Expected range per parameter, from the parameter_limit table; parameters without a row have none. */
+    public List<Map<String, Object>> limits() {
+        return jdbc.queryForList("""
+                SELECT parameter_id, lo, hi
+                  FROM parameter_limit
+                 ORDER BY parameter_id""");
     }
 
     /** Snapshot for the dashboard: every parameter the LUT currently downlinks. */
@@ -129,11 +168,11 @@ public class TelemetryRepo {
                        t.spacecraft_time AS spacecraft_time,
                        t.received_at   AS received_at
                   FROM pick_param pp
-                  JOIN pick   k ON k.id = pp.pick_id
-                  JOIN lut_entry e ON e.id = k.entry_id
-                  JOIN parameter p ON p.id = pp.parameter_id
-                  JOIN message   m ON m.id = p.message_id
-                  JOIN subsystem s ON s.id = m.subsystem_id
+                  JOIN pick            k ON k.id = pp.pick_id
+                  JOIN lut_entry       e ON e.id = k.entry_id
+                  JOIN parameter       p ON p.id = pp.parameter_id
+                  JOIN message         m ON m.id = p.message_id
+                  JOIN subsystem       s ON s.id = m.subsystem_id
                   LEFT JOIN telemetry_latest t ON t.parameter_id = p.id
                  ORDER BY e.tier, e.entry_index, k.seq, pp.seq""");
     }

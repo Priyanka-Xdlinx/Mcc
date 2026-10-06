@@ -33,6 +33,7 @@ import {
   type Widget as LayoutWidget,
 } from './lib/layout'
 import { clientStat } from './lib/series'
+import { sharedAxisProblem, type Limit } from './lib/limits'
 import { tmPeriodMs } from './lib/widgets'
 import { DerivedEditor } from './telemetry/DerivedEditor'
 import { LiveBuffer } from './telemetry/liveBuffer'
@@ -173,6 +174,22 @@ function Dash({ rows, sha, pick }: { rows: Row[]; sha: string; pick: number[] })
   const setLayout = useCallback((f: (l: Layout) => Layout) => setDash((d) => ({ ...d, widgets: f(d.widgets) })), [])
   const [windowMin, setWindowMin] = useState(15)
   const [confirmReset, setConfirmReset] = useState(false)
+  // Expected ranges from the parameter_limit table; without them every chart is formed, as before.
+  const [limits, setLimits] = useState<Map<string, Limit>>(() => new Map())
+  useEffect(() => {
+    let current = true
+    fetch('/api/telemetry/limits')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((rs: { parameter_id: number; lo: number; hi: number }[]) => {
+        if (current) setLimits(new Map(rs.map((x) => [keyOf(x.parameter_id), { lo: x.lo, hi: x.hi }])))
+      })
+      .catch(() => {
+        /* no limits to check against */
+      })
+    return () => {
+      current = false
+    }
+  }, [])
   useEffect(() => void saveDashboard(USER, sha, dash), [sha, dash])
   const setDerived = (next: DerivedDef[]) => {
     setDerivedState(next)
@@ -460,22 +477,30 @@ function Dash({ rows, sha, pick }: { rows: Row[]; sha: string; pick: number[] })
               <SortableContext items={list.map((w) => w.uid)} strategy={rectSortingStrategy}>
                 <div className="grid">
                   {list.length === 0 && <p className="empty">No widgets. Add one with the menu above.</p>}
-                  {list.map((w) => (
-                    <Widget
-                      key={w.uid}
-                      w={w}
-                      metas={seriesIds(w).map(meta)}
-                      data={widgetData(w)}
-                      markers={[]}
-                      seriesOptions={seriesOptions}
-                      rowOptions={rowOptions}
-                      onUpdate={onUpdate}
-                      onRemove={onRemove}
-                      now={now}
-                      live
-                      periodMs={widgetPeriod(w)}
-                    />
-                  ))}
+                  {list.map((w) => {
+                    const ids = seriesIds(w)
+                    const metas = ids.map(meta)
+                    const cannot = isChartType(w.type)
+                      ? sharedAxisProblem(ids.map((id, i) => ({ name: metas[i]!.name, unit: metas[i]!.unit, limit: limits.get(id) ?? null })))
+                      : null
+                    return (
+                      <Widget
+                        key={w.uid}
+                        w={w}
+                        metas={metas}
+                        data={widgetData(w)}
+                        markers={[]}
+                        seriesOptions={seriesOptions}
+                        rowOptions={rowOptions}
+                        onUpdate={onUpdate}
+                        onRemove={onRemove}
+                        now={now}
+                        live
+                        periodMs={widgetPeriod(w)}
+                        cannot={cannot}
+                      />
+                    )
+                  })}
                 </div>
               </SortableContext>
             </Section>

@@ -8,23 +8,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
-import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import com.orblinx.mcc.auth.AccountRepo;
+
 /**
- * Operator-owned display pages and each operator's saved window layout.
+ * Display pages and each account's saved window layout, in mcc.db, owned by
+ * sign-in accounts (mcc-auth.db). The two live in separate SQLite files, so
+ * there is no foreign key between them: a page's owner is looked up by a
+ * second query, and a deleted account's pages read as a former user's.
  *
- * These tables sit beside the decode schema in mcc.db but are created here, at
- * startup, with CREATE TABLE IF NOT EXISTS: mcc.db already holds telemetry
- * history, and rebuilding it just to add three tiny tables would throw that
- * away. The same DDL is appended to schema/schema.sql so a fresh build has them.
- *
- * Name clashes are left to the UNIQUE constraints rather than checked first, so
- * two operators saving at once get a clean 409 instead of a race.
+ * Name clashes are left to the UNIQUE constraint rather than checked first, so
+ * two saves at once get a clean 409 instead of a race.
  */
 @Repository
 public class DisplayRepo {
@@ -32,9 +31,8 @@ public class DisplayRepo {
     /** A page always shows exactly this many parameter slots: ten rows of two. */
     public static final int SLOTS = 20;
 
-    public record User(long id, String name, int pages) { }
-
-    public record Page(long id, long ownerId, String ownerName, String name,
+    /** `ownerId`/`ownerName` are null once the owner's account has been deleted. */
+    public record Page(long id, Long ownerId, String ownerName, String name,
                        List<Integer> params, String createdAt, String updatedAt) { }
 
     public record Workspace(String layout, String updatedAt) { }
@@ -45,40 +43,36 @@ public class DisplayRepo {
     }
 
     private static final String DDL = """
-            CREATE TABLE IF NOT EXISTS app_user (
-              id         INTEGER PRIMARY KEY,
-              name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
-              created_at TEXT NOT NULL
-            );
             CREATE TABLE IF NOT EXISTS display_page (
               id         INTEGER PRIMARY KEY,
-              owner_id   INTEGER NOT NULL REFERENCES app_user(id),
+              owner_id   INTEGER NOT NULL,
               name       TEXT NOT NULL,
               params     TEXT NOT NULL,
               created_at TEXT NOT NULL,
               updated_at TEXT NOT NULL,
               UNIQUE (owner_id, name)
             );
-            CREATE TABLE IF NOT EXISTS user_workspace (
-              user_id    INTEGER PRIMARY KEY REFERENCES app_user(id),
+            CREATE TABLE IF NOT EXISTS account_workspace (
+              account_id INTEGER PRIMARY KEY,
               layout     TEXT NOT NULL,
               updated_at TEXT NOT NULL
             );""";
 
     private static final String PAGE_SELECT = """
-            SELECT p.id, p.owner_id, u.name AS owner_name, p.name, p.params,
-                   p.created_at, p.updated_at
-              FROM display_page p JOIN app_user u ON u.id = p.owner_id""";
+            SELECT id, owner_id, name, params, created_at, updated_at FROM display_page""";
 
     private static final TypeReference<List<Integer>> INT_LIST = new TypeReference<>() { };
 
     private final JdbcTemplate jdbc;
+    private final AccountRepo accounts;
     private final ObjectMapper json = new ObjectMapper();
     /** Parameters the flown LUT downlinks. The LUT is fixed for the process, so load once. */
     private final Set<Integer> downlinked;
 
-    public DisplayRepo(DataSource ds) {
-        this.jdbc = new JdbcTemplate(ds);
+    /** The loader is a parameter so the decode tables are filled before the downlinked set is read. */
+    public DisplayRepo(JdbcTemplate jdbc, DecodeSchemaLoader loader, AccountRepo accounts) {
+        this.jdbc = jdbc;
+        this.accounts = accounts;
         for (String stmt : DDL.split(";")) {
             if (!stmt.isBlank()) jdbc.execute(stmt);
         }
@@ -89,49 +83,25 @@ public class DisplayRepo {
 
     public boolean isDownlinked(int parameterId) { return downlinked.contains(parameterId); }
 
-    // ── users ───────────────────────────────────────────────────────────────
-
-    /** Every operator with a count of their pages, in one query. */
-    public List<User> users() {
-        return jdbc.query("""
-                SELECT u.id, u.name, COUNT(p.id) AS pages
-                  FROM app_user u LEFT JOIN display_page p ON p.owner_id = u.id
-                 GROUP BY u.id ORDER BY u.name COLLATE NOCASE""", USER_ROW);
-    }
-
-    public Optional<User> user(long id) {
-        return jdbc.query("""
-                SELECT u.id, u.name, (SELECT COUNT(*) FROM display_page WHERE owner_id = u.id) AS pages
-                  FROM app_user u WHERE u.id = ?""", USER_ROW, id).stream().findFirst();
-    }
-
-    /** Get-or-create by name, case-insensitively. The first spelling used is kept. */
-    public User userByName(String name) {
-        jdbc.update("INSERT INTO app_user (name, created_at) VALUES (?, ?) ON CONFLICT(name) DO NOTHING",
-                    name, Instant.now().toString());
-        return jdbc.query("""
-                SELECT u.id, u.name, (SELECT COUNT(*) FROM display_page WHERE owner_id = u.id) AS pages
-                  FROM app_user u WHERE u.name = ?""", USER_ROW, name).get(0);
-    }
-
     // ── pages ───────────────────────────────────────────────────────────────
 
     /** Pages, newest update first, optionally for one owner and/or matching a name fragment. */
     public List<Page> pages(Long owner, String q) {
         StringBuilder sql = new StringBuilder(PAGE_SELECT).append(" WHERE 1=1");
         List<Object> args = new ArrayList<>();
-        if (owner != null) { sql.append(" AND p.owner_id = ?"); args.add(owner); }
+        if (owner != null) { sql.append(" AND owner_id = ?"); args.add(owner); }
         if (q != null && !q.isBlank()) {
             // instr, not LIKE, so % and _ in the search text are taken literally.
-            sql.append(" AND instr(lower(p.name), lower(?)) > 0");
+            sql.append(" AND instr(lower(name), lower(?)) > 0");
             args.add(q.trim());
         }
-        sql.append(" ORDER BY p.updated_at DESC, p.id DESC");
-        return jdbc.query(sql.toString(), pageRow, args.toArray());
+        sql.append(" ORDER BY updated_at DESC, id DESC");
+        return withOwnerNames(jdbc.query(sql.toString(), rawPageRow, args.toArray()));
     }
 
     public Optional<Page> page(long id) {
-        return jdbc.query(PAGE_SELECT + " WHERE p.id = ?", pageRow, id).stream().findFirst();
+        List<Page> rows = withOwnerNames(jdbc.query(PAGE_SELECT + " WHERE id = ?", rawPageRow, id));
+        return rows.stream().findFirst();
     }
 
     public Page createPage(long ownerId, String name, List<Integer> params) {
@@ -165,29 +135,41 @@ public class DisplayRepo {
 
     // ── workspaces ──────────────────────────────────────────────────────────
 
-    public Optional<Workspace> workspace(long userId) {
-        return jdbc.query("SELECT layout, updated_at FROM user_workspace WHERE user_id = ?",
-                (rs, i) -> new Workspace(rs.getString(1), rs.getString(2)), userId)
+    public Optional<Workspace> workspace(long accountId) {
+        return jdbc.query("SELECT layout, updated_at FROM account_workspace WHERE account_id = ?",
+                (rs, i) -> new Workspace(rs.getString(1), rs.getString(2)), accountId)
                 .stream().findFirst();
     }
 
-    public void saveWorkspace(long userId, String layout) {
+    public void saveWorkspace(long accountId, String layout) {
         jdbc.update("""
-                INSERT INTO user_workspace (user_id, layout, updated_at) VALUES (?, ?, ?)
-                ON CONFLICT(user_id) DO UPDATE SET layout = excluded.layout,
-                                                   updated_at = excluded.updated_at""",
-                userId, layout, Instant.now().toString());
+                INSERT INTO account_workspace (account_id, layout, updated_at) VALUES (?, ?, ?)
+                ON CONFLICT(account_id) DO UPDATE SET layout = excluded.layout,
+                                                       updated_at = excluded.updated_at""",
+                accountId, layout, Instant.now().toString());
     }
 
     // ── row mapping ─────────────────────────────────────────────────────────
 
-    private static final RowMapper<User> USER_ROW = (rs, i) ->
-            new User(rs.getLong("id"), rs.getString("name"), rs.getInt("pages"));
+    private final RowMapper<Page> rawPageRow = (ResultSet rs, int i) -> new Page(
+            rs.getLong("id"), rs.getLong("owner_id"), null, rs.getString("name"),
+            fromJson(rs.getString("params")), rs.getString("created_at"), rs.getString("updated_at"));
 
-    private final RowMapper<Page> pageRow = (ResultSet rs, int i) -> new Page(
-            rs.getLong("id"), rs.getLong("owner_id"), rs.getString("owner_name"),
-            rs.getString("name"), fromJson(rs.getString("params")),
-            rs.getString("created_at"), rs.getString("updated_at"));
+    /** Fills in each page's owner name from mcc-auth.db; "former user" once the account is gone. */
+    private List<Page> withOwnerNames(List<Page> rows) {
+        if (rows.isEmpty()) return rows;
+        Map<Long, String> names = new HashMap<>();
+        List<Page> out = new ArrayList<>(rows.size());
+        for (Page p : rows) {
+            String name = names.computeIfAbsent(p.ownerId(), id -> accounts.byId(id)
+                    .map(a -> a.displayName() == null || a.displayName().isBlank() ? a.username() : a.displayName())
+                    .orElse(null));
+            out.add(name == null
+                    ? new Page(p.id(), null, "former user", p.name(), p.params(), p.createdAt(), p.updatedAt())
+                    : new Page(p.id(), p.ownerId(), name, p.name(), p.params(), p.createdAt(), p.updatedAt()));
+        }
+        return out;
+    }
 
     private String toJson(List<Integer> params) {
         try {

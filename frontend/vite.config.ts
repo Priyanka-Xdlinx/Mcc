@@ -11,6 +11,8 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:8080', changeOrigin: true },
       '/ws': { target: 'ws://localhost:8080', ws: true },
+      // Sign-in, refresh and sign-out (username/password, JWT cookies)
+      '/auth': { target: 'http://localhost:8080' },
       // Swagger UI and the OpenAPI description, shown on the Docs page
       '/swagger-ui': { target: 'http://localhost:8080', changeOrigin: true },
       '/v3': { target: 'http://localhost:8080', changeOrigin: true },

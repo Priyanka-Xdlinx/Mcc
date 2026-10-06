@@ -42,6 +42,15 @@ function NotInRun() {
   return <div className="val missing">Not in this run</div>;
 }
 
+/** Shown in place of a plot or bar whose series cannot share one axis (see sharedAxisProblem). */
+export function CannotChart({ reason }: { reason: string }) {
+  return (
+    <div className="banner warn" role="alert">
+      <b>This chart is not possible.</b> {reason}
+    </div>
+  );
+}
+
 export function ValueBody(p: WidgetProps) {
   const meta = p.metas[0]!;
   if (meta.missing) return <NotInRun />;

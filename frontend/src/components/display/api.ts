@@ -36,6 +36,8 @@ export interface LayoutWindow {
   h: number
   z: number
   min: boolean
+  /** Permanent page number of this window; never renumbered when others close. */
+  pageNo: number
 }
 
 export interface Layout {
@@ -77,6 +79,9 @@ async function call<T>(method: string, url: string, user: number | null, body?: 
 export const api = {
   users: () => call<User[]>('GET', '/api/users', null),
   createUser: (name: string) => call<User>('POST', '/api/users', null, { name }),
+  /** The operator this browser picked, remembered by the backend in a cookie. */
+  session: () => call<{ user: User | null }>('GET', '/api/session', null),
+  setSession: (userId: number | null) => call<{ user: User | null }>('PUT', '/api/session', null, { userId }),
   pages: () => call<Page[]>('GET', '/api/pages', null),
   page: (id: number) => call<Page>('GET', `/api/pages/${id}`, null),
   createPage: (user: number, d: Draft) => call<Page>('POST', '/api/pages', user, d),
@@ -140,7 +145,34 @@ export function parseLayout(raw: unknown): LayoutWindow[] | null {
       h: num(o.h, 560),
       z: num(o.z, i + 1),
       min: o.min === true,
+      pageNo: typeof o.pageNo === 'number' && Number.isInteger(o.pageNo) && o.pageNo > 0 ? o.pageNo : 0,
     })
   })
+  return uniquePageNos(out)
+}
+
+/** Smallest positive page number not used by any window. */
+export function nextPageNo(ws: { pageNo: number }[]): number {
+  const used = new Set(ws.map((w) => w.pageNo))
+  let n = 1
+  while (used.has(n)) n++
+  return n
+}
+
+/** Keeps each window's number, and gives a new one to any missing (0) or repeated number. */
+export function uniquePageNos<T extends { pageNo: number }>(ws: T[]): T[] {
+  const seen = new Set<number>()
+  const bad: number[] = []
+  ws.forEach((w, i) => {
+    if (w.pageNo > 0 && !seen.has(w.pageNo)) seen.add(w.pageNo)
+    else bad.push(i)
+  })
+  if (!bad.length) return ws
+  const out = ws.slice()
+  for (const i of bad) {
+    const n = nextPageNo(Array.from(seen, (pageNo) => ({ pageNo })))
+    seen.add(n)
+    out[i] = { ...out[i], pageNo: n }
+  }
   return out
 }

@@ -3,11 +3,14 @@ frontend/node_modules/
 frontend/dist/
 frontend/tsconfig.tsbuildinfo
 backend/target/
-# runtime state (the DB is rebuilt by schema/build_schema.py; history is disposable)
-mcc.db
-mcc.db-*
+# runtime state
 backend.log
 .backend.pid
 .sim.pid
 .DS_Store
 .feed.pid
+# the database (two SQLite files) and the first-admin password
+mcc.db*
+mcc-auth.db*
+mcc-admin-password.txt
+.mcc-launcher-token

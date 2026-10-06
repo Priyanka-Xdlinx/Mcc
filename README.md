@@ -7,7 +7,7 @@ dashboard. The simulator can be started and stopped from the browser.
 ```
 React + Vite ──HTTP/WS──> Spring Boot ──TCP 9100──> xdos_tm_view ──> OBC ──> 6 bus sims
                               │
-                           SQLite (schema + telemetry)
+                   mcc.db (decode, telemetry, display) + mcc-auth.db (accounts)
 ```
 
 ## Requirements
@@ -19,12 +19,18 @@ Everything the app needs is in this repository. Install these tools once:
 | JDK | 17 or later | backend |
 | Maven | 3.9 | backend build |
 | Node.js | 22 | web UI build |
-| Python 3.10+ | standard library | `mcc.py` launcher, builds `mcc.db`, runs the recorded telemetry feed |
+| Python 3.10+ | standard library | `mcc.py` launcher, runs the recorded telemetry feed |
 
 Only for the live test stack (start.sh, macOS / Linux): a C++ toolchain with
 CMake (Xcode Command Line Tools on macOS, GCC + CMake on Linux).
 
 ## First run after cloning
+
+Nothing to install or create: the database is two SQLite files beside this
+README, `mcc.db` (decode, telemetry, display pages) and `mcc-auth.db`
+(accounts) — created on first start, and left alone after that. The decode
+tables are loaded from `xdos/mib/*.json` and the LUT twin once, the first time
+`mcc.db` has none.
 
 There are two ways to run it; they differ only in where the telemetry comes from.
 
@@ -49,7 +55,7 @@ cmake -S xdos -B xdos/build && cmake --build xdos/build -j   # Linux
 ./start.sh --build --sim
 ```
 
-`mcc.db`, `frontend/dist` and the jar are generated, never committed.
+`mcc.db`, `mcc-auth.db`, `frontend/dist` and the jar are local, never committed.
 
 ## Run it
 
@@ -66,12 +72,12 @@ and is marked as such.
 |---|---|
 | `./start.sh` | Backend only — press **Start feed** in the UI |
 | `./start.sh --sim` | Also starts the XDOS simulator stack |
-| `./start.sh --build` | Force a rebuild of schema, frontend and backend |
+| `./start.sh --build` | Force a rebuild of frontend and backend |
 | `./start.sh --fg` | Backend in the foreground, Ctrl-C to stop |
 | `./stop.sh` | Stop the simulator and the backend |
 | `./stop.sh --sim` | Stop only the simulator, leave the backend up |
 
-`start.sh` builds whatever is missing, so a clean checkout needs nothing else.
+`start.sh` builds whatever is missing, so a clean checkout needs nothing at all first.
 It waits on the health endpoint rather than sleeping a fixed amount, and prints
 the last 20 log lines if the backend dies during startup. `stop.sh` is safe to
 run when nothing is up, and verifies afterwards that nothing survived.
@@ -85,13 +91,12 @@ proxies `/api` and `/ws` to the backend.
 <summary>Manual equivalent, if you would rather not use the scripts</summary>
 
 ```bash
-cd schema   && python3 build_schema.py
-cd ../frontend && npm install && npm run build
+cd frontend && npm install && npm run build
 rm -rf ../backend/src/main/resources/static
 mkdir -p ../backend/src/main/resources/static
 cp -r dist/* ../backend/src/main/resources/static/
 cd ../backend && mvn -DskipTests package
-MCC_DB=../mcc.db MCC_XDOS_HOME=../xdos \
+MCC_DB=../mcc.db MCC_AUTH_DB=../mcc-auth.db MCC_DATA_DIR=.. MCC_XDOS_HOME=../xdos \
   java -jar target/mcc-backend-1.0.0.jar
 ```
 </details>
@@ -103,7 +108,7 @@ Each has its own address (`/#charts`, `/#docs/database`, …); `?theme=light|dar
 sets the theme from the address. The look (palette, IBM Plex type, header, uPlot
 charts) is shared with the Orblinx platform.
 
-**Docs** — how the system is built, the database schema read live from `mcc.db`
+**Docs** — how the system is built, the database schema read live from SQLite
 (`GET /api/schema`), the REST API in Swagger UI, and the WebSocket messages.
 Swagger UI is also at <http://localhost:8080/swagger-ui.html>, and the OpenAPI
 description at <http://localhost:8080/v3/api-docs>.
@@ -154,8 +159,8 @@ could disagree with the value on the dashboard and nobody would notice.
 
 | Path | What it is |
 |---|---|
-| `schema/build_schema.py` | Builds `mcc.db` from `mib/*.json` **and never from the CSV** — see below |
-| `schema/schema.sql` | The DDL |
+| `backend/…/store/DecodeSchemaLoader.java` | Creates the decode tables in `mcc.db` and loads them from `mib/*.json` **and never from the CSV** — see below |
+| `backend/…/auth/AccountRepo.java` | Accounts, sessions and signing keys, in their own `mcc-auth.db` |
 | `backend/…/wire/` | Layer 1: XMCC framing, tier reassembly, the LUT twin |
 | `backend/…/decode/` | Layer 2: the parameter decoder |
 | `backend/…/sim/` | Starts and stops the simulator |

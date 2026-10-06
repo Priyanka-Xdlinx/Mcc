@@ -1,0 +1,51 @@
+/* Charts: a toolbar, then sections of widget cards. */
+.charts { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.charts-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 5px 10px; background: var(--panel-2); border-bottom: 1px solid var(--line);
+}
+.charts-bar label { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); }
+.charts-bar button { padding: 4px 9px; font-size: 12px; }
+.charts-hint { color: var(--dimmer); font-size: 12px; }
+.charts-body { flex: 1; overflow: auto; padding: 8px 8px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.charts-section > header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.charts-section h2 { margin: 0; font-size: 13px; font-weight: 600; }
+.charts-section .count { margin-left: 0; }
+.charts-section select { max-width: 320px; }
+.charts-section > header button { padding: 5px 8px; }
+
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.charts-grid .empty { grid-column: 1 / -1; padding: 12px; }
+
+.cw {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 8px; min-width: 0; display: flex; flex-direction: column; gap: 4px;
+}
+.cw-cannot {
+  padding: 6px 8px; border-radius: 6px; font-size: 12px; line-height: 1.4;
+  border: 1px solid var(--warn); background: var(--warn-soft); color: var(--warn);
+}
+.cw-cannot b { color: inherit; }
+.cw.wide { grid-column: span 2; }
+@media (max-width: 700px) { .cw.wide { grid-column: auto; } }
+.cw-head { display: flex; align-items: flex-start; gap: 8px; }
+.cw-head select { padding: 3px 6px; font-size: 12px; }
+.cw-names { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.cw-name { font-weight: 600; font-size: 12px; overflow-wrap: anywhere; }
+.cw-name.s0 { color: var(--fg); }
+.cw-name.s1 { color: var(--plot-2); }
+.cw-name.s2 { color: var(--plot-3); }
+.cw .cw-x { border: 0; background: none; padding: 0 4px; font-size: 14px; line-height: 1; color: var(--dimmer); }
+.cw .cw-x:hover:not(:disabled) { color: var(--fg); }
+.cw-stale { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--warn); }
+.cw.stale .cw-big, .cw.stale .cw-value { color: var(--dimmer); }
+.cw-foot select { font-size: 12px; padding: 3px 6px; max-width: 100%; }
+
+.cw-stat { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.cw-big { font: 600 22px/1.1 var(--mono); }
+.cw-big small { font-size: 13px; color: var(--dim); font-weight: 400; }
+.cw-stat dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 1px 10px; font-family: var(--mono); font-size: 12px; }
+.cw-stat dt { color: var(--dimmer); }
+.cw-stat dd { margin: 0; text-align: right; }
+.cw-value { font: 600 20px/1.3 var(--mono); overflow-wrap: anywhere; }

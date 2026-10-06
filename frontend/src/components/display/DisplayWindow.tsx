@@ -6,7 +6,9 @@ import { HeaderBlock, SpecTable } from './SpecTable'
 import { ParamPicker, type IndexEntry } from './ParamPicker'
 
 export const MIN_W = 560
-export const MIN_H = 380
+export const MIN_H = 300
+/** Height of a new window: fits the header and the 10 compact rows at the default width. */
+export const DEFAULT_H = 400
 
 /** A window on the desk: the persisted layout fields plus client-only state. */
 export interface WinState extends LayoutWindow {
@@ -55,11 +57,19 @@ export const EMPTY_PARAMS: (number | null)[] = Object.freeze(
 type Mode = 'move' | 'r' | 'b' | 'rb'
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi))
+/** Title bar, body padding and borders, in pixels; and each extra bar (edit, save as, error). */
+const CHROME_H = 48
+const BAR_H = 40
+/** Pixels from the desk's top or bottom edge where dragging starts auto-scrolling. */
+const EDGE = 40
 
 function DisplayWindowImpl({ win, pageNo, top, slots, stale, userId, actions, getIndex, getDesk }: DisplayWindowProps) {
   const { key } = win
   const [geo, setGeo] = useState<Geo>({ x: win.x, y: win.y, w: win.w, h: win.h })
-  const drag = useRef<{ mode: Mode; px: number; py: number; g: Geo; last: Geo } | null>(null)
+  const drag = useRef<{
+    mode: Mode; px: number; py: number; cx: number; cy: number; g: Geo; last: Geo
+    desk: HTMLElement | null; s0: number; raf: number
+  } | null>(null)
   const [editing, setEditing] = useState(false)
   const [pick, setPick] = useState<number | null>(null)
   const [saveAs, setSaveAs] = useState<string | null>(null)
@@ -69,39 +79,71 @@ function DisplayWindowImpl({ win, pageNo, top, slots, stale, userId, actions, ge
   useEffect(() => {
     if (!drag.current) setGeo({ x: win.x, y: win.y, w: win.w, h: win.h })
   }, [win.x, win.y, win.w, win.h])
+  useEffect(() => () => {
+    if (drag.current) cancelAnimationFrame(drag.current.raf)
+  }, [])
 
   const start = (mode: Mode) => (e: React.PointerEvent<HTMLElement>) => {
     if (e.button !== 0) return
     if (mode === 'move' && (e.target as HTMLElement).closest('button, input, select')) return
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
-    drag.current = { mode, px: e.clientX, py: e.clientY, g: geo, last: geo }
+    const desk = e.currentTarget.closest<HTMLElement>('.dp-desk')
+    const d = {
+      mode, px: e.clientX, py: e.clientY, cx: e.clientX, cy: e.clientY, g: geo, last: geo,
+      desk, s0: desk?.scrollTop ?? 0, raf: 0,
+    }
+    drag.current = d
+    // Scroll the desk while the pointer rests near its top or bottom edge.
+    const tick = () => {
+      if (drag.current !== d) return
+      const el = d.desk
+      if (el) {
+        const r = el.getBoundingClientRect()
+        const v = d.cy > r.bottom - EDGE ? d.cy - (r.bottom - EDGE) : d.cy < r.top + EDGE ? d.cy - (r.top + EDGE) : 0
+        if (v) {
+          const before = el.scrollTop
+          el.scrollTop += clamp(Math.round(v / 2), -24, 24)
+          if (el.scrollTop !== before) apply(d)
+        }
+      }
+      d.raf = requestAnimationFrame(tick)
+    }
+    d.raf = requestAnimationFrame(tick)
     actions.focus(key)
   }
-  const move = (e: React.PointerEvent<HTMLElement>) => {
-    const d = drag.current
-    if (!d) return
-    const desk = getDesk()
-    const dx = e.clientX - d.px
-    const dy = e.clientY - d.py
+  const apply = (d: NonNullable<typeof drag.current>) => {
+    const W = d.desk?.clientWidth ?? getDesk().w
+    const dx = d.cx - d.px
+    // Pointer travel plus how far the desk has scrolled since the drag began.
+    const dy = d.cy - d.py + (d.desk ? d.desk.scrollTop - d.s0 : 0)
     const g = d.g
     let next: Geo
     if (d.mode === 'move') {
-      next = { ...g, x: clamp(g.x + dx, 0, desk.w - g.w), y: clamp(g.y + dy, 0, desk.h - g.h) }
+      // Only the width is bounded; the desk scrolls down as far as windows go.
+      next = { ...g, x: clamp(g.x + dx, 0, W - g.w), y: Math.max(0, g.y + dy) }
     } else {
       next = {
         ...g,
-        w: d.mode === 'b' ? g.w : clamp(g.w + dx, MIN_W, desk.w - g.x),
-        h: d.mode === 'r' ? g.h : clamp(g.h + dy, MIN_H, desk.h - g.y),
+        w: d.mode === 'b' ? g.w : clamp(g.w + dx, MIN_W, W - g.x),
+        h: d.mode === 'r' ? g.h : Math.max(MIN_H, g.h + dy),
       }
     }
     d.last = next
     setGeo(next)
   }
+  const move = (e: React.PointerEvent<HTMLElement>) => {
+    const d = drag.current
+    if (!d) return
+    d.cx = e.clientX
+    d.cy = e.clientY
+    apply(d)
+  }
   const end = (e: React.PointerEvent<HTMLElement>) => {
     const d = drag.current
     if (!d) return
     drag.current = null
+    cancelAnimationFrame(d.raf)
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId)
     const g = d.last
     if (g.x !== d.g.x || g.y !== d.g.y || g.w !== d.g.w || g.h !== d.g.h) actions.geometry(key, g)
@@ -163,7 +205,28 @@ function DisplayWindowImpl({ win, pageNo, top, slots, stale, userId, actions, ge
     return n
   })()
 
-  const fontSize = Math.round(clamp(geo.w / 64, 12, 14.5) * 2) / 2
+  // Text follows the window's width, but never so large that the header and 10 rows
+  // (about 18.5em) stop fitting its height; the rows then stretch to fill what is left.
+  const chrome = CHROME_H + (editing ? BAR_H : 0) + (saveAs != null ? BAR_H : 0) + (win.error ? BAR_H : 0)
+  const fontSize = Math.round(clamp(Math.min(geo.w / 62, (geo.h - chrome) / 18.5), 10, 20) * 2) / 2
+
+  // Share the table's height between its 10 rows, so they always fill the window.
+  const tableWrap = useRef<HTMLDivElement>(null)
+  const [rowH, setRowH] = useState<number | null>(null)
+  useEffect(() => {
+    const el = tableWrap.current
+    if (!el) return
+    const measure = () => {
+      const head = el.querySelector('thead')?.getBoundingClientRect().height ?? 0
+      const h = Math.floor((el.clientHeight - head) / 10)
+      setRowH(h > 0 ? h : null)
+    }
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    const thead = el.querySelector('thead')
+    if (thead) ro.observe(thead)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <section
@@ -287,14 +350,20 @@ function DisplayWindowImpl({ win, pageNo, top, slots, stale, userId, actions, ge
       <div className="dp-body" style={{ fontSize }}>
         {win.loading && <div className="dp-loading">Loading page…</div>}
         <HeaderBlock pageNo={pageNo} />
-        <SpecTable
-          params={params}
-          slots={slots}
-          stale={stale}
-          editing={editing}
-          activeSlot={pick}
-          onSlot={onSlot}
-        />
+        <div
+          className="dp-tablewrap"
+          ref={tableWrap}
+          style={rowH != null ? ({ '--row-h': `${rowH}px` } as React.CSSProperties) : undefined}
+        >
+          <SpecTable
+            params={params}
+            slots={slots}
+            stale={stale}
+            editing={editing}
+            activeSlot={pick}
+            onSlot={onSlot}
+          />
+        </div>
       </div>
 
       {pick != null && (

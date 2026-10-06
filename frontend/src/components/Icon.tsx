@@ -37,6 +37,9 @@ const P: Record<string, string> = {
   copy: 'M9 9h11v11H9ZM15 9V4H4v11h5',
   folder: 'M3 6h6l2 2h10v11H3Z',
   grid: 'M4 4h7v7H4ZM13 4h7v7h-7ZM4 13h7v7H4ZM13 13h7v7h-7Z',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  up: 'M6 15l6-6 6 6',
+  down: 'M6 9l6 6 6-6',
   user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0',
 }
 

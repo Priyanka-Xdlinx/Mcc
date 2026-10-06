@@ -1,0 +1,156 @@
+/* ── design tokens ─────────────────────────────────────────────────────────
+   The Orblinx platform palette. Light is the default; dark follows the OS
+   unless the header switch sets data-theme on <html>. The MUI theme
+   (src/theme/index.js) uses the same colours; the feature stylesheets read
+   these tokens. */
+:root {
+  --bg: #edf0f2; --panel: #ffffff; --panel-2: #f5f7f8; --raised: #ffffff;
+  --line: #d5dce1; --line-soft: #e4e9ec; --hover: #f1f4f6; --sel: #d5edf3;
+  --fg: #13202a; --dim: #43535f; --dimmer: #5c6b76;
+  --accent: #006d85; --accent-strong: #007892; --on-accent: #ffffff; --accent-soft: #d5edf3;
+  --ok: #256e43; --ok-soft: #ddf0e4; --warn: #8a5710; --warn-soft: #f8ebd3;
+  --bad: #b3372a; --bad-soft: #f9e3df; --warmup: #6d46c4; --warmup-soft: #ece6fa;
+  --t-vh: #bd3a31; --t-h: #8f5c00; --t-m: #2963ae; --t-l: #0e7050;
+  --l1: #2963ae; --l2: #b8641a; --l3: #2a7a4b;
+  --hex-bg: #f5f7f8; --hex-fg: #43535f; --mark-bg: #ffe9a3; --mark-fg: #5c4200;
+  --grid: #e3e8eb; --tooltip-bg: #ffffff; --shadow: 0 8px 28px rgba(19, 32, 42, 0.14);
+  --backdrop: rgba(19, 32, 42, 0.38); --reserved: #e4e9ec;
+  --s1: #007892; --s2: #9a4c9e; --s3: #b8641a; --s4: #3d6fb6; --s5: #2a7a4b; --s6: #b3372a;
+  /* names used by the chart component shared with the Orblinx platform */
+  --surface: #ffffff; --muted: #5c6b76; --crit: #b3372a; --event: #9a6210;
+  --plot: #007892; --plot-fill: rgba(0, 120, 146, 0.1); --plot-2: #9a4c9e; --plot-3: #b8641a; --plot-4: #3d6fb6;
+  --logo-ink: block; --logo-white: none;
+  --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cond: 'IBM Plex Sans Condensed', 'Arial Narrow', var(--sans);
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg: #0b1115; --panel: #121a20; --panel-2: #172129; --raised: #1b262e;
+  --line: #25323b; --line-soft: #1c2830; --hover: #162029; --sel: #0f3340;
+  --fg: #e0e7eb; --dim: #a8b5be; --dimmer: #8896a0;
+  --accent: #22b8d8; --accent-strong: #22b8d8; --on-accent: #06181b; --accent-soft: #0f3340;
+  --ok: #5dbe86; --ok-soft: #153024; --warn: #e2a640; --warn-soft: #352812;
+  --bad: #ef6d5c; --bad-soft: #3a1915; --warmup: #b39cf7; --warmup-soft: #231c3a;
+  --t-vh: #f06a5f; --t-h: #d99a1e; --t-m: #5a9ff2; --t-l: #2bb584;
+  --l1: #5a9ff2; --l2: #e89a52; --l3: #5dbe86;
+  --hex-bg: #0e161b; --hex-fg: #a8b5be; --mark-bg: #3d2f08; --mark-fg: #ffd866;
+  --grid: #1e2a32; --tooltip-bg: #121a20; --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --backdrop: rgba(2, 6, 9, 0.72); --reserved: #172129;
+  --s1: #22b8d8; --s2: #d08ad4; --s3: #e89a52; --s4: #7ea8ec; --s5: #5dbe86; --s6: #ef6d5c;
+  --surface: #121a20; --muted: #8896a0; --crit: #ef6d5c; --event: #e2a640;
+  --plot: #22b8d8; --plot-fill: rgba(34, 184, 216, 0.14); --plot-2: #d08ad4; --plot-3: #e89a52; --plot-4: #7ea8ec;
+  --logo-ink: none; --logo-white: block;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1115; --panel: #121a20; --panel-2: #172129; --raised: #1b262e;
+  --line: #25323b; --line-soft: #1c2830; --hover: #162029; --sel: #0f3340;
+  --fg: #e0e7eb; --dim: #a8b5be; --dimmer: #8896a0;
+  --accent: #22b8d8; --accent-strong: #22b8d8; --on-accent: #06181b; --accent-soft: #0f3340;
+  --ok: #5dbe86; --ok-soft: #153024; --warn: #e2a640; --warn-soft: #352812;
+  --bad: #ef6d5c; --bad-soft: #3a1915; --warmup: #b39cf7; --warmup-soft: #231c3a;
+  --t-vh: #f06a5f; --t-h: #d99a1e; --t-m: #5a9ff2; --t-l: #2bb584;
+  --l1: #5a9ff2; --l2: #e89a52; --l3: #5dbe86;
+  --hex-bg: #0e161b; --hex-fg: #a8b5be; --mark-bg: #3d2f08; --mark-fg: #ffd866;
+  --grid: #1e2a32; --tooltip-bg: #121a20; --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --backdrop: rgba(2, 6, 9, 0.72); --reserved: #172129;
+  --s1: #22b8d8; --s2: #d08ad4; --s3: #e89a52; --s4: #7ea8ec; --s5: #5dbe86; --s6: #ef6d5c;
+  --surface: #121a20; --muted: #8896a0; --crit: #ef6d5c; --event: #e2a640;
+  --plot: #22b8d8; --plot-fill: rgba(34, 184, 216, 0.14); --plot-2: #d08ad4; --plot-3: #e89a52; --plot-4: #7ea8ec;
+  --logo-ink: none; --logo-white: block;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13.5px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13.5px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── shared marks: status dots, the link pill, part and quality badges ──── */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.dot.on { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.dot.off { background: var(--dimmer); }
+.dot.idle { background: var(--warn); }
+
+.linkpill {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600;
+  padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2);
+  white-space: nowrap;
+}
+.linkpill.on { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: var(--ok-soft); }
+.linkpill.idle { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: var(--warn-soft); }
+.linkpill.off { color: var(--dim); }
+.linkpill .dot { margin-right: 0; }
+
+.tier {
+  display: inline-block; min-width: 30px; text-align: center;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px; border: 1px solid;
+}
+.tier.VH { color: var(--t-vh); border-color: color-mix(in srgb, var(--t-vh) 45%, transparent); background: color-mix(in srgb, var(--t-vh) 13%, transparent); }
+.tier.H  { color: var(--t-h); border-color: color-mix(in srgb, var(--t-h) 45%, transparent); background: color-mix(in srgb, var(--t-h) 13%, transparent); }
+.tier.M  { color: var(--t-m); border-color: color-mix(in srgb, var(--t-m) 45%, transparent); background: color-mix(in srgb, var(--t-m) 13%, transparent); }
+.tier.L  { color: var(--t-l); border-color: color-mix(in srgb, var(--t-l) 45%, transparent); background: color-mix(in srgb, var(--t-l) 13%, transparent); }
+
+.q { font-size: 10.5px; letter-spacing: .03em; }
+.q span { display: inline-block; padding: 1px 7px; border-radius: 999px; font-weight: 600; }
+.q.OK span { color: var(--ok); background: var(--ok-soft); }
+.q.NO_ANSWER span, .q.BLOCK_INCOMPLETE span { color: var(--warn); background: var(--warn-soft); }
+.q.WARMUP span { color: var(--warmup); background: var(--warmup-soft); }
+.q.NOT_DOWNLINKED span, .q.none span { color: var(--dimmer); background: var(--panel-2); }
+.q.NO_ANSWER { color: var(--warn); }
+.q.BLOCK_INCOMPLETE { color: var(--warn); }
+.q.NOT_DOWNLINKED { color: var(--dimmer); }
+.q.WARMUP { color: var(--warmup); }
+.val.stale { color: var(--dimmer); }
+.val.flag { color: var(--warn); }
+
+.empty { padding: 48px 16px; text-align: center; color: var(--dim); }
+.empty code { font-family: var(--mono); color: var(--accent); }
+.dimcol { color: var(--dim); }
+.ico { flex: none; display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ── raw controls inside feature views ─────────────────────────────────────
+   The instrument views (decode, display, docs, orbit, charts) draw dense
+   toolbars with plain buttons and selects. Scoped to `.feature` so they never
+   touch the MUI kit. */
+:where(.feature) button {
+  font: inherit; font-weight: 550; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 7px 14px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--fg);
+  cursor: pointer; transition: border-color .15s, background-color .15s, color .15s;
+}
+:where(.feature) button:hover:not(:disabled) { border-color: var(--accent); }
+:where(.feature) button:disabled { opacity: .45; cursor: not-allowed; }
+:where(.feature) button.primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+:where(.feature) button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+:where(.feature) button.danger { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 45%, transparent); color: var(--bad); }
+:where(.feature) input[type=search], :where(.feature) input[type=text], :where(.feature) select {
+  font: inherit; padding: 6px 10px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+}
+:where(.feature) table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+:where(.feature) :is(button, input, select, a):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+:where(.feature) .count { margin-left: auto; color: var(--dim); font-family: var(--mono); font-size: 12px; }
+:where(.feature) .err { color: var(--bad); font-family: var(--mono); font-size: 12px; }
+:where(.feature) .grow { flex: 1; }
+:where(.feature) .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

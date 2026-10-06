@@ -1,0 +1,18 @@
+/* uPlot chart wrapper (src/components/Chart.jsx). */
+.chart { width: 100%; min-width: 0; position: relative; }
+.chart .zoombar {
+  position: absolute; top: 4px; right: 4px; display: flex; gap: 1px; padding: 1px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  opacity: .85; transition: opacity .15s; z-index: 2;
+}
+.chart .zoombar button { min-width: 22px; height: 20px; padding: 0 5px; border: 0; background: none; color: var(--dim); font-size: 12px; line-height: 1; border-radius: 4px; }
+.chart .zoombar button:hover { background: var(--panel-2); color: var(--fg); }
+@media (hover: hover) {
+  .chart .zoombar { opacity: 0; }
+  .chart:hover .zoombar, .chart .zoombar:focus-within, .chart .zoombar.on { opacity: 1; }
+}
+.chart .nodata { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dimmer); font-size: 12px; pointer-events: none; }
+.uplot, .uplot * { font-family: var(--mono); }
+.uplot { width: 100%; }
+.u-legend { font-size: 11px; color: var(--dim); }
+.u-legend .u-marker { border-radius: 2px; }

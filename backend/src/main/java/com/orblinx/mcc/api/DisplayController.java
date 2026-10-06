@@ -1,9 +1,10 @@
 package com.orblinx.mcc.api;
 
+import com.orblinx.mcc.auth.CurrentUser;
+import com.orblinx.mcc.auth.Permission;
 import com.orblinx.mcc.store.DisplayRepo;
 import com.orblinx.mcc.store.DisplayRepo.NameClashException;
 import com.orblinx.mcc.store.DisplayRepo.Page;
-import com.orblinx.mcc.store.DisplayRepo.User;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,23 +19,22 @@ import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Display pages: named sets of twenty parameter slots that operators open as
- * floating windows, plus each operator's saved window layout.
+ * Display pages: named sets of twenty parameter slots that users open as
+ * floating windows, plus each user's saved window layout.
  *
- * There is no login. The acting operator is whatever id the browser sends in
- * X-MCC-User, which is enough to stop one operator overwriting another's page
- * by accident - it is not, and is not meant to be, access control.
+ * The owner is the signed-in account. Anyone signed in may list and open any
+ * page; only its owner may overwrite it, and its owner or an admin may delete it.
  */
 @RestController
 @RequestMapping("/api")
 @Tag(name = "Display pages")
 public class DisplayController {
 
-    static final String USER_HEADER = "X-MCC-User";
-    private static final int USER_NAME_MAX = 40;
     private static final int PAGE_NAME_MAX = 60;
     private static final int LAYOUT_MAX_BYTES = 64 * 1024;
 
@@ -46,34 +46,13 @@ public class DisplayController {
         this.json = json;
     }
 
-    // ── users ───────────────────────────────────────────────────────────────
-
-    @GetMapping("/users")
-    @Operation(summary = "Operators",
-               description = "Every operator who has picked a name, with how many pages each owns, sorted by name.")
-    public List<User> users() {
-        return repo.users();
-    }
-
-    @PostMapping("/users")
-    @Operation(summary = "Get or create an operator by name",
-               description = "Body {name}. Matched case-insensitively; created if new. 200 either way, "
-                           + "400 if the trimmed name is empty or longer than 40 characters.")
-    public ResponseEntity<?> pickUser(@RequestBody(required = false) JsonNode body) {
-        String name = text(body, "name");
-        if (name == null || name.isEmpty() || name.length() > USER_NAME_MAX) {
-            return error(HttpStatus.BAD_REQUEST, "name must be 1-" + USER_NAME_MAX + " characters");
-        }
-        return ResponseEntity.ok(repo.userByName(name));
-    }
-
     // ── pages ───────────────────────────────────────────────────────────────
 
     @GetMapping("/pages")
     @Operation(summary = "Display pages",
-               description = "Every operator's pages, most recently updated first. Anyone may list and open any page.")
+               description = "Everyone's pages, most recently updated first. Anyone signed in may list and open any page.")
     public List<Page> pages(
-            @Parameter(description = "Only pages owned by this user id") @RequestParam(required = false) Long owner,
+            @Parameter(description = "Only pages owned by this account id") @RequestParam(required = false) Long owner,
             @Parameter(description = "Only pages whose name contains this text (case-insensitive)")
             @RequestParam(required = false) String q) {
         return repo.pages(owner, q);
@@ -89,12 +68,13 @@ public class DisplayController {
     @PostMapping("/pages")
     @Operation(summary = "Save a new page",
                description = "Body {name, params}: name 1-60 characters, params exactly 20 entries, each a "
-                           + "downlinked parameter id or null. Owned by the X-MCC-User. 201 on success, "
-                           + "400 bad input, 401 no or unknown user, 409 if that owner already has the name.")
-    public ResponseEntity<?> create(@RequestHeader(value = USER_HEADER, required = false) String userHeader,
-                                    @RequestBody(required = false) JsonNode body) {
-        Long user = actingUser(userHeader);
-        if (user == null) return error(HttpStatus.UNAUTHORIZED, "no or unknown " + USER_HEADER);
+                           + "downlinked parameter id or null. Owned by the signed-in user. 201 on success, "
+                           + "400 bad input, 409 if you already have a page by that name.")
+    public ResponseEntity<?> create(@AuthenticationPrincipal Jwt jwt, @RequestBody(required = false) JsonNode body) {
+        return create(CurrentUser.of(jwt), body);
+    }
+
+    ResponseEntity<?> create(CurrentUser me, JsonNode body) {
         PageInput in;
         try {
             in = pageInput(body);
@@ -102,7 +82,7 @@ public class DisplayController {
             return error(HttpStatus.BAD_REQUEST, e.getMessage());
         }
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(repo.createPage(user, in.name, in.params));
+            return ResponseEntity.status(HttpStatus.CREATED).body(repo.createPage(me.accountId(), in.name, in.params));
         } catch (NameClashException e) {
             return error(HttpStatus.CONFLICT, e.getMessage());
         }
@@ -110,16 +90,17 @@ public class DisplayController {
 
     @PutMapping("/pages/{id}")
     @Operation(summary = "Overwrite a page",
-               description = "Owner only. Same body and validation as creating. 403 if the X-MCC-User is not "
-                           + "the owner (use Save as, i.e. POST, to copy it instead), 409 on a name clash.")
-    public ResponseEntity<?> update(@RequestHeader(value = USER_HEADER, required = false) String userHeader,
-                                    @PathVariable long id,
+               description = "Owner only. Same body and validation as creating. 403 if you are not the owner "
+                           + "(use Save as, i.e. POST, to copy it instead), 409 on a name clash.")
+    public ResponseEntity<?> update(@AuthenticationPrincipal Jwt jwt, @PathVariable long id,
                                     @RequestBody(required = false) JsonNode body) {
-        Long user = actingUser(userHeader);
-        if (user == null) return error(HttpStatus.UNAUTHORIZED, "no or unknown " + USER_HEADER);
+        return update(CurrentUser.of(jwt), id, body);
+    }
+
+    ResponseEntity<?> update(CurrentUser me, long id, JsonNode body) {
         Optional<Page> existing = repo.page(id);
         if (existing.isEmpty()) return error(HttpStatus.NOT_FOUND, "no page " + id);
-        if (existing.get().ownerId() != user) {
+        if (!Objects.equals(existing.get().ownerId(), me.accountId())) {
             return error(HttpStatus.FORBIDDEN, "page " + id + " belongs to " + existing.get().ownerName());
         }
         PageInput in;
@@ -136,31 +117,36 @@ public class DisplayController {
     }
 
     @DeleteMapping("/pages/{id}")
-    @Operation(summary = "Delete a page", description = "Owner only. 204 on success, 403 if not the owner, 404 if absent.")
-    public ResponseEntity<?> delete(@RequestHeader(value = USER_HEADER, required = false) String userHeader,
-                                    @PathVariable long id) {
-        Long user = actingUser(userHeader);
-        if (user == null) return error(HttpStatus.UNAUTHORIZED, "no or unknown " + USER_HEADER);
+    @Operation(summary = "Delete a page",
+               description = "Its owner or an admin. 204 on success, 403 for anyone else, 404 if absent.")
+    public ResponseEntity<?> delete(@AuthenticationPrincipal Jwt jwt, @PathVariable long id) {
+        return delete(CurrentUser.of(jwt), id);
+    }
+
+    ResponseEntity<?> delete(CurrentUser me, long id) {
         Optional<Page> existing = repo.page(id);
         if (existing.isEmpty()) return error(HttpStatus.NOT_FOUND, "no page " + id);
-        if (existing.get().ownerId() != user) {
+        if (!Objects.equals(existing.get().ownerId(), me.accountId()) && !me.has(Permission.DISPLAY_DELETE_ANY)) {
             return error(HttpStatus.FORBIDDEN, "page " + id + " belongs to " + existing.get().ownerName());
         }
         repo.deletePage(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ── workspaces ──────────────────────────────────────────────────────────
+    // ── workspace ───────────────────────────────────────────────────────────
 
-    @GetMapping("/users/{id}/workspace")
-    @Operation(summary = "An operator's saved window layout",
-               description = "{layout, updatedAt}; both null if nothing has been saved yet. 404 for an unknown user.")
-    public ResponseEntity<?> workspace(@PathVariable long id) {
-        if (repo.user(id).isEmpty()) return error(HttpStatus.NOT_FOUND, "no user " + id);
+    @GetMapping("/me/workspace")
+    @Operation(summary = "Your saved window layout",
+               description = "{layout, updatedAt}; both null if nothing has been saved yet.")
+    public Map<String, Object> workspace(@AuthenticationPrincipal Jwt jwt) {
+        return workspace(CurrentUser.of(jwt));
+    }
+
+    Map<String, Object> workspace(CurrentUser me) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("layout", null);
         m.put("updatedAt", null);
-        repo.workspace(id).ifPresent(w -> {
+        repo.workspace(me.accountId()).ifPresent(w -> {
             try {
                 m.put("layout", json.readTree(w.layout()));
             } catch (Exception e) {
@@ -168,26 +154,24 @@ public class DisplayController {
             }
             m.put("updatedAt", w.updatedAt());
         });
-        return ResponseEntity.ok(m);
+        return m;
     }
 
-    @PutMapping("/users/{id}/workspace")
-    @Operation(summary = "Save an operator's window layout",
-               description = "Body {layout}: any JSON up to 64 KB, stored as is. Only the operator "
-                           + "themselves may save it (403 otherwise). 204 on success.")
-    public ResponseEntity<?> saveWorkspace(@RequestHeader(value = USER_HEADER, required = false) String userHeader,
-                                           @PathVariable long id,
-                                           @RequestBody(required = false) JsonNode body) {
-        Long user = actingUser(userHeader);
-        if (user == null) return error(HttpStatus.UNAUTHORIZED, "no or unknown " + USER_HEADER);
-        if (user != id) return error(HttpStatus.FORBIDDEN, "you can only save your own workspace");
+    @PutMapping("/me/workspace")
+    @Operation(summary = "Save your window layout",
+               description = "Body {layout}: any JSON up to 64 KB, stored as is. 204 on success.")
+    public ResponseEntity<?> saveWorkspace(@AuthenticationPrincipal Jwt jwt, @RequestBody(required = false) JsonNode body) {
+        return saveWorkspace(CurrentUser.of(jwt), body);
+    }
+
+    ResponseEntity<?> saveWorkspace(CurrentUser me, JsonNode body) {
         JsonNode layout = body == null ? null : body.get("layout");
         if (layout == null || layout.isNull()) return error(HttpStatus.BAD_REQUEST, "layout is required");
         String text = layout.toString();
         if (text.getBytes(StandardCharsets.UTF_8).length > LAYOUT_MAX_BYTES) {
             return error(HttpStatus.BAD_REQUEST, "layout is larger than 64 KB");
         }
-        repo.saveWorkspace(id, text);
+        repo.saveWorkspace(me.accountId(), text);
         return ResponseEntity.noContent().build();
     }
 
@@ -227,17 +211,6 @@ public class DisplayController {
             params.add(pid);
         }
         return new PageInput(name, params);
-    }
-
-    /** The id in X-MCC-User if it names a known operator, else null. */
-    private Long actingUser(String header) {
-        if (header == null) return null;
-        try {
-            long id = Long.parseLong(header.trim());
-            return repo.user(id).isPresent() ? id : null;
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     private static String text(JsonNode body, String field) {

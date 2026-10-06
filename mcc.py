@@ -7,11 +7,15 @@ every OS (standard library only).
 
     python mcc.py start           app only; press "Start feed" in the UI
     python mcc.py start --sim     also start the telemetry feed
-    python mcc.py start --build   rebuild schema, web UI and backend first
+    python mcc.py start --build   rebuild the web UI and backend first
     python mcc.py start --fg      run the backend in this window (Ctrl-C stops it)
     python mcc.py stop            stop the feed and the app
     python mcc.py stop --sim      stop the feed only
     python mcc.py status          show what is running
+
+The database is two SQLite files beside this script: mcc.db (decode, telemetry,
+display pages) and mcc-auth.db (accounts). Both are created on first start; the
+decode tables are loaded from xdos/ then, and left alone after that.
 
 The telemetry feed started by mcc.py is always the recorded XMCC feed
 (feed/xmcc_replay.py), so no C++ build is needed. start.sh / stop.sh are for
@@ -30,10 +34,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 DB = ROOT / "mcc.db"
+AUTH_DB = ROOT / "mcc-auth.db"
 XDOS = ROOT / "xdos"
 JAR = ROOT / "backend" / "target" / "mcc-backend-1.0.0.jar"
 STATIC = ROOT / "backend" / "src" / "main" / "resources" / "static"
 PIDFILE = ROOT / ".backend.pid"
+# Written by the backend on each start; lets this script use /api/status and /api/sim
+# without signing in (localhost only, see LauncherToken.java).
+LAUNCHER_TOKEN = ROOT / ".mcc-launcher-token"
 LOG = ROOT / "backend.log"
 PORT = 8080
 URL = f"http://localhost:{PORT}"
@@ -66,6 +74,8 @@ def run(cmd: list[str], cwd: Path) -> None:
 def api(path: str, method: str = "GET", timeout: float = 5) -> dict | None:
     try:
         req = urllib.request.Request(URL + path, method=method)
+        if LAUNCHER_TOKEN.exists():
+            req.add_header("X-MCC-Launcher", LAUNCHER_TOKEN.read_text().strip())
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read() or b"{}")
     except Exception:
@@ -100,9 +110,6 @@ def read_pid() -> int | None:
 
 
 def build(force: bool) -> None:
-    if force or not DB.exists():
-        say("building the decode schema (mcc.db) from xdos/mib")
-        run([sys.executable, "build_schema.py"], ROOT / "schema")
     if force or not (STATIC / "index.html").exists():
         npm = tool("npm", "install Node.js 22")
         web = ROOT / "frontend"
@@ -129,7 +136,8 @@ def start(args: argparse.Namespace) -> None:
 
         # mcc.py is the launcher for developers without the C++ test stack: its feed is the
         # recording (feed/xmcc_replay.py). start.sh keeps using the native stack.
-        env = dict(os.environ, MCC_DB=str(DB), MCC_XDOS_HOME=str(XDOS), MCC_FEED="replay")
+        env = dict(os.environ, MCC_DB=str(DB), MCC_AUTH_DB=str(AUTH_DB), MCC_DATA_DIR=str(ROOT),
+                   MCC_XDOS_HOME=str(XDOS), MCC_FEED="replay")
         cmd = [java_exe(), "-jar", str(JAR)]
         if args.fg:
             say("starting the backend in this window - Ctrl-C to stop")
@@ -225,7 +233,7 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("start", help="build what is missing and start the app")
     p.add_argument("--sim", action="store_true", help="also start the telemetry feed")
-    p.add_argument("--build", action="store_true", help="rebuild schema, web UI and backend")
+    p.add_argument("--build", action="store_true", help="rebuild the web UI and backend")
     p.add_argument("--fg", action="store_true", help="run the backend in this window")
     p.set_defaults(fn=start)
     p = sub.add_parser("stop", help="stop the feed and the app")

@@ -1,26 +1,33 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AppHeader, TABS, type Tab } from './components/AppHeader'
 import { StatusBar } from './components/StatusBar'
-import { Dashboard, type TelemetryFilter } from './components/Dashboard'
 import { TelemetryTable } from './components/TelemetryTable'
 import { ChartsDashboard } from './ox/ChartsDashboard'
 import { DecodeView } from './components/DecodeView'
 import { Docs } from './components/Docs'
-import { XdlinxPage } from './components/XdlinxPage'
 import { DisplayDesk } from './components/display/DisplayDesk'
 
-// three.js is large, so the 3D page loads only when it is opened.
-const OrbitPage = lazy(() => import('./components/orbit/OrbitPage'))
 import { useTelemetryStream } from './hooks/useTelemetryStream'
 import { useTheme } from './theme'
+import type { AuthUser } from './auth/auth'
 
 function tabFromHash(): Tab {
   const id = location.hash.replace(/^#/, '').split('/')[0]
-  return (TABS.some((t) => t.id === id) ? id : 'dashboard') as Tab
+  return (TABS.some((t) => t.id === id) ? id : 'telemetry') as Tab
 }
 
-export default function App() {
-  const { rows, status, live, backendUp, lastMsgAt, lastFrame, movers, reload, refreshStatus } =
+export default function App({
+  user,
+  onUser,
+  onSignOut,
+  signingOut,
+}: {
+  user: AuthUser
+  onUser: (u: AuthUser) => void
+  onSignOut: () => void
+  signingOut: boolean
+}) {
+  const { rows, status, live, backendUp, lastMsgAt, lastFrame, reload, refreshStatus } =
     useTelemetryStream()
   const theme = useTheme()
   // The address carries the page (#telemetry, #docs/database, ...) so a page can
@@ -33,10 +40,12 @@ export default function App() {
   }, [])
   useEffect(() => {
     if (tabFromHash() === tab) return // already there (keeps #docs/database intact)
-    history.pushState(null, '', tab === 'dashboard' ? location.pathname : `#${tab}`)
+    history.pushState(null, '', `#${tab}`)
   }, [tab])
-  const [filter, setFilter] = useState<TelemetryFilter & { n: number }>({ n: 0 })
-  const [chartIds, setChartIds] = useState<number[]>([])
+  const [chartIds] = useState<number[]>([])
+  // Display page focus mode: header and toolbar hidden, windows highlighted.
+  const [focusMode, setFocusMode] = useState(false)
+  const focused = focusMode && tab === 'display'
 
   useEffect(() => {
     const t = TABS.find((x) => x.id === tab)
@@ -48,16 +57,19 @@ export default function App() {
       <AppHeader
         tab={tab}
         onTab={(t) => {
-          // The nav always opens a page unfiltered; filters come only from a
-          // dashboard link that asked for them.
-          if (t === 'telemetry') setFilter((prev) => ({ n: prev.n + 1 }))
           setTab(t)
         }}
+        collapsed={focused}
+        onToggleCollapse={tab === 'display' ? () => setFocusMode((v) => !v) : undefined}
         lastMsgAt={lastMsgAt}
         status={backendUp === false ? null : status}
         live={live}
         theme={theme.choice}
         onTheme={theme.set}
+        user={user}
+        onUser={onUser}
+        onSignOut={onSignOut}
+        signingOut={signingOut}
         onFeedChanged={() => {
           void refreshStatus()
           void reload()
@@ -71,31 +83,10 @@ export default function App() {
       )}
       {(tab === 'telemetry' || tab === 'charts' || tab === 'decode') && <StatusBar status={status} live={live} />}
 
-      {tab === 'dashboard' && (
-        <Dashboard
-          rows={rows}
-          status={status}
-          live={live}
-          lastMsgAt={lastMsgAt}
-          lastFrame={lastFrame}
-          movers={movers}
-          onOpenTelemetry={(f) => {
-            setFilter((prev) => ({ ...f, n: prev.n + 1 }))
-            setTab('telemetry')
-          }}
-          onOpenCharts={(ids) => {
-            setChartIds(ids)
-            setTab('charts')
-          }}
-        />
-      )}
       {tab === 'telemetry' && (
         <TelemetryTable
-          key={filter.n}
           rows={rows}
           backendUp={backendUp}
-          initialSubsystem={filter.subsystem}
-          initialOnlyProblems={filter.onlyProblems}
         />
       )}
       {tab === 'charts' && (
@@ -103,15 +94,9 @@ export default function App() {
       )}
       {tab === 'decode' && <DecodeView rows={rows} live={live} />}
       {tab === 'display' && (
-        <DisplayDesk rows={rows} status={status} live={live} lastMsgAt={lastMsgAt} lastFrame={lastFrame} />
+        <DisplayDesk rows={rows} status={status} live={live} lastMsgAt={lastMsgAt} lastFrame={lastFrame} focused={focused} />
       )}
       {tab === 'docs' && <Docs theme={theme.choice} />}
-      {tab === 'xdlinx' && <XdlinxPage />}
-      {tab === 'track' && (
-        <Suspense fallback={<div className="empty">Loading the 3D view…</div>}>
-          <OrbitPage rows={rows} live={live} />
-        </Suspense>
-      )}
     </div>
   )
 }

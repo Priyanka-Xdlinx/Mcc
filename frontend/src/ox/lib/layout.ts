@@ -32,7 +32,7 @@ export const WIDGET_TYPE_LABEL: Record<WidgetType, string> = {
 
 export type WidgetHeight = 's' | 'm' | 'l';
 /** Chart height in px per widget height. */
-export const HEIGHT_PX: Record<WidgetHeight, number> = { s: 130, m: 220, l: 340 };
+export const HEIGHT_PX: Record<WidgetHeight, number> = { s: 104, m: 170, l: 260 };
 /** Series in one plot, and channels in one table widget. */
 export const MAX_SERIES = 3;
 export const MAX_TABLE = 8;

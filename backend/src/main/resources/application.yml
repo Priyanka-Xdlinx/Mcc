@@ -13,8 +13,13 @@ spring:
           no-cache: true
 
 mcc:
-  # Absolute paths keep the app runnable from any working directory.
+  # Decode schema, telemetry and display pages. store.DecodeSchemaLoader fills
+  # the decode tables from xdos/ the first time this file has none.
   db: ${MCC_DB:../mcc.db}
+  # Where the launcher token and the first admin's one-time password file go
+  # (the repository root, where mcc.py looks for them).
+  data-dir: ${MCC_DATA_DIR:..}
+  # The XDLINX tree the decode schema is built from, on a fresh mcc.db.
   xdos-home: ${MCC_XDOS_HOME:../xdos}
   feed:
     host: 127.0.0.1
@@ -32,6 +37,28 @@ mcc:
     # has to actually run (IngestService.prune, every 30s).
     max-rows: 500000
 
+  # Username/password sign-in; see com.orblinx.mcc.auth.AuthProperties.
+  # Accounts, sessions and the token signing keys are in their own file, apart
+  # from the decode/telemetry/display data in mcc.db.
+  auth:
+    db: ${MCC_AUTH_DB:../mcc-auth.db}
+    # Browsers accept Secure cookies on http://localhost; set false only to
+    # serve plain http under another host name.
+    secure-cookies: ${MCC_SECURE_COOKIES:true}
+    # First start only (no accounts yet): this admin is created. Without a
+    # password here one is generated into mcc-admin-password.txt in data-dir.
+    # Either way it must be changed at first sign-in.
+    bootstrap-admin: ${MCC_ADMIN_USER:admin}
+    bootstrap-password: ${MCC_ADMIN_PASSWORD:}
+    access-ttl: 15m
+    refresh-ttl: 7d
+    # Lock an account for 15 minutes after 5 wrong passwords in a row.
+    max-failed-logins: 5
+    lockout: 15m
+    # At most 20 sign-in attempts per address per 5 minutes.
+    logins-per-ip: 20
+    login-window: 5m
+
 logging:
   level:
     com.orblinx.mcc: INFO
@@ -47,4 +74,7 @@ springdoc:
     display-request-duration: true
     operations-sorter: alpha
     tags-sorter: alpha
+    # "Try it out" echoes the XSRF-TOKEN cookie, which writes need once signed in.
+    csrf:
+      enabled: true
   paths-to-match: /api/**

@@ -18,6 +18,7 @@
 
 #include "codec/ccsds_tm_codec.hpp"
 #include "common/color.hpp"
+#include "common/socket_compat.hpp"
 #include "mib/mib.hpp"
 #include "cli/master_frame_store.hpp"
 #include "cli/mcc_forward.hpp"
@@ -525,6 +526,7 @@ static void master_frame_browser() {
 
 // ─── entry point ─────────────────────────────────────────────────────────────
 int main(int argc, char** argv) {
+    xdos::net::Startup _net_init;        // no-op on POSIX, WSAStartup on Windows
     std::string obc_host = "192.168.1.111";  // bench default: real OBC
     int obc_port = 7000;
     int rg_port  = 0;                      // 0 = derive as obc_port + 2

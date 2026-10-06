@@ -1,0 +1,15 @@
+==> bus simulators
+    EPS sim                      log: logs/eps.log
+    ADCS sim                     log: logs/adcs.log
+    GPS sim                      log: logs/gps.log
+    PAYLOAD sim                  log: logs/payload.log
+    XLINK sim                    log: logs/xlink.log
+    UHF sim                      log: logs/uhf.log
+==> OBC bridge
+    OBC 127.0.0.1:10000          log: logs/obc.log
+==> releasing the EPS kill switch (EGSE umbilical)
+    kill switch ON — OBC boots (10 s), then staggers channels
+==> TM view + MCC feed — MCC connects to 127.0.0.1:9100
+    tm_view (headless)           log: logs/tm_view.log
+==> running headless (no xdos_gs).  Ctrl-C to stop.
+

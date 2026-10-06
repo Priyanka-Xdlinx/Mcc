@@ -1,0 +1,143 @@
+/* ── sign-in and account screens ────────────────────────────────────────── */
+.auth {
+  min-height: 100svh; display: grid; place-items: center;
+  padding: 32px 16px; box-sizing: border-box;
+  background: var(--bg); color: var(--fg); font-family: var(--sans);
+}
+.auth-card {
+  width: 100%; max-width: 380px; box-sizing: border-box;
+  padding: 32px 28px 26px; border-radius: 10px;
+  background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.auth-brand img { height: 34px; width: auto; }
+.auth-brand .logo-ink { display: var(--logo-ink); }
+.auth-brand .logo-white { display: var(--logo-white); }
+.auth h1 { margin: 22px 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.auth-sub { margin: 0 0 24px; font-size: 13px; color: var(--dim); }
+.auth-lead { margin: 0 0 16px; font-size: 13px; color: var(--dim); text-align: left; line-height: 1.5; }
+.auth-lead b { color: var(--fg); }
+
+.auth-form { width: 100%; display: flex; flex-direction: column; gap: 14px; text-align: left; }
+.auth-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--dim); }
+.auth-form input:not([hidden]), .users-new input, .users-new select, .users-table select {
+  height: 36px; box-sizing: border-box; padding: 0 10px;
+  font: 400 14px var(--sans); color: var(--fg);
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px;
+}
+.auth-form input:focus-visible, .users-new input:focus-visible, .users-new select:focus-visible,
+.users-table select:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.auth-form input[aria-invalid='true'], .users-new input[aria-invalid='true'] { border-color: var(--bad); }
+.auth-field { display: flex; flex-direction: column; gap: 5px; }
+.auth-field-hint:empty { display: none; }
+.auth-field-hint { font-weight: 400; font-size: 12px; color: var(--dimmer); }
+.auth-field-hint.bad { color: var(--bad); }
+.auth-hint { margin: 2px 0 0; font-size: 12px; color: var(--dimmer); text-align: center; }
+
+.auth-error, .auth-ok {
+  width: 100%; box-sizing: border-box; padding: 9px 12px;
+  font-size: 13px; text-align: left; border-radius: 6px; color: var(--fg);
+}
+.auth-error { background: var(--bad-soft); border: 1px solid color-mix(in srgb, var(--bad) 40%, transparent); }
+.auth-ok { background: var(--ok-soft); border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent); }
+.auth-error code { font-family: var(--mono); font-size: 12px; }
+
+.auth-btn {
+  height: 38px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 600 13.5px var(--sans); color: var(--fg); cursor: pointer;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 6px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.auth-btn.primary { background: var(--accent-strong); border-color: transparent; color: var(--on-accent); }
+.auth-form > .auth-btn.primary, .auth-card > .auth-btn { width: 100%; height: 40px; }
+.auth-btn:hover:not(:disabled) { border-color: var(--dimmer); }
+.auth-btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+.auth-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.auth-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+.auth-btn[aria-busy='true'] { cursor: progress; }
+.auth-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.auth-actions .auth-btn.primary { flex: 1; }
+.auth-spin {
+  width: 14px; height: 14px; border-radius: 50%; box-sizing: border-box;
+  border: 2px solid currentColor; border-top-color: transparent;
+  animation: auth-spin 0.8s linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .auth-spin { animation-duration: 2.4s; } }
+
+/* ── account menu in the header ─────────────────────────────────────────── */
+.usermenu { position: relative; }
+.usermenu-btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px 0 4px;
+  font: 500 13px var(--sans); color: var(--fg); cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 15px;
+}
+.usermenu-btn:hover { background: var(--hover); }
+.usermenu-avatar {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11.5px; font-weight: 600; background: var(--accent-soft); color: var(--accent);
+}
+.usermenu-name { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.usermenu-list {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; min-width: 200px;
+  display: flex; flex-direction: column; padding: 6px;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow);
+}
+.usermenu-who { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px 8px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+.usermenu-who span { font-size: 12px; color: var(--dim); }
+.usermenu-list button {
+  display: flex; justify-content: flex-start; text-align: left; width: 100%; padding: 8px 10px; font: 400 13px var(--sans); color: var(--fg);
+  background: none; border: none; border-radius: 5px; cursor: pointer;
+}
+.usermenu-list button:hover:not(:disabled) { background: var(--hover); }
+.usermenu-list button:disabled { color: var(--dim); cursor: progress; }
+
+/* ── dialogs ────────────────────────────────────────────────────────────── */
+.auth-backdrop {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px;
+  background: var(--backdrop);
+}
+.auth-dialog {
+  width: 100%; max-width: 400px; max-height: calc(100svh - 32px); display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+  color: var(--fg); font-family: var(--sans);
+}
+.auth-dialog.wide { max-width: 900px; }
+.auth-dialog-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;
+  border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.auth-x { background: none; border: none; color: var(--dim); font-size: 14px; cursor: pointer; padding: 2px 6px; }
+.auth-dialog-body { padding: 16px; overflow: auto; }
+
+/* ── user management ────────────────────────────────────────────────────── */
+.users { display: flex; flex-direction: column; gap: 12px; }
+.users-scroll { overflow-x: auto; }
+.users-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; }
+/* the app-wide table rules clip cells to one line; this table needs its buttons whole */
+.users-table tbody td { overflow: visible; text-overflow: clip; }
+.users-table thead th { position: static; }
+.users-table th { text-align: left; font-size: 11.5px; font-weight: 600; color: var(--dim); text-transform: uppercase;
+  letter-spacing: 0.03em; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.users-table td { padding: 8px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+.users-table select { height: 30px; font-size: 13px; }
+.users-dim { color: var(--dim); font-size: 12px; }
+.users-empty { color: var(--dim); text-align: center; }
+.users-tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 9px; font-size: 11.5px;
+  background: var(--panel-2); color: var(--dim); border: 1px solid var(--line-soft); }
+td > .users-tag:first-child { margin-left: 0; }
+.users-tag.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.users-tag.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.users-tag.bad { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.users-actions { white-space: nowrap; text-align: right; }
+.users-actions button {
+  margin-left: 6px; padding: 4px 9px; font: 500 12px var(--sans); color: var(--fg); cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 5px;
+}
+.users-actions button:hover { background: var(--hover); }
+.users-actions button.danger { color: var(--bad); }
+.users-new { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 12px;
+  border-top: 1px solid var(--line); font-size: 13px; }
+.users-new > b { width: 100%; }
+.users-new input { flex: 1 1 150px; min-width: 0; }
+.users-new .auth-btn { height: 36px; }
+.users-new .auth-field-hint { width: 100%; }

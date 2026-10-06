@@ -40,6 +40,15 @@ public class TelemetryController {
         return store.latest();
     }
 
+    /** Expected range of each parameter that has one; the charts use it to tell when two cannot share an axis. */
+    @GetMapping("/telemetry/limits")
+    @Operation(summary = "Expected range of each parameter",
+               description = "One row per parameter with a limit in the parameter_limit table: its id and the "
+                           + "lowest and highest expected value. Parameters without a row have no limit.")
+    public List<Map<String, Object>> limits() {
+        return store.limits();
+    }
+
     /**
      * History for one parameter. Defaults to the run in progress; pass
      * {@code session=all} to reach back across earlier runs.

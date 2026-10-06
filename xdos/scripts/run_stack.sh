@@ -95,7 +95,7 @@ spawn() {
     if ! : > "$logf" 2>/dev/null; then
         echo "    !! cannot write $logf" >&2; cleanup
     fi
-    "$@" > "$logf" 2>&1 &
+    "$@" > "$logf" 2>&1 < <(exec tail -f /dev/null) &
     local pid=$!
     PIDS+=("$pid")
     sleep 0.2

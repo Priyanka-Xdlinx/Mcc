@@ -4,7 +4,6 @@ import com.orblinx.mcc.decode.*;
 import com.orblinx.mcc.wire.Tier;
 
 import java.util.*;
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 /**
- * Loads the decode schema and the flown lookup table out of SQLite, once, at
+ * Loads the decode schema and the flown lookup table out of mcc.db, once, at
  * startup. Everything here is read-only after load.
  */
 @Repository
@@ -29,8 +28,9 @@ public class SchemaRepo {
     private final Map<Integer, String> paramNames = new HashMap<>();
     private int lutCrc16;
 
-    public SchemaRepo(DataSource ds) {
-        this.jdbc = new JdbcTemplate(ds);
+    /** The loader is a parameter so the decode tables are filled before they are read. */
+    public SchemaRepo(JdbcTemplate jdbc, DecodeSchemaLoader loader) {
+        this.jdbc = jdbc;
         load();
     }
 
@@ -53,9 +53,9 @@ public class SchemaRepo {
             ParamDef p = new ParamDef(
                     rs.getInt("id"), rs.getInt("message_id"), rs.getInt("seq"),
                     rs.getString("name"), off, rs.getInt("length"), bo, bl,
-                    rs.getInt("byte_aligned") != 0, rs.getString("data_type"),
+                    rs.getBoolean("byte_aligned"), rs.getString("data_type"),
                     "big".equals(rs.getString("endian")), scale, rs.getString("unit"),
-                    enumId, rs.getInt("is_array") != 0);
+                    enumId, rs.getBoolean("is_array"));
             byMessage.computeIfAbsent(p.messageId(), k -> new ArrayList<>()).add(p);
         });
 

@@ -1,0 +1,97 @@
+/* Orbit: the space-dark mission view (globe + HUD), then the map and position charts. */
+.dash { flex: 1; overflow: auto; }
+.dash-inner { max-width: 1440px; margin: 0 auto; padding: 22px 24px 40px; display: flex; flex-direction: column; gap: 18px; }
+.dash-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.dash-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.dash-head p { margin: 3px 0 0; color: var(--dim); font-size: 13px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+.card-head { display: flex; align-items: baseline; gap: 4px 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-head h2 { white-space: nowrap; }
+.card-head h2 { margin: 0; font-size: 14px; font-weight: 700; }
+.card-head .sub { font-size: 12px; color: var(--dim); }
+.card-head .act { margin-left: auto; }
+/* ── ground track page: a mission view, always space-dark in both themes ── */
+.orbitpage { background: var(--bg); }
+.mission {
+  position: relative; height: clamp(560px, 74vh, 900px); overflow: hidden;
+  background: radial-gradient(ellipse at 60% 45%, #0a1a2c 0%, #02050a 70%);
+  border-bottom: 1px solid #13222e; color: #e6f3f7;
+}
+.mission .globe { position: absolute; inset: 0; }
+.globe canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+.globe canvas:active { cursor: grabbing; }
+.globe-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #c9d6de; font-size: 13px; }
+
+.hud { position: absolute; z-index: 2; pointer-events: none; }
+.hud * { pointer-events: auto; }
+.hud-eyebrow { font: 600 11px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #7fd3e6; }
+.hud-sub { font-size: 12.5px; color: #9fb6c2; margin-top: 4px; }
+.hud-title { top: 26px; left: 32px; max-width: 46%; }
+.hud-title h1 { margin: 6px 0 0; font: 600 clamp(28px, 3vw, 40px)/1.05 var(--sans); letter-spacing: .01em; color: #f3fbfd; text-shadow: 0 2px 24px rgba(34,184,216,.25); }
+.hud-clock { top: 26px; right: 32px; text-align: right; }
+.hud-clock .clock { font: 500 clamp(28px, 3vw, 40px)/1.1 var(--mono); color: #f3fbfd; margin-top: 6px; letter-spacing: .02em; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px rgba(34,184,216,.35); }
+
+.hud-panel {
+  background: linear-gradient(180deg, rgba(10,20,30,.62), rgba(6,12,20,.5));
+  border: 1px solid rgba(127,211,230,.2); border-radius: 14px;
+  backdrop-filter: blur(12px) saturate(1.2); -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 12px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+  padding: 16px 18px;
+}
+/* corner ticks: a quiet instrument frame */
+.hud-panel::before, .hud-panel::after { content: ''; position: absolute; width: 14px; height: 14px; border-color: #7fd3e6; opacity: .7; pointer-events: none; }
+.hud-panel::before { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 14px; }
+.hud-panel::after { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: 14px; }
+.hud-left { left: 32px; top: 50%; transform: translateY(-40%); width: 270px; display: grid; gap: 16px; }
+.readout span { display: block; font: 600 10.5px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #7fd3e6; }
+.readout b { display: block; font: 500 27px/1.2 var(--mono); color: #f3fbfd; margin-top: 4px; font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(34,184,216,.28); }
+.readout b small { font-size: 15px; color: #9fb6c2; }
+.readout .heading { display: block; font-style: normal; font-size: 11.5px; color: #9fb6c2; margin-top: 2px; }
+.readout .heading.north { color: #5dbe86; }
+.readout .heading.south { color: #e2a640; }
+.hud-right { right: 32px; top: 50%; transform: translateY(-40%); width: 280px; }
+.hud-right dl { margin: 8px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; font-size: 13px; }
+.hud-right dt { color: #9fb6c2; }
+.hud-right dd { margin: 0; text-align: right; font-family: var(--mono); color: #eaf6f9; font-variant-numeric: tabular-nums; }
+.hud-right dd.ok { color: #5dbe86; } .hud-right dd.warn { color: #e2a640; }
+
+.hud-bar { left: 32px; right: 32px; bottom: 22px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hud-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: #e6f3f7; padding: 7px 12px; border-radius: 999px; background: rgba(10,20,30,.6); border: 1px solid rgba(127,211,230,.25); backdrop-filter: blur(8px); cursor: pointer; }
+.hud-toggle input { accent-color: #22b8d8; }
+.hud-btn { font-size: 12.5px; font-weight: 600; color: #e6f3f7; padding: 7px 14px; border-radius: 999px; background: rgba(10,20,30,.6); border: 1px solid rgba(127,211,230,.25); backdrop-filter: blur(8px); }
+.hud-btn:hover:not(:disabled) { border-color: #7fd3e6; }
+.hud-legend { display: flex; gap: 14px; margin-left: 8px; font-size: 11.5px; color: #b9cdd6; }
+.hud-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.hud-legend i { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.lg-orbit { background: #8fe3f4; box-shadow: 0 0 8px #8fe3f4; }
+.lg-ground { background: #22b8d8; }
+.lg-foot { background: repeating-linear-gradient(90deg, #ffd866 0 5px, transparent 5px 8px); }
+.hud-hint { margin-left: auto; font-size: 11.5px; color: #8aa3b0; }
+
+.gmap { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #0a1522; }
+.gmap canvas { display: block; cursor: crosshair; }
+.gmap-tip { position: absolute; pointer-events: none; font-family: var(--mono); font-size: 11.5px; padding: 3px 8px; border-radius: 6px; background: rgba(8, 12, 22, 0.85); color: #eef4f7; border: 1px solid rgba(255,255,255,0.15); white-space: nowrap; }
+.orbit-charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.oc-title { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+.oc-title span { color: var(--dimmer); font-weight: 400; font-family: var(--mono); margin-left: 4px; }
+.pos-note { font-size: 12px; color: var(--dimmer); }
+
+@media (max-width: 1100px) {
+  .hud-left { width: 230px; } .hud-right { width: 240px; }
+  .readout b { font-size: 22px; }
+  .orbit-charts { grid-template-columns: 1fr; }
+}
+/* narrow: globe on top, panels flow below it instead of covering the Earth */
+@media (max-width: 900px) {
+  .mission { height: auto; display: flex; flex-direction: column; }
+  .mission .globe { position: relative; height: 380px; order: 2; }
+  .hud { position: relative; inset: auto; transform: none; width: auto; margin: 12px 14px 0; }
+  .hud-title { order: 1; max-width: none; margin-top: 18px; }
+  .hud-clock { order: 3; text-align: left; }
+  .hud-left { order: 4; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hud-right { order: 5; }
+  .hud-bar { order: 6; margin-bottom: 16px; }
+  .hud-hint { margin-left: 0; }
+}
+@media (max-width: 560px) { .hud-left { grid-template-columns: 1fr; } }
+

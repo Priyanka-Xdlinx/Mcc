@@ -623,7 +623,7 @@
   padding: 12px 14px;
 }
 .oxd details.sec {
-  margin-top: 14px;
+  margin-top: 8px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
@@ -635,8 +635,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
-  padding: 10px 14px;
+  gap: 4px 8px;
+  padding: 5px 10px;
 }
 .oxd details.sec > summary::-webkit-details-marker {
   display: none;
@@ -676,7 +676,7 @@
   padding: 3px 6px;
 }
 .oxd .secbody {
-  padding: 0 12px 12px;
+  padding: 0 6px 6px;
 }
 
 /* ---------- summary strip */
@@ -731,21 +731,21 @@
 /* ---------- widgets */
 .oxd .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
-  padding: 0 12px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+  padding: 0 6px 6px;
   /* Widgets keep their own height (a value is not stretched next to a plot); small ones fill gaps. */
   align-items: start;
   grid-auto-flow: row;
 }
 .oxd .w {
   border: 1px solid var(--line-2);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--surface-2);
-  padding: 9px 10px 8px;
+  padding: 5px 7px 5px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
   touch-action: manipulation;
 }

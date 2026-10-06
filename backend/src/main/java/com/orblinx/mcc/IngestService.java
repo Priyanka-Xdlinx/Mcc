@@ -121,7 +121,7 @@ public class IngestService {
             if (onDisk != schema.lutCrc16()) {
                 throw new IllegalStateException(String.format(
                         "LUT mismatch: schema was built from CRC-16 %d but %s now has %d. "
-                        + "Rebuild the schema (schema/build_schema.py) before decoding.",
+                        + "Delete mcc.db and restart the backend to rebuild the decode schema.",
                         schema.lutCrc16(), twinPath, onDisk));
             }
             log.info("LUT verified: CRC-16 {} matches {}", onDisk, twinPath);

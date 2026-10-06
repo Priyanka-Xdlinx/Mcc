@@ -4,36 +4,33 @@ import type { LastFrame } from '../../hooks/useTelemetryStream'
 import { ago } from '../../format'
 import { Icon } from '../Icon'
 import {
-  api, ApiError, emptyParams, parseLayout,
-  type Draft, type Layout, type Page, type User,
+  api, ApiError, emptyParams, nextPageNo, parseLayout, uniquePageNos,
+  type Draft, type Layout, type LayoutWindow, type Page, type User,
 } from './api'
-import { DisplayWindow, EMPTY_PARAMS, MIN_H, MIN_W, type Geo, type WinActions, type WinState } from './DisplayWindow'
+import { DEFAULT_H, DisplayWindow, EMPTY_PARAMS, MIN_H, MIN_W, type Geo, type WinActions, type WinState } from './DisplayWindow'
 import { buildIndex, type IndexEntry } from './ParamPicker'
 import { setHeader } from './headerStore'
 import { Library } from './Library'
 import './display.css'
 
-const USER_KEY = 'mcc.user'
 /** Seconds between samples per tier; a value older than 3 periods is stale. */
 const PERIOD_S: Record<Row['tier'], number> = { VH: 1, H: 2, M: 4, L: 8 }
 const UNTITLED = 'Untitled page'
+/** The layout is saved this long after the last change. */
+const SAVE_DELAY_MS = 300
+/** A failed layout save is tried again after this long. */
+const RETRY_MS = 5000
 
-function readUser(): number | null {
-  try {
-    const v = localStorage.getItem(USER_KEY)
-    const n = v == null ? NaN : Number(v)
-    return Number.isInteger(n) && n > 0 ? n : null
-  } catch {
-    return null
-  }
-}
-function writeUser(id: number | null) {
-  try {
-    if (id == null) localStorage.removeItem(USER_KEY)
-    else localStorage.setItem(USER_KEY, String(id))
-  } catch {
-    /* private window or blocked storage: the choice just is not remembered */
-  }
+function toWinStates(lw: LayoutWindow[]): WinState[] {
+  return lw.map((l) => ({
+    ...l,
+    w: Math.max(MIN_W, l.w),
+    h: Math.max(MIN_H, l.h),
+    page: null,
+    error: null,
+    busy: false,
+    loading: l.pageId != null,
+  }))
 }
 
 const paramsOf = (w: WinState) => w.draft?.params ?? w.page?.params ?? EMPTY_PARAMS
@@ -42,7 +39,7 @@ const nameOf = (w: WinState) => w.draft?.name ?? w.page?.name ?? UNTITLED
 function serialize(ws: WinState[]): string {
   const layout: Layout = {
     v: 1,
-    windows: ws.map(({ key, pageId, draft, x, y, w, h, z, min }) => ({ key, pageId, draft, x, y, w, h, z, min })),
+    windows: ws.map(({ key, pageId, draft, x, y, w, h, z, min, pageNo }) => ({ key, pageId, draft, x, y, w, h, z, min, pageNo })),
   }
   return JSON.stringify(layout)
 }
@@ -52,12 +49,12 @@ const newKey = () => `w${Date.now().toString(36)}${(keySeq++).toString(36)}`
 
 const clampTo = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi))
 
-/** Keep every window's top-left on the desk (sizes are left alone). */
-function clampAll(ws: WinState[], W: number, H: number): WinState[] {
+/** Keep every window's top-left on the desk (sizes are left alone). The desk scrolls down, so only the top is bounded. */
+function clampAll(ws: WinState[], W: number): WinState[] {
   let changed = false
   const out = ws.map((w) => {
     const x = clampTo(w.x, 0, W - Math.min(w.w, W))
-    const y = clampTo(w.y, 0, H - 40)
+    const y = Math.max(0, w.y)
     if (x === w.x && y === w.y) return w
     changed = true
     return { ...w, x, y }
@@ -78,7 +75,10 @@ export function DisplayDesk({
   live,
   lastMsgAt,
   lastFrame,
+  focused = false,
 }: {
+  /** Focus mode: toolbar hidden, windows highlighted. */
+  focused?: boolean
   rows: Row[]
   status: Status | null
   live: boolean
@@ -87,7 +87,9 @@ export function DisplayDesk({
 }) {
   const [users, setUsers] = useState<User[] | null>(null)
   const [usersErr, setUsersErr] = useState<string | null>(null)
-  const [userId, setUserId] = useState<number | null>(() => readUser())
+  const [userId, setUserId] = useState<number | null>(null)
+  /** false until the backend has said which operator this browser is. */
+  const [sessionReady, setSessionReady] = useState(false)
   const [newName, setNewName] = useState<string | null>(null)
   const [nameErr, setNameErr] = useState<string | null>(null)
   const [windows, setWindows] = useState<WinState[]>([])
@@ -105,8 +107,9 @@ export function DisplayDesk({
   const restoredFor = useRef<number | null>(null)
   const lastSaved = useRef<string | null>(null)
   const pending = useRef<{ uid: number; json: string } | null>(null)
-  const prevUser = useRef<number | null>(null)
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const arrangeRef = useRef<HTMLDivElement>(null)
+  const scrollTarget = useRef<number | null>(null)
 
   // ── feed header, shared by every window through a tiny store ──────────────
   useEffect(() => {
@@ -160,7 +163,7 @@ export function DisplayDesk({
 
   const getDesk = useCallback(() => {
     const el = deskRef.current
-    return { w: el?.clientWidth ?? 1200, h: el?.clientHeight ?? 700 }
+    return { w: el?.clientWidth ?? 1200, h: el?.clientHeight ?? 700, top: el?.scrollTop ?? 0 }
   }, [])
 
   // ── users ─────────────────────────────────────────────────────────────────
@@ -175,19 +178,67 @@ export function DisplayDesk({
   }, [])
   useEffect(loadUsers, [loadUsers])
 
-  // A remembered id the server no longer knows is dropped.
+  // ── which operator this browser is: the backend remembers it in a cookie ──
   useEffect(() => {
-    if (users && userId != null && !users.some((u) => u.id === userId)) {
-      writeUser(null)
-      setUserId(null)
+    let cancelled = false
+    let t: ReturnType<typeof setTimeout> | null = null
+    const ask = () => {
+      api
+        .session()
+        .then((s) => {
+          if (cancelled) return
+          setUserId(s?.user?.id ?? null)
+          setSessionReady(true)
+        })
+        .catch(() => {
+          // Backend not up yet: keep asking; nothing can be shown or saved without it.
+          if (!cancelled) t = setTimeout(ask, RETRY_MS)
+        })
     }
-  }, [users, userId])
+    ask()
+    return () => {
+      cancelled = true
+      if (t) clearTimeout(t)
+    }
+  }, [])
 
-  // ── workspace save: debounced PUT of the layout ───────────────────────────
+  // ── saved pages behind restored windows are fetched from the backend ─────
+  const loadPages = useCallback((ids: number[]) => {
+    for (const id of new Set(ids)) {
+      api
+        .page(id)
+        .then((p) => {
+          setWindows((ws) => ws.map((w) => (w.pageId === id ? { ...w, page: p, loading: false } : w)))
+        })
+        .catch((e: Error) => {
+          const gone = e instanceof ApiError && e.status === 404
+          setWindows((ws) =>
+            ws.map((w) =>
+              w.pageId !== id
+                ? w
+                : gone
+                  ? {
+                      ...w, loading: false, pageId: null,
+                      draft: w.draft ?? { name: UNTITLED, params: emptyParams() },
+                      error: `Saved page #${id} no longer exists; this is now an unsaved copy.`,
+                    }
+                  : { ...w, loading: false, error: `Could not load page #${id}: ${e.message}` },
+            ),
+          )
+        })
+    }
+  }, [])
+  const pageIdsOf = (ws: { pageId: number | null }[]) => ws.map((w) => w.pageId).filter((x): x is number => x != null)
+
+  // ── workspace save: debounced PUT of the layout, the only copy kept ───────
   const flush = useCallback(async (keepalive = false) => {
     const p = pending.current
     if (!p) return
     pending.current = null
+    if (retryTimer.current) {
+      clearTimeout(retryTimer.current)
+      retryTimer.current = null
+    }
     if (keepalive) {
       try {
         void fetch(`/api/users/${p.uid}/workspace`, {
@@ -208,7 +259,10 @@ export function DisplayDesk({
         if (!pending.current) setSave({ kind: 'saved' })
       }
     } catch (e) {
-      if (p.uid === userIdRef.current) setSave({ kind: 'error', msg: (e as Error).message })
+      // Nothing else holds this layout: keep it and try again, unless a newer one is already waiting.
+      if (!pending.current) pending.current = p
+      retryTimer.current = setTimeout(() => void flush(), RETRY_MS)
+      if (p.uid === userIdRef.current) setSave({ kind: 'error', msg: `Not saved: ${(e as Error).message}` })
     }
   }, [])
 
@@ -218,7 +272,7 @@ export function DisplayDesk({
     if (json === lastSaved.current) return
     pending.current = { uid: userId, json }
     setSave({ kind: 'pending' })
-    const t = setTimeout(() => void flush(), 800)
+    const t = setTimeout(() => void flush(), SAVE_DELAY_MS)
     return () => clearTimeout(t)
   }, [windows, userId, flush])
 
@@ -227,15 +281,15 @@ export function DisplayDesk({
     window.addEventListener('beforeunload', onUnload)
     return () => {
       window.removeEventListener('beforeunload', onUnload)
+      if (retryTimer.current) clearTimeout(retryTimer.current)
       void flush() // leaving the tab: send what is waiting now
     }
   }, [flush])
 
   // ── workspace restore when a user is chosen (or remembered) ───────────────
   useEffect(() => {
-    const from = prevUser.current
-    prevUser.current = userId
     restoredFor.current = null
+    setWindows([]) // never show one operator's windows under another's name
     if (userId == null) {
       setSave({ kind: 'nouser' })
       return
@@ -246,58 +300,12 @@ export function DisplayDesk({
       .workspace(userId)
       .then((res) => {
         if (cancelled) return
-        const lw = parseLayout(res?.layout ?? null)
-        const desk = getDesk()
-        if (lw && lw.length) {
-          const restored: WinState[] = lw.map((l) => ({
-            ...l,
-            w: Math.max(MIN_W, l.w),
-            h: Math.max(MIN_H, l.h),
-            page: null,
-            error: null,
-            busy: false,
-            loading: l.pageId != null,
-          }))
-          // Windows opened before a name was picked are kept alongside.
-          const keep = from == null ? windowsRef.current.filter((w) => !restored.some((r) => r.key === w.key)) : []
-          const all = clampAll([...restored, ...keep], desk.w, desk.h)
-          lastSaved.current = serialize(restored)
-          restoredFor.current = userId
-          setWindows(all)
-          setSave({ kind: 'saved' })
-          const ids = Array.from(new Set(restored.map((w) => w.pageId).filter((x): x is number => x != null)))
-          for (const id of ids) {
-            api
-              .page(id)
-              .then((p) => {
-                if (cancelled) return
-                setWindows((ws) => ws.map((w) => (w.pageId === id ? { ...w, page: p, loading: false } : w)))
-              })
-              .catch((e: Error) => {
-                if (cancelled) return
-                const gone = e instanceof ApiError && e.status === 404
-                setWindows((ws) =>
-                  ws.map((w) =>
-                    w.pageId !== id
-                      ? w
-                      : gone
-                        ? {
-                            ...w, loading: false, pageId: null,
-                            draft: w.draft ?? { name: UNTITLED, params: emptyParams() },
-                            error: `Saved page #${id} no longer exists; this is now an unsaved copy.`,
-                          }
-                        : { ...w, loading: false, error: `Could not load page #${id}: ${e.message}` },
-                  ),
-                )
-              })
-          }
-        } else {
-          // Nothing stored yet: what is open now becomes this user's workspace.
-          lastSaved.current = null
-          restoredFor.current = userId
-          setWindows((ws) => (from == null ? [...ws] : []))
-          setSave({ kind: 'saved' })
-        }
+        const restored = toWinStates(parseLayout(res?.layout ?? null) ?? [])
+        lastSaved.current = serialize(restored)
+        restoredFor.current = userId
+        setWindows(uniquePageNos(clampAll(restored, getDesk().w)))
+        setSave({ kind: 'saved' })
+        loadPages(pageIdsOf(restored))
       })
       .catch((e: Error) => {
         if (cancelled) return
@@ -307,12 +315,13 @@ export function DisplayDesk({
     return () => {
       cancelled = true
     }
-  }, [userId, restoreNonce, getDesk])
+  }, [userId, restoreNonce, getDesk, loadPages])
 
   const chooseUser = (id: number | null) => {
     void flush()
-    writeUser(id)
     setUserId(id)
+    // If this fails the choice holds until a refresh, which then asks for the name again.
+    api.setSession(id).catch(() => {})
   }
 
   const createUser = async (e: React.FormEvent) => {
@@ -417,6 +426,14 @@ export function DisplayDesk({
   }, [loadUsers])
   const restoreWin = (actions as WinActions & { restore: (key: string) => void }).restore
 
+  // Bring a newly opened window into view once it is on the desk.
+  useEffect(() => {
+    const y = scrollTarget.current
+    if (y == null) return
+    scrollTarget.current = null
+    deskRef.current?.scrollTo({ top: Math.max(0, y - 8), behavior: 'smooth' })
+  }, [windows])
+
   const openWindow = (page: Page | null) => {
     const desk = getDesk()
     setWindows((ws) => {
@@ -427,17 +444,21 @@ export function DisplayDesk({
           return ws.map((w) => (w === open ? { ...w, page, min: false, z: maxZ + 1 } : w))
         }
       }
-      const n = ws.length
       const w = Math.max(MIN_W, Math.min(880, desk.w - 48))
-      const h = Math.max(MIN_H, Math.min(600, desk.h - 40))
+      const h = Math.max(MIN_H, Math.min(DEFAULT_H, desk.h - 40))
       const maxZ = ws.reduce((m, x) => Math.max(m, x.z), 0)
+      // New windows stack below the lowest open one instead of covering it.
+      const bottom = ws.reduce((m, x) => (x.min ? m : Math.max(m, x.y + x.h)), -1)
+      const y = bottom < 0 ? 16 : bottom + 16
+      scrollTarget.current = y
       const win: WinState = {
         key: newKey(),
+        pageNo: nextPageNo(ws),
         pageId: page?.id ?? null,
         page,
         draft: page ? null : { name: UNTITLED, params: emptyParams() },
-        x: clampTo(24 + (n % 8) * 28, 0, desk.w - w),
-        y: clampTo(16 + (n % 8) * 28, 0, desk.h - h),
+        x: clampTo(16, 0, desk.w - w),
+        y,
         w, h,
         z: maxZ + 1,
         min: false,
@@ -446,6 +467,33 @@ export function DisplayDesk({
         loading: false,
       }
       return [...ws, win]
+    })
+  }
+
+  /** Copies the front window into a new unsaved page; editing it leaves the original alone. */
+  const copyWindow = () => {
+    setWindows((ws) => {
+      let src: WinState | null = null
+      for (const w of ws) if (!w.min && (!src || w.z > src.z)) src = w
+      if (!src) return ws
+      const maxZ = ws.reduce((m, x) => Math.max(m, x.z), 0)
+      const bottom = ws.reduce((m, x) => (x.min ? m : Math.max(m, x.y + x.h)), -1)
+      const y = bottom < 0 ? 16 : bottom + 16
+      scrollTarget.current = y
+      const copy: WinState = {
+        key: newKey(),
+        pageNo: nextPageNo(ws),
+        pageId: null,
+        page: null,
+        draft: { name: `${nameOf(src)} (copy)`, params: paramsOf(src).slice() },
+        x: src.x, y, w: src.w, h: src.h,
+        z: maxZ + 1,
+        min: false,
+        error: null,
+        busy: false,
+        loading: false,
+      }
+      return [...ws, copy]
     })
   }
 
@@ -458,11 +506,11 @@ export function DisplayDesk({
       const geo = new Map<string, Geo>()
       if (how === 'cascade') {
         const w = Math.max(MIN_W, Math.min(880, desk.w - 48 - (vis.length - 1) * 28))
-        const h = Math.max(MIN_H, Math.min(600, desk.h - 40 - (vis.length - 1) * 28))
+        const h = Math.max(MIN_H, Math.min(DEFAULT_H, desk.h - 40 - (vis.length - 1) * 28))
         vis.forEach((v, i) => {
           geo.set(v.key, {
             x: clampTo(16 + i * 28, 0, desk.w - w),
-            y: clampTo(12 + i * 28, 0, desk.h - h),
+            y: desk.top + clampTo(12 + i * 28, 0, desk.h - h),
             w, h,
           })
         })
@@ -476,7 +524,7 @@ export function DisplayDesk({
           const r = Math.floor(i / cols)
           geo.set(v.key, {
             x: clampTo(8 + c * (w + 8), 0, desk.w - w),
-            y: clampTo(8 + r * (h + 8), 0, desk.h - h),
+            y: desk.top + clampTo(8 + r * (h + 8), 0, desk.h - h),
             w, h,
           })
         })
@@ -492,7 +540,7 @@ export function DisplayDesk({
   useEffect(() => {
     const on = () => {
       const d = getDesk()
-      setWindows((ws) => clampAll(ws, d.w, d.h))
+      setWindows((ws) => clampAll(ws, d.w))
     }
     window.addEventListener('resize', on)
     return () => window.removeEventListener('resize', on)
@@ -524,9 +572,14 @@ export function DisplayDesk({
   const user = users?.find((u) => u.id === userId) ?? null
   const minimized = windows.filter((w) => w.min)
 
+  // Pages need a name, and the layout must be back from the server first, or it would be overwritten.
+  const ready = userId != null && save.kind !== 'loading' && !(save.kind === 'error' && save.restore)
+  const needName = userId == null ? 'Pick your name first' : undefined
+
   const saveText = (() => {
+    if (!sessionReady) return 'Connecting to the backend…'
     switch (save.kind) {
-      case 'nouser': return 'Pick your name to save pages and the layout'
+      case 'nouser': return 'Pick your name to start'
       case 'loading': return 'Loading your layout…'
       case 'pending': return 'Saving…'
       case 'saved': return 'Layout saved'
@@ -535,8 +588,8 @@ export function DisplayDesk({
   })()
 
   return (
-    <div className="dp-root">
-      <div className="dp-toolbar" role="toolbar" aria-label="Display pages">
+    <div className={`dp-root${focused ? ' focused' : ''}`}>
+      <div className="dp-toolbar" role="toolbar" aria-label="Display pages" hidden={focused}>
         <label className="dp-user">
           <Icon name="user" size={15} />
           <span className="sr">Operator</span>
@@ -586,10 +639,18 @@ export function DisplayDesk({
           </span>
         )}
         <span className="dp-sep" />
-        <button type="button" onClick={() => openWindow(null)}>
+        <button type="button" onClick={() => openWindow(null)} disabled={!ready} title={needName}>
           <Icon name="plus" size={14} /> New page
         </button>
-        <button type="button" onClick={() => setLibOpen(true)}>
+        <button
+          type="button"
+          onClick={copyWindow}
+          disabled={!ready || !windows.some((w) => !w.min)}
+          title="Copy the front page into a new page you can edit without changing the original"
+        >
+          <Icon name="copy" size={14} /> Copy page
+        </button>
+        <button type="button" onClick={() => setLibOpen(true)} disabled={!ready} title={needName}>
           <Icon name="folder" size={14} /> Open saved…
         </button>
         <div className="dp-menuwrap" ref={arrangeRef}>
@@ -635,17 +696,34 @@ export function DisplayDesk({
       </div>
 
       <div className="dp-desk" ref={deskRef}>
+        {windows.some((w) => !w.min) && (
+          <div
+            className="dp-spacer"
+            aria-hidden="true"
+            style={{ top: windows.reduce((m, w) => (w.min ? m : Math.max(m, w.y + w.h)), 0) + 120 }}
+          />
+        )}
         {windows.length === 0 && (
           <div className="dp-hint">
             <Icon name="display" size={28} />
-            <p>
-              No display pages open. <b>New page</b> starts an empty one; <b>Open saved…</b> lists every
-              operator's pages.
-            </p>
-            {userId == null && <p className="dim">Pick your name first to save pages and have your layout restored.</p>}
+            {!sessionReady ? (
+              <p>Connecting to the MCC backend…</p>
+            ) : userId == null ? (
+              <p>
+                <b>Pick your name</b> in the toolbar to start. Your pages and window layout are kept on the
+                server under your name.
+              </p>
+            ) : save.kind === 'loading' ? (
+              <p>Loading your layout…</p>
+            ) : (
+              <p>
+                No display pages open. <b>New page</b> starts an empty one; <b>Open saved…</b> lists every
+                operator's pages.
+              </p>
+            )}
           </div>
         )}
-        {windows.map((w, i) => {
+        {windows.map((w) => {
           if (w.min) return null
           const params = paramsOf(w)
           const slots = params.map((id) => (id == null ? null : rowMap.get(id) ?? null))
@@ -659,7 +737,7 @@ export function DisplayDesk({
             <DisplayWindow
               key={w.key}
               win={w}
-              pageNo={i + 1}
+              pageNo={w.pageNo}
               top={w.key === topKey}
               slots={slots}
               stale={stale}
@@ -677,7 +755,7 @@ export function DisplayDesk({
           {minimized.map((w) => (
             <button key={w.key} type="button" className="dp-chip" onClick={() => restoreWin(w.key)} title="Restore">
               <Icon name="display" size={13} />
-              <span>page {windows.indexOf(w) + 1}</span>
+              <span>page {w.pageNo}</span>
               <b>{nameOf(w)}</b>
               {w.draft && <span className="dp-dirty">•</span>}
             </button>
